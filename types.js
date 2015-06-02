@@ -10,12 +10,13 @@ function JSType(field, options) {
   // `field` is the field schema.
   this.field = field;
 
-  if this.field:
+  if(this.field) {
     this.format = this.field['format'];
     this.required = this.field['constraints']['required'];
-  else:
+  } else {
     this.format = 'default';
     this.required = true;
+  }
 
   return this;
 }
@@ -48,8 +49,8 @@ JSType.prototype.cast = function(value) {
 
 // Return boolean if the value can be cast to the type/format.
 JSType.cast_default = function(value) {
-  if this.typeCheck(value):
-    return value
+  if(this.typeCheck(value))
+    return value;
 
   // WARN Port compat
   try {
