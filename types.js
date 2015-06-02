@@ -2,7 +2,7 @@ var _ = require('underscore');
 var moment = require('moment');
 
 
-function JSType(field, options) {
+module.exports.JSType = function(field, options) {
   this.js = typeof(null);
   this.name = '';
   this.formats = ['default'];
@@ -22,7 +22,7 @@ function JSType(field, options) {
 }
 
 // Return boolean if `value` can be cast as type `this.js`.
-JSType.prototype.cast = function(value) {
+module.exports.JSType.prototype.cast = function(value) {
   // WARN Port utilities
   // we can check on `constraints.required` before we cast
   if(!this.required && _.contains([null, utilities.NULL_VALUES], value))
@@ -45,7 +45,7 @@ JSType.prototype.cast = function(value) {
 }
 
 // Return boolean if the value can be cast to the type/format.
-JSType.cast_default = function(value) {
+module.exports.JSType.cast_default = function(value) {
   if(this.typeCheck(value))
     return value;
 
@@ -60,7 +60,7 @@ JSType.cast_default = function(value) {
   return false;
 }
 
-JSType.prototype.hasFormat = function(_format) {
+module.exports.JSType.prototype.hasFormat = function(_format) {
   if(_.contains(this.formats, _format))
     return true;
 
@@ -68,14 +68,14 @@ JSType.prototype.hasFormat = function(_format) {
 }
 
 // Return boolean on type check of value.
-JSType.prototype.typeCheck = function(value) {
+module.exports.JSType.prototype.typeCheck = function(value) {
   if(value instanceof this.js)
     return true;
 
   return false;
 }
 
-function StringType(field, options) {
+module.exports.StringType = function(field, options) {
   JSType.call(this, field, options);
 
   // WARN Port compat
@@ -89,7 +89,7 @@ function StringType(field, options) {
   return this;
 }
 
-StringType.prototype = _.extend(StringType.prototype, JSType.prototype, {
+module.exports.StringType.prototype = _.extend(module.exports.StringType.prototype, module.exports.JSType.prototype, {
   // Return `value` if is of type, else return false.
   castEmail: function(value) {
     if(!this.typeCheck(value))
@@ -127,14 +127,14 @@ StringType.prototype = _.extend(StringType.prototype, JSType.prototype, {
   }
 });
 
-function IntegerType(field, options) {
+module.exports.IntegerType = function(field, options) {
   JSType.call(this, field, options);
   this.js = Number;
   name = 'integer';
   return this;
 }
 
-function NumberType(field, options) {
+module.exports.NumberType = function(field, options) {
   JSType.call(this, field, options);
   this.js = Number;
   this.name = 'number';
@@ -144,7 +144,7 @@ function NumberType(field, options) {
   return this;
 }
 
-NumberType.prototype = _.extend(NumberType.prototype, JSType.prototype, {
+module.exports.NumberType.prototype = _.extend(module.exports.NumberType.prototype, module.exports.JSType.prototype, {
   castCurrency: function(value) {
     value = value.replace(new Regexp('[' + [this.separators, this.currencies].join('') + ']', 'g'), '');
 
@@ -159,7 +159,7 @@ NumberType.prototype = _.extend(NumberType.prototype, JSType.prototype, {
   }
 });
 
-function BooleanType(field, options) {
+module.exports.BooleanType = function(field, options) {
   JSType.call(this, field, options);
   this.py = Boolean;
   this.name = 'boolean';
@@ -168,7 +168,7 @@ function BooleanType(field, options) {
   return this;
 }
 
-BooleanType.prototype = _.extend(BooleanType.prototype, JSType.prototype, {
+module.exports.BooleanType.prototype = _.extend(module.exports.BooleanType.prototype, module.exports.JSType.prototype, {
   // Return boolean if `value` can be cast as type `this.js`
   castDefault: function(value) {
     if(value instanceof this.js)
@@ -183,14 +183,14 @@ BooleanType.prototype = _.extend(BooleanType.prototype, JSType.prototype, {
   }
 });
 
-function NullType(field, options) {
+module.exports.NullType = function(field, options) {
   JSType.call(this, field, options);
   this.name = 'null';
   this.nullValues = utilities.NULL_VALUES;
   return this;
 }
 
-NullType.prototype = _.extend(NullType.prototype, JSType.prototype, {
+module.exports.NullType.prototype = _.extend(module.exports.NullType.prototype, module.exports.JSType.prototype, {
   // Return null if `value` can be cast as type `this.js`
   castDefault: function(value) {
     if(value instanceof this.js)
@@ -205,14 +205,14 @@ NullType.prototype = _.extend(NullType.prototype, JSType.prototype, {
   }
 });
 
-function ArrayType(field, options) {
+module.exports.ArrayType = function(field, options) {
   JSType.call(this, field, options);
   this.js = Array;
   this.name = 'array';
   return this;
 }
 
-ArrayType.prototype = _.extend(ArrayType.prototype, JSType.prototype, {
+module.exports.ArrayType.prototype = _.extend(module.exports.ArrayType.prototype, module.exports.JSType.prototype, {
   // Return boolean if `value` can be cast as type `this.js`
   castDefault: function(value) {
     if(value instanceof this.js)
@@ -227,19 +227,19 @@ ArrayType.prototype = _.extend(ArrayType.prototype, JSType.prototype, {
   }
 });
 
-function ObjectType(field, options) {
+module.exports.ObjectType = function(field, options) {
   JSType.call(this, field, options);
   this.js = Object;
   this.name = 'object';
   return this;
 }
 
-ObjectType.prototype = _.extend(ObjectType.prototype, JSType.prototype, {
+module.exports.ObjectType.prototype = _.extend(module.exports.ObjectType.prototype, module.exports.JSType.prototype, {
   // Return boolean if `value` can be cast as type `this.js`
-  castDefault: ArrayType.prototype.castDefault
+  castDefault: module.exports.ArrayType.prototype.castDefault
 });
 
-function DateType(field, options) {
+module.exports.DateType = function(field, options) {
   JSType.call(this, field, options);
   this.js = Object;
   this.name = 'date';
@@ -248,7 +248,7 @@ function DateType(field, options) {
   return this;
 }
 
-DateType.prototype = _.extend(DateType.prototype, JSType.prototype, {
+module.exports.DateType.prototype = _.extend(module.exports.DateType.prototype, module.exports.JSType.prototype, {
   castAny: function(value) {
     try {
       // WARN Port date_parse()
@@ -276,7 +276,7 @@ DateType.prototype = _.extend(DateType.prototype, JSType.prototype, {
   }
 });
 
-function TimeType(field, options) {
+module.exports.TimeType = function(field, options) {
   JSType.call(this, field, options);
   this.js = Object;
   this.name = 'time';
@@ -284,9 +284,9 @@ function TimeType(field, options) {
   return this;
 }
 
-TimeType.prototype = _.extend(TimeType.prototype, DateType.prototype);
+module.exports.TimeType.prototype = _.extend(module.exports.TimeType.prototype, module.exports.DateType.prototype);
 
-function DateTimeType(field, options) {
+module.exports.DateTimeType = function(field, options) {
   JSType.call(this, field, options);
   this.js = Object;
   this.name = 'datetime';
@@ -295,9 +295,9 @@ function DateTimeType(field, options) {
   return this;
 }
 
-DateTimeType.prototype = _.extend(DateTimeType.prototype, DateType.prototype);
+module.exports.DateTimeType.prototype = _.extend(module.exports.DateTimeType.prototype, module.exports.DateType.prototype);
 
-function GeoPointType(field, options) {
+module.exports.GeoPointType = function(field, options) {
   JSType.call(this, field, options);
   this.js = [Object, Array];
   this.name = 'geopoint';
@@ -305,7 +305,7 @@ function GeoPointType(field, options) {
   return this;
 }
 
-GeoPointType.prototype = _.extend(GeoPointType.prototype, JSType.prototype, {
+module.exports.GeoPointType.prototype = _.extend(module.exports.GeoPointType.prototype, module.exports.JSType.prototype, {
   castDefault: function(value) {
     if(this.typeCheck(value))
       return value.split(',').length == 2;
@@ -324,7 +324,7 @@ GeoPointType.prototype = _.extend(GeoPointType.prototype, JSType.prototype, {
   castObject: function(value) { throw new Error('Not implemented'); }
 });
 
-function GeoPointType(field, options) {
+module.exports.GeoJSONType = function(field, options) {
   JSType.call(this, field, options);
   this.js = Object;
   this.name = 'geojson';
@@ -338,20 +338,20 @@ function GeoPointType(field, options) {
   return this;
 }
 
-GeoJSONType.prototype = _.extend(GeoJSONType.prototype, JSType.prototype, {
+module.exports.GeoJSONType.prototype = _.extend(module.exports.GeoJSONType.prototype, module.exports.JSType.prototype, {
   // Return boolean if `value` can be cast as type `self.py`
-  castDefault: GeoPointType.prototype.castDefault,
+  castDefault: module.exports.GeoPointType.prototype.castDefault,
   
   castTopojson: function(value) { throw new Error('Not implemented'); }
 });
 
-function AnyType(field, options) {
+module.exports.AnyType = function(field, options) {
   JSType.call(this, field, options);
   this.name = 'any';
   return this;
 }
 
-AnyType.prototype = _.extend(GeoJSONType.prototype, JSType.prototype, {
+module.exports.AnyType.prototype = _.extend(module.exports.AnyType.prototype, module.exports.JSType.prototype, {
   cast: function(value) { return true; }
 });
 
@@ -367,12 +367,12 @@ function availableTypes() {
 // Guess the type for a value.
 // Returns:
 //   * A tuple  of ('type', 'format')
-function TypeGuesser(typeOptions) {
+module.exports.TypeGuesser = function(typeOptions) {
   this.typeOptions = typeOptions || {};
   return this;
 }
 
-TypeGuesser.prototype.cast = function(value) {
+module.exports.TypeGuesser.prototype.cast = function(value) {
   for type in availableTypes().reverse():
     if(type(this.typeOptions[type.name] || {}).cast(value))
       return [type.name, 'default']
@@ -380,9 +380,9 @@ TypeGuesser.prototype.cast = function(value) {
   return null
 }
 
-function TypeResolver() { return this; }
+module.exports.TypeResolver = function() { return this; }
 
-TypeGuesser.prototype.get = function(results) {
+module.exports.TypeResolver.prototype.get = function(results) {
   var counts = {};
   var variants = _.uniq(results);
 
