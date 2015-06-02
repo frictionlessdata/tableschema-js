@@ -21,9 +21,6 @@ function JSType(field, options) {
   return this;
 }
 
-JSType.prototype.init = function(field, options) {
-}
-
 // Return boolean if `value` can be cast as type `this.js`.
 JSType.prototype.cast = function(value) {
   // WARN Port utilities
