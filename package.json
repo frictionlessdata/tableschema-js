@@ -1,0 +1,16 @@
+{
+  "name": "jtskit",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "promise-polyfill": "^2.0.2",
+    "superagent": "^1.2.0",
+    "underscore": "^1.8.3"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Open Knowledge",
+  "license": "MIT"
+}
