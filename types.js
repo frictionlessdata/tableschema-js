@@ -356,3 +356,50 @@ function AnyType(field, options) {
 AnyType.prototype = _.extend(GeoJSONType.prototype, JSType.prototype, {
   cast: function(value) { return true; }
 });
+
+// Return available types
+function availableTypes() {
+  return [
+    'AnyType', 'StringType', 'BooleanType', 'NumberType', 'IntegerType', 'NullType',
+    'DateType', 'TimeType', 'DateTimeType', 'ArrayType', 'ObjectType',
+    'GeoPointType', 'GeoJSONType'
+  ].forEach(function(T) { return module.exports[T]; });
+}
+
+// Guess the type for a value.
+// Returns:
+//   * A tuple  of ('type', 'format')
+function TypeGuesser(typeOptions) {
+  this.typeOptions = typeOptions || {};
+  return this;
+}
+
+TypeGuesser.prototype.cast = function(value) {
+  for type in availableTypes().reverse():
+    if(type(this.typeOptions[type.name] || {}).cast(value))
+      return [type.name, 'default']
+
+  return null
+}
+
+function TypeResolver() { return this; }
+
+TypeGuesser.prototype.get = function(results) {
+  var counts = {};
+  var variants = _.uniq(results);
+
+
+  // Only one candidate... that's easy.
+  if(variants.length == 1)
+    return {type: results[0][0], format: results[0][1]};
+
+  results.forEach(function(R) { counts[R] = (counts[R] || 0) + 1; });
+
+  // Tuple representation of `counts` dict, sorted by values of `counts`
+  sortedCounts = _.sortBy(
+    _.pairs(counts),
+    function(C) { return C[1]; }
+  ).reverse();
+
+  return {type: sortedCounts[0][0][0], format: sortedCounts[0][0][1]};
+}
