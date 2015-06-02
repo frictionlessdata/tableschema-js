@@ -14,7 +14,7 @@ module.exports = {
     if(_.isNull(source) || _.isUndefined(source) || _.isString(source))
       return null;
     else if(_.isArray(source))
-      // The source has already been loaded
+      // The source has already been loaded. Return Promise object for consistency.
       return new Promise(function(RS, RJ) { RS(source); });
 
     if(_.contains(REMOTE_SCHEMES, url.parse(source).protocol.replace(':', '')))
