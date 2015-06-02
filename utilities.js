@@ -10,11 +10,11 @@ module.exports = {
   FALSE_VALUES: ['no', 'n', 'false', 'f', '0'],
 
   // Load a JSON source, from string, URL or buffer,  into a Python type.
-  loadJSONSource: function (source) {
+  loadJSONSource: function(source) {
     if(_.isNull(source) || _.isUndefined(source) || _.isString(source))
       return null;
     else if(_.isArray(source))
-      // the source has already been loaded
+      // The source has already been loaded
       return new Promise(function(RS, RJ) { RS(source); });
 
     if(_.contains(REMOTE_SCHEMES, url.parse(source).protocol.replace(':', '')))
