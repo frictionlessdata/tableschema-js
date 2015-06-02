@@ -8,6 +8,13 @@
     "superagent": "^1.2.0",
     "underscore": "^1.8.3"
   },
+  "devDependencies": {
+    "chai": "^2.3.0",
+    "chai-spies": "^0.6.0",
+    "mocha": "^2.2.5",
+    "superagent-mock": "^1.1.0"
+  },
+
   "scripts": {
     "test": "mocha"
   },
