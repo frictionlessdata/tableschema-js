@@ -53,7 +53,7 @@ JSType.cast_default = function(value) {
 
   // WARN Port compat
   try {
-    if this.js !== compat.str:
+    if(_.isFunction(this.js))
       return this.js(value);
   } catch(E) {
     return false;
