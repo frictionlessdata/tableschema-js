@@ -373,9 +373,10 @@ module.exports.TypeGuesser = function(typeOptions) {
 }
 
 module.exports.TypeGuesser.prototype.cast = function(value) {
-  for type in availableTypes().reverse():
-    if(type(this.typeOptions[type.name] || {}).cast(value))
-      return [type.name, 'default']
+  if(_.find(availableTypes().reverse(), (function(T) {
+    return T(this.typeOptions[T.name] || {}).cast(value);
+  }).bind(this)))
+    return [type.name, 'default'];
 
   return null
 }
