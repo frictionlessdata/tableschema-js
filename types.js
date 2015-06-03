@@ -24,13 +24,13 @@ module.exports.JSType = function(field, options) {
 
 // Return boolean if `value` can be cast as type `this.js`.
 module.exports.JSType.prototype.cast = function(value) {
-  // we can check on `constraints.required` before we cast
+  // We can check on `constraints.required` before we cast
   if(!this.required && _.contains(_.flatten([null, utilities.NULL_VALUES]), value))
     return true;
   else if(this.required && _.contains([null, undefined, ''], value))
     return false;
 
-  // cast with the appropriate handler, falling back to default if none
+  // Cast with the appropriate handler, falling back to default if none
   if(this.format.indexOf('fmt') === 0)
     _format = 'fmt';
   else
