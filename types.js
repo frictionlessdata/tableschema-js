@@ -45,7 +45,7 @@ module.exports.JSType.prototype.cast = function(value) {
 }
 
 // Return boolean if the value can be cast to the type/format.
-module.exports.JSType.cast_default = function(value) {
+module.exports.JSType.castDefault = function(value) {
   if(this.typeCheck(value))
     return value;
 
@@ -267,7 +267,7 @@ module.exports.DateType.prototype = _.extend(module.exports.DateType.prototype, 
     }
   },
 
-  cast_fmt: function(value) {
+  castFmt: function(value) {
     try {
       return moment(value, this.format.replace(/^fmt:/, ''));
     } catch(E) {
