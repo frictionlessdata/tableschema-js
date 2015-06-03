@@ -229,8 +229,20 @@ describe('ArrayType', function() {
 });
 
 describe('ObjectType', function() {
-  it('cast object', function(done, err) { assert(false); });
-  it('don\'t cast random array as object', function(done, err) { assert(false); });
+  beforeEach(function(done) {
+    BASE_FIELD.type = 'object';
+    done();
+  });
+
+  it('cast object', function(done, err) {
+    assert((new types.ObjectType(BASE_FIELD)).cast({key: 'value'}));
+    done();
+  });
+
+  it('don\'t cast random array as object', function(done, err) {
+    assert.notOk((new types.ObjectType(BASE_FIELD)).cast(['boo', 'ya']));
+    done();
+  });
 });
 
 describe('GeoPointType', function() {

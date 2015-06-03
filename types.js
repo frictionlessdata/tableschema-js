@@ -249,8 +249,17 @@ module.exports.ObjectType = function(field, options) {
 }
 
 module.exports.ObjectType.prototype = _.extend(module.exports.ObjectType.prototype, module.exports.JSType.prototype, {
-  // Return boolean if `value` can be cast as type `this.js`
-  castDefault: module.exports.ArrayType.prototype.castDefault
+  castDefault: function(value) {
+    if(_.isObject(value) && !_.isArray(value) && !_.isFunction(value))
+      return true;
+
+    try {
+      value = JSON.parse(value);
+      return value instanceof this.js;
+    } catch(E) {
+      return false;
+    }
+  }
 });
 
 module.exports.DateType = function(field, options) {
