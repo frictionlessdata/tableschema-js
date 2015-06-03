@@ -263,8 +263,20 @@ describe('GeoPointType', function() {
 });
 
 describe('GeoJSONType', function() {
-  it('cast geo json', function(done, err) { assert(false); });
-  it('don\'t cast random string as GeoJSON', function(done, err) { assert(false); });
+  beforeEach(function(done) {
+    BASE_FIELD.type = 'geojson';
+    done();
+  });
+
+  it('cast geo json', function(done, err) {
+    assert((new types.GeoJSONType(BASE_FIELD)).cast({type: 'Point'}));
+    done();
+  });
+
+  it('don\'t cast random string as GeoJSON', function(done, err) {
+    assert.notOk((new types.GeoJSONType(BASE_FIELD)).cast(''));
+    done();
+  });
 });
 
 

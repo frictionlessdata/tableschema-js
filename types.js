@@ -362,7 +362,6 @@ module.exports.DateTimeType.prototype = _.extend(module.exports.DateTimeType.pro
 
 module.exports.GeoPointType = function(field, options) {
   module.exports.JSType.call(this, field, options);
-  this.js = [Object, Array];
   this.name = 'geopoint';
   this.formats = ['default', 'array', 'object'];
   return this;
@@ -376,9 +375,11 @@ module.exports.GeoPointType.prototype = _.extend(module.exports.GeoPointType.pro
     if(_.isString(value))
       return value.split(',').length === 2;
 
+    if(_.isObject(value))
+      return value;
+
     try {
-      value = JSON.parse(value);
-      return value instanceof this.js;
+      return JSON.parse(value);
     } catch(E) {
       return false;
     }
@@ -413,7 +414,12 @@ module.exports.GeoJSONType.prototype = _.extend(module.exports.GeoJSONType.proto
   // Return boolean if `value` can be cast as type `this.js`
   castDefault: module.exports.GeoPointType.prototype.castDefault,
   
-  castTopojson: function(value) { throw new Error('Not implemented'); }
+  castTopojson: function(value) { throw new Error('Not implemented'); },
+
+  // Geo JSON is always an object
+  typeCheck: function(value) {
+    return _.isObject(value) && !_.isFunction(value);
+  }
 });
 
 module.exports.AnyType = function(field, options) {
