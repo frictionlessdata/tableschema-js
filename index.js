@@ -1,3 +1,3 @@
 module.exports = {
-	types: require(./types)
+	types: require('./types')
 }
