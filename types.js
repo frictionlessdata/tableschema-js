@@ -370,8 +370,11 @@ module.exports.GeoPointType = function(field, options) {
 
 module.exports.GeoPointType.prototype = _.extend(module.exports.GeoPointType.prototype, module.exports.JSType.prototype, {
   castDefault: function(value) {
-    if(this.typeCheck(value))
-      return value.split(',').length == 2;
+    if(!this.typeCheck(value))
+      return false
+
+    if(_.isString(value))
+      return value.split(',').length === 2;
 
     try {
       value = JSON.parse(value);
@@ -384,7 +387,12 @@ module.exports.GeoPointType.prototype = _.extend(module.exports.GeoPointType.pro
   },
 
   castArray: function(value) { throw new Error('Not implemented'); },
-  castObject: function(value) { throw new Error('Not implemented'); }
+  castObject: function(value) { throw new Error('Not implemented'); },
+
+  // Geo point may be passed as string object with keys or array
+  typeCheck: function(value) {
+    return _.isString(value) || _.isArray(value) || _.keys(value).length;
+  }
 });
 
 module.exports.GeoJSONType = function(field, options) {
