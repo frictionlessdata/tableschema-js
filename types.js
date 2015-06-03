@@ -110,7 +110,7 @@ module.exports.StringType.prototype = _.extend(module.exports.StringType.prototy
       return false;
 
     return value;
-  }
+  },
   
   // Return `value` if is of type, else return false.
   castBinary: function(value) {
