@@ -136,8 +136,20 @@ describe('DateType', function() {
 });
 
 describe('TimeType', function() {
-  it('cast simple time', function(done, err) { assert(false); });
-  it('don\'t cast wrong simple time', function(done, err) { assert(false); });
+  beforeEach(function(done) {
+    BASE_FIELD.type = 'time';
+    done();
+  });
+
+  it('cast simple time', function(done, err) {
+    assert((new types.TimeType(BASE_FIELD)).cast('06:00:00'));
+    done();
+  });
+
+  it('don\'t cast wrong simple time', function(done, err) {
+    assert.notOk((new types.TimeType(BASE_FIELD)).cast('3 am'));
+    done();
+  });
 });
 
 describe('DateTimeType', function() {

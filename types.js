@@ -313,7 +313,24 @@ module.exports.TimeType = function(field, options) {
   return this;
 }
 
-module.exports.TimeType.prototype = _.extend(module.exports.TimeType.prototype, module.exports.DateType.prototype);
+module.exports.TimeType.prototype = _.extend(module.exports.TimeType.prototype, module.exports.DateType.prototype, {
+  // Return boolean if `value` can be cast as type `self.py`
+  castDefault: function(value) {
+    var date;
+
+
+    try {
+      date = moment(value, 'HH:mm:ss', true);
+    } catch(E) {
+      return false;
+    }
+
+    if(date.isValid())
+      return date;
+
+    return false;
+  },
+});
 
 module.exports.DateTimeType = function(field, options) {
   module.exports.JSType.call(this, field, options);
