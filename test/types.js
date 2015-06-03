@@ -278,5 +278,3 @@ describe('GeoJSONType', function() {
     done();
   });
 });
-
-
