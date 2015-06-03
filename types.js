@@ -175,7 +175,7 @@ module.exports.NumberType.prototype = _.extend(module.exports.NumberType.prototy
 
 module.exports.BooleanType = function(field, options) {
   module.exports.JSType.call(this, field, options);
-  this.py = Boolean;
+  this.js = Boolean;
   this.name = 'boolean';
   this.trueValues = utilities.TRUE_VALUES;
   this.falseValues = utilities.FALSE_VALUES;
@@ -190,7 +190,7 @@ module.exports.BooleanType.prototype = _.extend(module.exports.BooleanType.proto
 
     value = value.trim().toLowerCase();
     
-    if(_.contains(_.union(self.true_values, self.false_values), value))
+    if(_.contains(_.union(this.trueValues, this.falseValues), value))
       return true;
 
     return false;
@@ -279,7 +279,7 @@ module.exports.DateType.prototype = _.extend(module.exports.DateType.prototype, 
     return false;
   },
 
-  // Return boolean if `value` can be cast as type `self.py`
+  // Return boolean if `value` can be cast as type `this.js`
   castDefault: function(value) {
     var date;
 
@@ -322,7 +322,7 @@ module.exports.TimeType = function(field, options) {
 }
 
 module.exports.TimeType.prototype = _.extend(module.exports.TimeType.prototype, module.exports.DateType.prototype, {
-  // Return boolean if `value` can be cast as type `self.py`
+  // Return boolean if `value` can be cast as type `this.js`
   castDefault: function(value) {
     var date;
 
@@ -393,7 +393,7 @@ module.exports.GeoJSONType = function(field, options) {
 }
 
 module.exports.GeoJSONType.prototype = _.extend(module.exports.GeoJSONType.prototype, module.exports.JSType.prototype, {
-  // Return boolean if `value` can be cast as type `self.py`
+  // Return boolean if `value` can be cast as type `this.js`
   castDefault: module.exports.GeoPointType.prototype.castDefault,
   
   castTopojson: function(value) { throw new Error('Not implemented'); }

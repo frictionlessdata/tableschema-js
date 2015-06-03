@@ -178,8 +178,20 @@ describe('DateTimeType', function() {
 });
 
 describe('BooleanType', function() {
-  it('cast simple string as True boolean', function(done, err) { assert(false); });
-  it('cast simple string as False boolean', function(done, err) { assert(false); });
+  beforeEach(function(done) {
+    BASE_FIELD.type = 'boolean';
+    done();
+  });
+
+  it('cast simple string as True boolean', function(done, err) {
+    assert((new types.BooleanType(BASE_FIELD)).cast('y'));
+    done();
+  });
+
+  it('cast simple string as False boolean', function(done, err) {
+    assert((new types.BooleanType(BASE_FIELD)).cast('n'));
+    done();
+  });
 });
 
 describe('NullType', function() {
