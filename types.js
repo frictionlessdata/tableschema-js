@@ -264,11 +264,19 @@ module.exports.DateType = function(field, options) {
 
 module.exports.DateType.prototype = _.extend(module.exports.DateType.prototype, module.exports.JSType.prototype, {
   castAny: function(value) {
+    var date;
+
+
     try {
-      return moment(new Date(value));
+      date = moment(new Date(value));
     } catch(E) {
       return false;
     }
+
+    if(date.isValid())
+      return date;
+
+    return false;
   },
 
   // Return boolean if `value` can be cast as type `self.py`

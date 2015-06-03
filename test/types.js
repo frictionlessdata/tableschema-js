@@ -108,7 +108,7 @@ describe('DateType', function() {
 
   it('cast any date', function(done, err) {
     BASE_FIELD.format = 'any';
-    assert((new types.DateType(BASE_FIELD)).cast('10th Jan 1969'));
+    assert((new types.DateType(BASE_FIELD)).cast('10 Jan 1969'));
     done();
   });
 
@@ -137,6 +137,7 @@ describe('DateType', function() {
 
 describe('TimeType', function() {
   beforeEach(function(done) {
+    BASE_FIELD.format = 'default';
     BASE_FIELD.type = 'time';
     done();
   });
@@ -153,9 +154,27 @@ describe('TimeType', function() {
 });
 
 describe('DateTimeType', function() {
-  it('cast simple datetime', function(done, err) { assert(false); });
-  it('cast any datetime', function(done, err) { assert(false); });
-  it('don\'t cast wrong simple date', function(done, err) { assert(false); });
+  beforeEach(function(done) {
+    BASE_FIELD.format = 'default';
+    BASE_FIELD.type = 'datetime';
+    done();
+  });
+
+  it('cast simple datetime', function(done, err) {
+    assert((new types.DateTimeType(BASE_FIELD)).cast('2014-01-01T06:00:00Z'));
+    done();
+  });
+
+  it('cast any datetime', function(done, err) {
+    BASE_FIELD.format = 'any';
+    assert((new types.DateTimeType(BASE_FIELD)).cast('10 Jan 1969 9:00'));
+    done();
+  });
+
+  it('don\'t cast wrong simple date', function(done, err) {
+    assert.notOk((new types.DateTimeType(BASE_FIELD)).cast('10 Jan 1969 9'));
+    done();
+  });
 });
 
 describe('BooleanType', function() {
