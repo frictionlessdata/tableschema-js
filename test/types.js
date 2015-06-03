@@ -212,8 +212,20 @@ describe('NullType', function() {
 });
 
 describe('ArrayType', function() {
-  it('cast array', function(done, err) { assert(false); });
-  it('don\'t cast random string as array', function(done, err) { assert(false); });
+  beforeEach(function(done) {
+    BASE_FIELD.type = 'array';
+    done();
+  });
+
+  it('cast array', function(done, err) {
+    assert((new types.ArrayType(BASE_FIELD)).cast([1, 2]));
+    done();
+  });
+
+  it('don\'t cast random string as array', function(done, err) {
+    assert.notOk((new types.ArrayType(BASE_FIELD)).cast('string, string'));
+    done();
+  });
 });
 
 describe('ObjectType', function() {
