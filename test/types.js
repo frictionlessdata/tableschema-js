@@ -3,12 +3,42 @@ var assert = require('chai').assert;
 var should = require('chai').should();
 var types = require('../').types;
 
+var BASE_FIELD;
+
+
+beforeEach(function(done) {
+  BASE_FIELD = {
+    'constraints': {'required': true},
+    'format'     : 'default',
+    'name'       : 'Name',
+    'type'       : 'string'
+  };
+
+  done();
+});
 
 describe('StringType', function() {
-  it('cast string', function(done, err) { assert(false); });
-  it('cast empty string if no constraints', function(done, err) { assert(false); });
-  it('don\'t cast digits', function(done, err) { assert(false); });
-  it('don\'t cast empty string by default', function(done, err) { assert(false); });
+  it('cast string', function(done, err) {
+    assert((new types.StringType(BASE_FIELD)).cast('string'));
+    done();
+  });
+
+  it('cast empty string if no constraints', function(done, err) {
+    BASE_FIELD.constraints.required = false;
+    assert((new types.StringType(BASE_FIELD)).cast(''));
+    done();
+  });
+
+  it('don\'t cast digits', function(done, err) {
+    BASE_FIELD.constraints.required = false;
+    assert.notOk((new types.StringType(BASE_FIELD)).cast(1));
+    done();
+  });
+
+  it('don\'t cast empty string by default', function(done, err) {
+    assert.notOk((new types.StringType(BASE_FIELD)).cast(''));
+    done();
+  });
 });
 
 describe('IntegerType', function() {

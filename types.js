@@ -1,5 +1,6 @@
 var _ = require('underscore');
 var moment = require('moment');
+var utilities = require('./utilities');
 
 
 module.exports.JSType = function(field, options) {
@@ -23,15 +24,14 @@ module.exports.JSType = function(field, options) {
 
 // Return boolean if `value` can be cast as type `this.js`.
 module.exports.JSType.prototype.cast = function(value) {
-  // WARN Port utilities
   // we can check on `constraints.required` before we cast
-  if(!this.required && _.contains([null, utilities.NULL_VALUES], value))
+  if(!this.required && _.contains(_.flatten([null, utilities.NULL_VALUES]), value))
     return true;
-  else if(this.required && _.contains([None, ''], value))
+  else if(this.required && _.contains([null, undefined, ''], value))
     return false;
 
   // cast with the appropriate handler, falling back to default if none
-  if(this.format.startsWith('fmt'))
+  if(this.format.indexOf('fmt') === 0)
     _format = 'fmt';
   else
     _format = this.format;
@@ -45,11 +45,10 @@ module.exports.JSType.prototype.cast = function(value) {
 }
 
 // Return boolean if the value can be cast to the type/format.
-module.exports.JSType.castDefault = function(value) {
+module.exports.JSType.prototype.castDefault = function(value) {
   if(this.typeCheck(value))
     return value;
 
-  // WARN Port compat
   try {
     if(_.isFunction(this.js))
       return this.js(value);
@@ -76,11 +75,9 @@ module.exports.JSType.prototype.typeCheck = function(value) {
 }
 
 module.exports.StringType = function(field, options) {
-  JSType.call(this, field, options);
+  module.exports.JSType.call(this, field, options);
 
-  // WARN Port compat
-  this.js = compat.str;
-
+  this.js = 'string';
   this.name = 'string';
   this.formats = ['default', 'email', 'uri', 'binary'];
   this.emailPattern = new RegExp('[^@]+@[^@]+\.[^@]+');
@@ -124,18 +121,25 @@ module.exports.StringType.prototype = _.extend(module.exports.StringType.prototy
     }
 
     return true;
+  },
+
+  typeCheck: function(value) {
+    if(typeof value == 'string')
+      return true;
+
+    return false;
   }
 });
 
 module.exports.IntegerType = function(field, options) {
-  JSType.call(this, field, options);
+  module.exports.JSType.call(this, field, options);
   this.js = Number;
   name = 'integer';
   return this;
 }
 
 module.exports.NumberType = function(field, options) {
-  JSType.call(this, field, options);
+  module.exports.JSType.call(this, field, options);
   this.js = Number;
   this.name = 'number';
   this.formats = ['default', 'currency'];
@@ -160,7 +164,7 @@ module.exports.NumberType.prototype = _.extend(module.exports.NumberType.prototy
 });
 
 module.exports.BooleanType = function(field, options) {
-  JSType.call(this, field, options);
+  module.exports.JSType.call(this, field, options);
   this.py = Boolean;
   this.name = 'boolean';
   this.trueValues = utilities.TRUE_VALUES;
@@ -184,7 +188,7 @@ module.exports.BooleanType.prototype = _.extend(module.exports.BooleanType.proto
 });
 
 module.exports.NullType = function(field, options) {
-  JSType.call(this, field, options);
+  module.exports.JSType.call(this, field, options);
   this.name = 'null';
   this.nullValues = utilities.NULL_VALUES;
   return this;
@@ -206,7 +210,7 @@ module.exports.NullType.prototype = _.extend(module.exports.NullType.prototype, 
 });
 
 module.exports.ArrayType = function(field, options) {
-  JSType.call(this, field, options);
+  module.exports.JSType.call(this, field, options);
   this.js = Array;
   this.name = 'array';
   return this;
@@ -228,7 +232,7 @@ module.exports.ArrayType.prototype = _.extend(module.exports.ArrayType.prototype
 });
 
 module.exports.ObjectType = function(field, options) {
-  JSType.call(this, field, options);
+  module.exports.JSType.call(this, field, options);
   this.js = Object;
   this.name = 'object';
   return this;
@@ -240,7 +244,7 @@ module.exports.ObjectType.prototype = _.extend(module.exports.ObjectType.prototy
 });
 
 module.exports.DateType = function(field, options) {
-  JSType.call(this, field, options);
+  module.exports.JSType.call(this, field, options);
   this.js = Object;
   this.name = 'date';
   this.formats = ['default', 'any', 'fmt'];
@@ -277,7 +281,7 @@ module.exports.DateType.prototype = _.extend(module.exports.DateType.prototype, 
 });
 
 module.exports.TimeType = function(field, options) {
-  JSType.call(this, field, options);
+  module.exports.JSType.call(this, field, options);
   this.js = Object;
   this.name = 'time';
   this.formats = ['default', 'any', 'fmt'];
@@ -287,7 +291,7 @@ module.exports.TimeType = function(field, options) {
 module.exports.TimeType.prototype = _.extend(module.exports.TimeType.prototype, module.exports.DateType.prototype);
 
 module.exports.DateTimeType = function(field, options) {
-  JSType.call(this, field, options);
+  module.exports.JSType.call(this, field, options);
   this.js = Object;
   this.name = 'datetime';
   this.formats = ['default', 'any', 'fmt'];
@@ -298,7 +302,7 @@ module.exports.DateTimeType = function(field, options) {
 module.exports.DateTimeType.prototype = _.extend(module.exports.DateTimeType.prototype, module.exports.DateType.prototype);
 
 module.exports.GeoPointType = function(field, options) {
-  JSType.call(this, field, options);
+  module.exports.JSType.call(this, field, options);
   this.js = [Object, Array];
   this.name = 'geopoint';
   this.formats = ['default', 'array', 'object'];
@@ -325,7 +329,7 @@ module.exports.GeoPointType.prototype = _.extend(module.exports.GeoPointType.pro
 });
 
 module.exports.GeoJSONType = function(field, options) {
-  JSType.call(this, field, options);
+  module.exports.JSType.call(this, field, options);
   this.js = Object;
   this.name = 'geojson';
   this.formats = ['default', 'topojson'];
@@ -346,7 +350,7 @@ module.exports.GeoJSONType.prototype = _.extend(module.exports.GeoJSONType.proto
 });
 
 module.exports.AnyType = function(field, options) {
-  JSType.call(this, field, options);
+  module.exports.JSType.call(this, field, options);
   this.name = 'any';
   return this;
 }
