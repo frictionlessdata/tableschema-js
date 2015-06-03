@@ -91,7 +91,6 @@ module.exports.StringType = function(field, options) {
 }
 
 module.exports.StringType.prototype = _.extend(module.exports.StringType.prototype, module.exports.JSType.prototype, {
-  // Return `value` if is of type, else return false.
   castEmail: function(value) {
     if(!this.typeCheck(value))
       return false;
@@ -102,7 +101,6 @@ module.exports.StringType.prototype = _.extend(module.exports.StringType.prototy
     return value;
   },
 
-  // Return `value` if is of type, else return false.
   castUri: function(value) {
     if(!this.typeCheck(value))
       return false;
@@ -113,7 +111,6 @@ module.exports.StringType.prototype = _.extend(module.exports.StringType.prototy
     return value;
   },
   
-  // Return `value` if is of type, else return false.
   castBinary: function(value) {
     if(!this.typeCheck(value))
       return false;
@@ -183,7 +180,6 @@ module.exports.BooleanType = function(field, options) {
 }
 
 module.exports.BooleanType.prototype = _.extend(module.exports.BooleanType.prototype, module.exports.JSType.prototype, {
-  // Return boolean if `value` can be cast as type `this.js`
   castDefault: function(value) {
     if(value instanceof this.js)
       return true;
@@ -205,7 +201,6 @@ module.exports.NullType = function(field, options) {
 }
 
 module.exports.NullType.prototype = _.extend(module.exports.NullType.prototype, module.exports.JSType.prototype, {
-  // Return null if `value` can be cast as type `this.js`
   castDefault: function(value) {
     if(_.isNull(value))
       return true;
@@ -227,7 +222,6 @@ module.exports.ArrayType = function(field, options) {
 }
 
 module.exports.ArrayType.prototype = _.extend(module.exports.ArrayType.prototype, module.exports.JSType.prototype, {
-  // Return boolean if `value` can be cast as type `this.js`
   castDefault: function(value) {
     if(value instanceof this.js)
       return true;
@@ -288,7 +282,6 @@ module.exports.DateType.prototype = _.extend(module.exports.DateType.prototype, 
     return false;
   },
 
-  // Return boolean if `value` can be cast as type `this.js`
   castDefault: function(value) {
     var date;
 
@@ -331,7 +324,6 @@ module.exports.TimeType = function(field, options) {
 }
 
 module.exports.TimeType.prototype = _.extend(module.exports.TimeType.prototype, module.exports.DateType.prototype, {
-  // Return boolean if `value` can be cast as type `this.js`
   castDefault: function(value) {
     var date;
 
@@ -411,7 +403,6 @@ module.exports.GeoJSONType = function(field, options) {
 }
 
 module.exports.GeoJSONType.prototype = _.extend(module.exports.GeoJSONType.prototype, module.exports.JSType.prototype, {
-  // Return boolean if `value` can be cast as type `this.js`
   castDefault: module.exports.GeoPointType.prototype.castDefault,
   
   castTopojson: function(value) { throw new Error('Not implemented'); },
@@ -432,7 +423,7 @@ module.exports.AnyType.prototype = _.extend(module.exports.AnyType.prototype, mo
   cast: function(value) { return true; }
 });
 
-// Return available types
+// Return available types objects
 function availableTypes() {
   return [
     'AnyType', 'StringType', 'BooleanType', 'NumberType', 'IntegerType', 'NullType',
