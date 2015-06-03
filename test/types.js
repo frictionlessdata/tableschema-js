@@ -30,7 +30,6 @@ describe('StringType', function() {
   });
 
   it('don\'t cast digits', function(done, err) {
-    BASE_FIELD.constraints.required = false;
     assert.notOk((new types.StringType(BASE_FIELD)).cast(1));
     done();
   });
