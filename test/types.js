@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var assert = require('chai').assert;
 var should = require('chai').should();
+var types = require('../').types;
 
 
 describe('StringType', function() {
