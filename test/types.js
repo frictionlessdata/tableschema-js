@@ -195,8 +195,20 @@ describe('BooleanType', function() {
 });
 
 describe('NullType', function() {
-  it('cast simple string as Null', function(done, err) { assert(false); });
-  it('don\'t cast random string as Null', function(done, err) { assert(false); });
+  beforeEach(function(done) {
+    BASE_FIELD.type = 'null';
+    done();
+  });
+
+  it('cast simple string as Null', function(done, err) {
+    assert((new types.NullType(BASE_FIELD)).cast('null'));
+    done();
+  });
+
+  it('don\'t cast random string as Null', function(done, err) {
+    assert.notOk((new types.NullType(BASE_FIELD)).cast('isnull'));
+    done();
+  });
 });
 
 describe('ArrayType', function() {

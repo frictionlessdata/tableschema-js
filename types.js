@@ -207,7 +207,7 @@ module.exports.NullType = function(field, options) {
 module.exports.NullType.prototype = _.extend(module.exports.NullType.prototype, module.exports.JSType.prototype, {
   // Return null if `value` can be cast as type `this.js`
   castDefault: function(value) {
-    if(value instanceof this.js)
+    if(_.isNull(value))
       return true;
 
     value = value.trim().toLowerCase();
