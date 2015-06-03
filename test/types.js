@@ -58,10 +58,40 @@ describe('IntegerType', function() {
 });
 
 describe('NumberType', function() {
-  it('cast float', function(done, err) { assert(false); });
-  it('don\'t cast string', function(done, err) { assert(false); });
-  it('cast currency', function(done, err) { assert(false); });
-  it('don\'t cast wrong format currency', function(done, err) { assert(false); });
+  beforeEach(function(done) {
+    BASE_FIELD.type = 'number';
+    done();
+  });
+
+  it('cast float', function(done, err) {
+    assert((new types.NumberType(BASE_FIELD)).cast(1.1));
+    done();
+  });
+
+  it('don\'t cast string', function(done, err) {
+    assert.notOk((new types.NumberType(BASE_FIELD)).cast('string'));
+    done();
+  });
+
+  it('cast currency', function(done, err) {
+    BASE_FIELD.format = 'currency';
+
+    ['10,000.00', '10;000.00', '$10000.00'].forEach(function(V) {
+      assert((new types.NumberType(BASE_FIELD)).cast(V));
+    });
+
+    done();
+  });
+
+  it('don\'t cast wrong format currency', function(done, err) {
+    BASE_FIELD.format = 'currency';
+
+    ['10,000a.00', '10+000.00', '$10:000.00'].forEach(function(V) {
+      assert.notOk((new types.NumberType(BASE_FIELD)).cast(V));
+    });
+
+    done();
+  });
 });
 
 describe('DateType', function() {

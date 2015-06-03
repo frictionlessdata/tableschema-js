@@ -24,6 +24,10 @@ module.exports.JSType = function(field, options) {
 
 // Return boolean if `value` can be cast as type `this.js`.
 module.exports.JSType.prototype.cast = function(value) {
+  var _format;
+  var _handler;
+
+
   // We can check on `constraints.required` before we cast
   if(!this.required && _.contains(_.flatten([null, utilities.NULL_VALUES]), value))
     return true;
@@ -36,7 +40,7 @@ module.exports.JSType.prototype.cast = function(value) {
   else
     _format = this.format;
 
-  _handler = 'cast_' + _format;
+  _handler = 'cast' + (_format.charAt(0).toUpperCase() + _format.substring(1));
 
   if(this.hasFormat(_format) && this[_handler])
     return this[_handler](value);
@@ -145,17 +149,21 @@ module.exports.NumberType = function(field, options) {
   this.js = Number;
   this.name = 'number';
   this.formats = ['default', 'currency'];
-  this.separators = ',;';
+  this.separators = '.,;';
   this.currencies = '$';
   return this;
 }
 
 module.exports.NumberType.prototype = _.extend(module.exports.NumberType.prototype, module.exports.JSType.prototype, {
   castCurrency: function(value) {
-    value = value.replace(new Regexp('[' + [this.separators, this.currencies].join('') + ']', 'g'), '');
+    value = value.replace(new RegExp('[' + [this.separators, this.currencies].join('') + ']', 'g'), '');
 
     if(value instanceof this.js)
       return true;
+
+    // parseFloat() parse string even if there are non-digit characters
+    if((new RegExp('[^\\d]+', 'g')).exec(value))
+      return false;
 
     try {
       return parseFloat(value);
