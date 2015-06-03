@@ -265,8 +265,7 @@ module.exports.DateType = function(field, options) {
 module.exports.DateType.prototype = _.extend(module.exports.DateType.prototype, module.exports.JSType.prototype, {
   castAny: function(value) {
     try {
-      // WARN Port date_parse()
-      return date_parse(value).date();
+      return moment(new Date(value));
     } catch(E) {
       return false;
     }
@@ -274,19 +273,35 @@ module.exports.DateType.prototype = _.extend(module.exports.DateType.prototype, 
 
   // Return boolean if `value` can be cast as type `self.py`
   castDefault: function(value) {
+    var date;
+
+
     try {
-      return moment(value, self.ISO8601);
+      date = moment(value, this.ISO8601, true);
     } catch(E) {
       return false;
     }
+
+    if(date.isValid())
+      return date;
+
+    return false;
   },
 
   castFmt: function(value) {
+    var date;
+
+
     try {
-      return moment(value, this.format.replace(/^fmt:/, ''));
+      date = moment(value, this.format.replace(/^fmt:/, ''), true);
     } catch(E) {
       return false;
     }
+
+    if(date.isValid())
+      return date;
+
+    return false;
   }
 });
 

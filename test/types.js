@@ -95,12 +95,44 @@ describe('NumberType', function() {
 });
 
 describe('DateType', function() {
-  it('cast simple date', function(done, err) { assert(false); });
-  it('cast any date', function(done, err) { assert(false); });
-  it('cast date with format specified', function(done, err) { assert(false); });
-  it('don\'t cast wrong simple date', function(done, err) { assert(false); });
-  it('don\'t cast wrong date string', function(done, err) { assert(false); });
-  it('don\'t cast date if it do not correspond specified format', function(done, err) { assert(false); });
+  beforeEach(function(done) {
+    BASE_FIELD.format = 'default';
+    BASE_FIELD.type = 'date';
+    done();
+  });
+
+  it('cast simple date', function(done, err) {
+    assert((new types.DateType(BASE_FIELD)).cast('2019-01-01'));
+    done();
+  });
+
+  it('cast any date', function(done, err) {
+    BASE_FIELD.format = 'any';
+    assert((new types.DateType(BASE_FIELD)).cast('10th Jan 1969'));
+    done();
+  });
+
+  it('cast date with format specified', function(done, err) {
+    BASE_FIELD.format = 'fmt:DD/MM/YYYY';
+    assert((new types.DateType(BASE_FIELD)).cast('10/06/2014'));
+    done();
+  });
+
+  it('don\'t cast wrong simple date', function(done, err) {
+    assert.notOk((new types.DateType(BASE_FIELD)).cast('01-01-2019'));
+    done();
+  });
+
+  it('don\'t cast wrong date string', function(done, err) {
+    assert.notOk((new types.DateType(BASE_FIELD)).cast('10th Jan nineteen sixty nine'));
+    done();
+  });
+
+  it('don\'t cast date if it do not correspond specified format', function(done, err) {
+    BASE_FIELD.format = 'fmt:DD/MM/YYYY';
+    assert.notOk((new types.DateType(BASE_FIELD)).cast('2014/12/19'));
+    done();
+  });
 });
 
 describe('TimeType', function() {
