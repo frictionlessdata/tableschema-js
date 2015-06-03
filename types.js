@@ -138,6 +138,8 @@ module.exports.IntegerType = function(field, options) {
   return this;
 }
 
+module.exports.IntegerType.prototype = _.extend(module.exports.IntegerType.prototype, module.exports.JSType.prototype);
+
 module.exports.NumberType = function(field, options) {
   module.exports.JSType.call(this, field, options);
   this.js = Number;

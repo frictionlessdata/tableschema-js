@@ -41,8 +41,20 @@ describe('StringType', function() {
 });
 
 describe('IntegerType', function() {
-  it('cast integer', function(done, err) { assert(false); });
-  it('don\'t cast string', function(done, err) { assert(false); });
+  beforeEach(function(done) {
+    BASE_FIELD.type = 'integer';
+    done();
+  });
+
+  it('cast integer', function(done, err) {
+    assert((new types.IntegerType(BASE_FIELD)).cast(1));
+    done();
+  });
+
+  it('don\'t cast string', function(done, err) {
+    assert.notOk((new types.IntegerType(BASE_FIELD)).cast('string'));
+    done();
+  });
 });
 
 describe('NumberType', function() {
