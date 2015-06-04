@@ -32,7 +32,16 @@ describe('Infer', function() {
     });
   });
 
-  it('respect primaryKey param', function(done, err) { assert(); done(); });
+  it('respect primaryKey param', function(done, err) {
+    csv.parse(CSVData.dataInferRowLimit, function(E, D) {
+      var primaryKey = 'id';
+      var schema = infer(D[0], _.rest(D), {primaryKey: primaryKey});
+
+      assert.equal(schema.primaryKey, primaryKey);
+      done();
+    });
+  });
+
   it('respect primaryKey param passed as list of fields', function(done, err) { assert(); done(); });
   it('do not create constraints if explicit param passed as False', function(done, err) { assert(); done(); });
   it('create constraints if explicit param passed as True', function(done, err) { assert(); done(); });
