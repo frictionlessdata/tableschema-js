@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var types = require('./types');
 
 
@@ -21,8 +22,8 @@ module.exports = function(headers, values, options) {
     primaryKey: null
   }, options);
 
-  guesser = types.TypeGuesser();
-  resolver = types.TypeResolver();
+  guesser = new types.TypeGuesser();
+  resolver = new types.TypeResolver();
   schema = {fields: []};
   typeMatches = {};
 
@@ -35,7 +36,7 @@ module.exports = function(headers, values, options) {
 
 
     descriptor = {
-      name: header,
+      name: H,
       title: '',
       description: '',
     };
@@ -48,9 +49,13 @@ module.exports = function(headers, values, options) {
 
     if(_.isEmpty(constraints))
       descriptor.constraints = constraints;
+
+    return descriptor;
    });
 
   for(var index in values) {
+    var headersLength;
+    var row = values[index];
     var rowLength;
 
 
@@ -58,7 +63,7 @@ module.exports = function(headers, values, options) {
       break;
 
     // Normalize rows with invalid dimensions for sanity
-    rowLength = value[index].length;
+    rowLength = row.length;
     headersLength = headers.length;
 
     if(rowLength > headersLength)
@@ -68,13 +73,14 @@ module.exports = function(headers, values, options) {
       row = row.concat(_.range(headersLength - rowLength).map(function() { return ''; }));
 
     // Build a column-wise lookup of type matches
-    for(var index in row)
-      typeMatches[index] = (typeMatches[index] || []).concat(guesser.cast(row[index]));
+    for(var rowIndex in row)
+      typeMatches[rowIndex] = (typeMatches[rowIndex] || []).concat([guesser.cast(row[rowIndex])]);
   }
 
   // Choose a type/format for each column based on the matches
-  for(var typeMatch in _.pairs(typeMatches))
-    _.extend(schema['fields'][typeMatch[0]], resolver.get(typeMatch[1]));
+  _.each(typeMatches, function(V, K) {
+    schema.fields[parseInt(K)] = _.extend(schema.fields[parseInt(K)], resolver.get(V));
+  });
 
   return schema;
 }

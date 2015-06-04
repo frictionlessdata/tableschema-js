@@ -1,12 +1,25 @@
 var _ = require('underscore');
 var assert = require('chai').assert;
-var CSV = require('./CSV');
+var csv = require('csv');
+var CSVData = require('./CSV');
 var infer = require('../').infer;
 var types = require('../').types;
 
 
+// WARN Use Model in test cases instead of validating schema directly
 describe('Infer', function() {
-  it('produce schema from a generic .csv', function(done, err) { assert(); done(); });
+  it('produce schema from a generic .csv', function(done, err) {
+    csv.parse(CSVData.dataInfer, function(E, D) {
+      var schema = infer(D[0], _.rest(D));
+
+
+      assert.equal(_.findWhere(schema.fields, {name: 'id'}).type, 'integer');
+      assert.equal(_.findWhere(schema.fields, {name: 'age'}).type, 'integer');
+      assert.equal(_.findWhere(schema.fields, {name: 'name'}).type, 'string');
+      done();
+    });
+  });
+
   it('respect rowLimit param', function(done, err) { assert(); done(); });
   it('respect primaryKey param', function(done, err) { assert(); done(); });
   it('respect primaryKey param passed as list of fields', function(done, err) { assert(); done(); });
