@@ -13,7 +13,7 @@ module.exports.JSType = function(field, options) {
 
   if(this.field) {
     this.format = this.field['format'];
-    this.required = this.field['constraints']['required'];
+    this.required = _.result(this.field['constraints'], 'required') || false;
   } else {
     this.format = 'default';
     this.required = true;
@@ -35,7 +35,7 @@ module.exports.JSType.prototype.cast = function(value) {
     return false;
 
   // Cast with the appropriate handler, falling back to default if none
-  if(this.format.indexOf('fmt') === 0)
+  if(!this.format || this.format.indexOf('fmt') === 0)
     _format = 'fmt';
   else
     _format = this.format;
@@ -55,7 +55,7 @@ module.exports.JSType.prototype.castDefault = function(value) {
 
   try {
     if(_.isFunction(this.js))
-      return this.js(value);
+      return this.js(value); 
   } catch(E) {
     return false;
   }
@@ -135,11 +135,25 @@ module.exports.StringType.prototype = _.extend(module.exports.StringType.prototy
 module.exports.IntegerType = function(field, options) {
   module.exports.JSType.call(this, field, options);
   this.js = Number;
-  name = 'integer';
+  this.name = 'integer';
   return this;
 }
 
-module.exports.IntegerType.prototype = _.extend(module.exports.IntegerType.prototype, module.exports.JSType.prototype);
+module.exports.IntegerType.prototype = _.extend(module.exports.IntegerType.prototype, module.exports.JSType.prototype, {
+  castDefault: function(value) {
+    if(this.typeCheck(value))
+      return value;
+
+    try {
+      if(parseInt(value))
+        return true;
+    } catch(E) {
+      return false;
+    }
+
+    return false;
+  }
+});
 
 module.exports.NumberType = function(field, options) {
   module.exports.JSType.call(this, field, options);
@@ -429,7 +443,7 @@ function availableTypes() {
     'AnyType', 'StringType', 'BooleanType', 'NumberType', 'IntegerType', 'NullType',
     'DateType', 'TimeType', 'DateTimeType', 'ArrayType', 'ObjectType',
     'GeoPointType', 'GeoJSONType'
-  ].forEach(function(T) { return module.exports[T]; });
+  ].map(function(T) { return module.exports[T]; });
 }
 
 // Guess the type for a value.
@@ -441,12 +455,19 @@ module.exports.TypeGuesser = function(typeOptions) {
 }
 
 module.exports.TypeGuesser.prototype.cast = function(value) {
-  if(_.find(availableTypes().reverse(), (function(T) {
-    return T(this.typeOptions[T.name] || {}).cast(value);
-  }).bind(this)))
-    return [type.name, 'default'];
+  try {
+    return [
+      (new (_.find(availableTypes().reverse(), (function(T) {
+        return (
+          new T(this.typeOptions[(new T()).name] || {})
+        ).cast(value);
+      }).bind(this)))()).name,
 
-  return null
+      'default'
+    ];
+  } catch(E) {
+    return null;
+  }
 }
 
 module.exports.TypeResolver = function() { return this; }
@@ -468,5 +489,5 @@ module.exports.TypeResolver.prototype.get = function(results) {
     function(C) { return C[1]; }
   ).reverse();
 
-  return {type: sortedCounts[0][0][0], format: sortedCounts[0][0][1]};
+  return {type: sortedCounts[0][0].split(',')[0], format: sortedCounts[0][0].split(',')[1]};
 }
