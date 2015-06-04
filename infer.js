@@ -47,7 +47,7 @@ module.exports = function(headers, values, options) {
     if(H === options.primaryKey)
       constraints.unique = true;
 
-    if(_.isEmpty(constraints))
+    if(!_.isEmpty(constraints))
       descriptor.constraints = constraints;
 
     return descriptor;

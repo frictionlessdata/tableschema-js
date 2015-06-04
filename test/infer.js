@@ -52,6 +52,15 @@ describe('Infer', function() {
     });
   });
 
-  it('do not create constraints if explicit param passed as False', function(done, err) { assert(); done(); });
+  it('do not create constraints if explicit param passed as False', function(done, err) {
+    csv.parse(CSVData.dataInfer, function(E, D) {
+      var schema = infer(D[0], _.rest(D), {explicit: false});
+
+
+      assert.notOk(schema.fields[0].constraints);
+      done();
+    });
+  });
+
   it('create constraints if explicit param passed as True', function(done, err) { assert(); done(); });
 });
