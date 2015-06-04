@@ -37,6 +37,7 @@ describe('Infer', function() {
       var primaryKey = 'id';
       var schema = infer(D[0], _.rest(D), {primaryKey: primaryKey});
 
+
       assert.equal(schema.primaryKey, primaryKey);
       done();
     });
@@ -46,6 +47,7 @@ describe('Infer', function() {
     csv.parse(CSVData.dataInfer, function(E, D) {
       var primaryKey = ['id', 'age'];
       var schema = infer(D[0], _.rest(D), {primaryKey: primaryKey});
+
 
       assert.equal(schema.primaryKey, primaryKey);
       done();
