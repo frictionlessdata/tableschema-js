@@ -20,7 +20,18 @@ describe('Infer', function() {
     });
   });
 
-  it('respect rowLimit param', function(done, err) { assert(); done(); });
+  it('respect rowLimit param', function(done, err) {
+    csv.parse(CSVData.dataInferRowLimit, function(E, D) {
+      var schema = infer(D[0], _.rest(D), {rowLimit: 4});
+
+
+      assert.equal(_.findWhere(schema.fields, {name: 'id'}).type, 'integer');
+      assert.equal(_.findWhere(schema.fields, {name: 'age'}).type, 'integer');
+      assert.equal(_.findWhere(schema.fields, {name: 'name'}).type, 'string');
+      done();
+    });
+  });
+
   it('respect primaryKey param', function(done, err) { assert(); done(); });
   it('respect primaryKey param passed as list of fields', function(done, err) { assert(); done(); });
   it('do not create constraints if explicit param passed as False', function(done, err) { assert(); done(); });
