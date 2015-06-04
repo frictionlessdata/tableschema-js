@@ -30,7 +30,7 @@ module.exports = function(headers, values, options) {
   if(options.primaryKey)
     schema['primaryKey'] = options.primaryKey;
 
-   schema['fields'] = headers.map(function(H) {
+  schema['fields'] = headers.map(function(H) {
     var constraints = {};
     var descriptor;
 
@@ -51,7 +51,7 @@ module.exports = function(headers, values, options) {
       descriptor.constraints = constraints;
 
     return descriptor;
-   });
+  });
 
   for(var index in values) {
     var headersLength;
