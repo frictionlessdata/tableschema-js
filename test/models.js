@@ -85,6 +85,13 @@ describe('Models', function() {
     done();
   });
 
-  it('raise exception when invalid json passed as schema', function(done, err) { assert(); done(); });
+  it('raise exception when invalid json passed as schema', function(done, err) {
+    try {
+      new SchemaModel('this is string');
+    } catch(E) {
+      done();
+    }
+  });
+
   it('raise exception when invalid format schema passed', function(done, err) { assert(); done(); });
 });
