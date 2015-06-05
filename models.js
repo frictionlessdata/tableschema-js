@@ -79,7 +79,7 @@ SchemaModel.prototype = _.extend(SchemaModel.prototype, {
   // duplicate field names.
   getField: function(fieldName, index) {
     try {
-      return _.where(this.fields(), {name: fieldName})[index];
+      return _.where(this.fields(), {name: fieldName})[index || 0];
     } catch(E) {
       return null;
     }
