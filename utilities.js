@@ -9,6 +9,8 @@ module.exports = {
   TRUE_VALUES: ['yes', 'y', 'true', 't', '1'],
   FALSE_VALUES: ['no', 'n', 'false', 'f', '0'],
 
+  isHash: function(value) { return !_.isObject(value) || _.isArray(value) || _.isFunction(value) },
+
   // Load a JSON source, from string, URL or buffer,  into a Python type.
   loadJSONSource: function(source) {
     if(_.isNull(source) || _.isUndefined(source) || _.isString(source))
