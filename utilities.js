@@ -31,7 +31,6 @@ module.exports = {
 
             RS(JSON.parse(source));
           });
-
       });
 
     // WARN There is no possibility to have browser compatable code which can load file
