@@ -93,5 +93,11 @@ describe('Models', function() {
     }
   });
 
-  it('raise exception when invalid format schema passed', function(done, err) { assert(); done(); });
+  it('raise exception when invalid format schema passed', function(done, err) {
+    try {
+      new SchemaModel({});
+    } catch(E) {
+      done();
+    }
+  });
 });
