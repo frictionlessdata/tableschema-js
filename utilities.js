@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var Promise = require('promise-polyfill');
 var request = require('superagent');
 var url = require('url');
@@ -9,17 +10,17 @@ module.exports = {
   TRUE_VALUES: ['yes', 'y', 'true', 't', '1'],
   FALSE_VALUES: ['no', 'n', 'false', 'f', '0'],
 
-  isHash: function(value) { return !_.isObject(value) || _.isArray(value) || _.isFunction(value) },
+  isHash: function(value) { return _.isObject(value) && !_.isArray(value) && !_.isFunction(value); },
 
-  // Load a JSON source, from string, URL or buffer,  into a Python type.
+  // Load a JSON source, from string, URL or buffer, into a Python type.
   loadJSONSource: function(source) {
     if(_.isNull(source) || _.isUndefined(source) || _.isString(source))
       return null;
-    else if(_.isArray(source))
+    else if(_.isObject(source) && !_.isFunction(source))
       // The source has already been loaded. Return Promise object for consistency.
       return new Promise(function(RS, RJ) { RS(source); });
 
-    if(_.contains(REMOTE_SCHEMES, url.parse(source).protocol.replace(':', '')))
+    if(_.contains(module.exports.REMOTE_SCHEMES, url.parse(source).protocol.replace(':', '')))
       return new Promise(function(RS, RJ) {
         request
           .get(source)

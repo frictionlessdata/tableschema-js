@@ -29,22 +29,22 @@ function SchemaModel(source, options) {
   */
 
   this.source = source;
-  this.caseInsensitiveHeaders = options.caseInsensitiveHeaders;
+  this.caseInsensitiveHeaders = (options || {}).caseInsensitiveHeaders;
   asJs = this.toJs();
 
   if(_.isUndefined(asJs) || _.isNull(asJs))
     throw new Error('Invalid JSON');
-  
+
   if(!ensure(asJs)[0])
     throw new Error('Invalid schema');
 
-  this.asJs = this._expand(asJs);
+  this.asJs = this.expand(asJs);
   this.asJSON = JSON.stringify(this.asJs);
 }
 
 SchemaModel.prototype = _.extend(SchemaModel.prototype, {
   // Return boolean if value can be cast to fieldName's type.
-  cast: function(fieldName, value, index) { return this.get_type(fieldName, index || 0).cast(value); },
+  cast: function(fieldName, value, index) { return this.getType(fieldName, index || 0).cast(value); },
 
   // Expand the schema with additional default properties.
   expand: function(schema) {
@@ -86,7 +86,7 @@ SchemaModel.prototype = _.extend(SchemaModel.prototype, {
   },
 
   // Return all fields that match the given type.
-  get_fields_by_type: function(typeName) { return _.where(this.fields(), {type: typeName}); },
+  getFieldsByType: function(typeName) { return _.where(this.fields(), {type: typeName}); },
 
   // Return the `type` for `fieldName`.
   getType: function(fieldName, index) {
@@ -94,13 +94,13 @@ SchemaModel.prototype = _.extend(SchemaModel.prototype, {
 
 
     return this.typeMap[field.type](field);
-  }
+  },
 
   // Return boolean if the field exists in the schema.
-  has_field: function(fieldName) { return Boolean(this.getField(fieldName)); },
+  hasField: function(fieldName) { return Boolean(this.getField(fieldName)); },
 
   headers: function() {
-    var raw = _.chain(this.asJs.fields).map(_.property('name'));
+    var raw = _.chain(this.asJs.fields).map(_.property('name')).value();
 
 
     if(this.caseInsensitiveHeaders)
@@ -114,7 +114,8 @@ SchemaModel.prototype = _.extend(SchemaModel.prototype, {
   requiredHeaders: function() {
     var raw = _.chain(this.asJs.fields)
       .filter(function(F) { return F.constraints.required; })
-      .map(_.property('name'));
+      .map(_.property('name'))
+      .value();
 
 
     if(this.caseInsensitiveHeaders)
@@ -126,7 +127,7 @@ SchemaModel.prototype = _.extend(SchemaModel.prototype, {
   // Return schema as an Object.
   toJs: function() {
     try {
-      return utilities.loadJSONSource(this.source);
+      return utilities.loadJSONSource(this.source)._value;
     } catch(E) {
       return null;
     };
