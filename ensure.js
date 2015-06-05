@@ -149,17 +149,17 @@ module.exports = function(schema) {
 
       // Ensure that the primary key matches field names
       if(_.isString(schema.primaryKey)) {
-          if(!_.contains(fieldsNames, schema.primaryKey)) {
+        if(!_.contains(fieldsNames, schema.primaryKey)) {
+          valid = false;
+          errors = errors.concat('A JSON Table Schema primaryKey value must be found in the schema field names');
+        }
+      } else {
+        _.each(schema.primaryKey, function(PK) {
+          if(_.contains(fieldsNames, PK)) {
             valid = false;
             errors = errors.concat('A JSON Table Schema primaryKey value must be found in the schema field names');
           }
-      } else {
-          _.each(schema.primaryKey, function(PK) {
-            if(_.contains(fieldsNames, PK)) {
-              valid = false;
-              errors = errors.concat('A JSON Table Schema primaryKey value must be found in the schema field names');
-            }
-          });
+        });
       }
   }
 
