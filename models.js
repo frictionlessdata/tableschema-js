@@ -1,5 +1,6 @@
 var _ = require('underscore');
 var ensure = require('./ensure');
+var Promise = require('promise-polyfill');
 var types = require('./types');
 var utilities = require('./utilities');
 
@@ -32,14 +33,13 @@ function SchemaModel(source, options) {
   this.caseInsensitiveHeaders = (options || {}).caseInsensitiveHeaders;
   asJs = this.toJs();
 
-  if(_.isUndefined(asJs) || _.isNull(asJs))
-    throw new Error('Invalid JSON');
+  // Manually use .loadSource() to get schema in case of URL passed instead of schema
+  if(asJs instanceof Promise) {
+    this.schemaPromise = asJs;
+    return this; 
+  }
 
-  if(!ensure(asJs)[0])
-    throw new Error('Invalid schema');
-
-  this.asJs = this.expand(asJs);
-  this.asJSON = JSON.stringify(this.asJs);
+  this.validateAndExpand(asJs);
 }
 
 SchemaModel.prototype = _.extend(SchemaModel.prototype, {
@@ -109,6 +109,9 @@ SchemaModel.prototype = _.extend(SchemaModel.prototype, {
     return raw;
   },
 
+  // Load schema from URL passed in init
+  loadSchema: function() { return this.schemaPromise.then(this.validateAndExpand); },
+
   primaryKey: function() { return this.asJs.primaryKey; },
 
   requiredHeaders: function() {
@@ -127,7 +130,7 @@ SchemaModel.prototype = _.extend(SchemaModel.prototype, {
   // Return schema as an Object.
   toJs: function() {
     try {
-      return utilities.loadJSONSource(this.source)._value;
+      return utilities.loadJSONSource(this.source);
     } catch(E) {
       return null;
     };
@@ -148,6 +151,19 @@ SchemaModel.prototype = _.extend(SchemaModel.prototype, {
     geopoint: types.GeoPointType,
     geojson : types.GeoJSONType,
     any     : types.AnyType
+  },
+
+  validateAndExpand: function(value) {
+    if(_.isUndefined(value) || _.isNull(value))
+      throw new Error('Invalid JSON');
+
+    if(!ensure(value)[0])
+      throw new Error('Invalid schema');
+
+    this.asJs = this.expand(value);
+    this.asJSON = JSON.stringify(this.asJs);
+
+    return this;
   }
 });
 

@@ -14,11 +14,11 @@ module.exports = {
 
   // Load a JSON source, from string, URL or buffer, into a Python type.
   loadJSONSource: function(source) {
-    if(_.isNull(source) || _.isUndefined(source) || _.isString(source))
+    if(_.isNull(source) || _.isUndefined(source))
       return null;
     else if(_.isObject(source) && !_.isFunction(source))
       // The source has already been loaded. Return Promise object for consistency.
-      return new Promise(function(RS, RJ) { RS(source); });
+      return source;
 
     if(_.contains(module.exports.REMOTE_SCHEMES, url.parse(source).protocol.replace(':', '')))
       return new Promise(function(RS, RJ) {
