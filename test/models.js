@@ -51,7 +51,11 @@ describe('Models', function() {
     done();
   });
 
-  it('do not have fields not specified in passed schema', function(done, err) { assert(); done(); });
+  it('do not have fields not specified in passed schema', function(done, err) {
+    assert.notOk((new SchemaModel(SCHEMA)).hasField('religion'));
+    done();
+  });
+
   it('respect caseInsensitiveHeaders option', function(done, err) { assert(); done(); });
   it('raise exception when invalid json passed as schema', function(done, err) { assert(); done(); });
   it('raise exception when invalid format schema passed', function(done, err) { assert(); done(); });
