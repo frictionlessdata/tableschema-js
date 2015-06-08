@@ -1,7 +1,8 @@
 {
-  "name": "jtskit",
-  "version": "0.0.1",
-  "description": "",
+  "name": "json-table-schema",
+  "version": "0.0.1-alpha",
+  "description": "A utility library for working with JSON Table Schema in Javascript.",
+  "keywords": ["data package", "frictionless data", "open data", "open knowledge"],
   "main": "index.js",
   "dependencies": {
     "csv": "^0.4.2",
@@ -20,5 +21,23 @@
     "test": "mocha"
   },
   "author": "Open Knowledge",
+  "contributors": [
+    {
+      "name": "Paul Walsh",
+      "email": "paulywalsh@gmail.com",
+      "url": "http://pwalsh.me/"
+    },
+    {
+      "name": "Artem Rudenko",
+      "email": "",
+      "url": ""
+    }
+  ],
+  "homepage": "https://github.com/okfn/json-table-schema-js",
+  "bugs": "https://github.com/okfn/json-table-schema-js/issues",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/okfn/json-table-schema-js.git"
+  },
   "license": "MIT"
 }
