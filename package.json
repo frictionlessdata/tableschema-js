@@ -20,7 +20,11 @@
   "scripts": {
     "test": "mocha"
   },
-  "author": "Open Knowledge",
+  "author": {
+    "name": "Open Knowledge",
+    "email": "info@okfn.org",
+    "url": "https://okfn.org/"
+  },
   "contributors": [
     {
       "name": "Paul Walsh",
@@ -29,8 +33,8 @@
     },
     {
       "name": "Artem Rudenko",
-      "email": "",
-      "url": ""
+      "email": "gvidon@ottofeller.com",
+      "url": "http://ottofeller.com/"
     }
   ],
   "homepage": "https://github.com/okfn/json-table-schema-js",
