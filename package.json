@@ -2,10 +2,16 @@
   "name": "json-table-schema",
   "version": "0.0.1-alpha",
   "description": "A utility library for working with JSON Table Schema in Javascript.",
-  "keywords": ["data package", "frictionless data", "open data", "open knowledge"],
+  "keywords": [
+    "data package",
+    "frictionless data",
+    "open data",
+    "open knowledge"
+  ],
   "main": "index.js",
   "dependencies": {
     "csv": "^0.4.2",
+    "moment": "^2.10.3",
     "promise-polyfill": "^2.0.2",
     "superagent": "^1.2.0",
     "underscore": "^1.8.3"
@@ -39,9 +45,9 @@
   ],
   "homepage": "https://github.com/okfn/json-table-schema-js",
   "bugs": "https://github.com/okfn/json-table-schema-js/issues",
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/okfn/json-table-schema-js.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/okfn/json-table-schema-js.git"
   },
   "license": "MIT"
 }
