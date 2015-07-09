@@ -1,6 +1,6 @@
 var _ = require('underscore');
 var ensure = require('./ensure');
-var Promise = require('promise-polyfill');
+var Promise = require('bluebird');
 var types = require('./types');
 var utilities = require('./utilities');
 
