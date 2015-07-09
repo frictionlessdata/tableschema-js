@@ -12,7 +12,7 @@
   "dependencies": {
     "csv": "^0.4.2",
     "moment": "^2.10.3",
-    "promise-polyfill": "^2.0.2",
+    "bluebird": "^2.9.30",
     "superagent": "^1.2.0",
     "underscore": "^1.8.3"
   },
