@@ -51,7 +51,7 @@ module.exports.JSType.prototype.cast = function(value) {
 // Return boolean if the value can be cast to the type/format.
 module.exports.JSType.prototype.castDefault = function(value) {
   if(this.typeCheck(value))
-    return value;
+    return true;
 
   try {
     if(_.isFunction(this.js))
@@ -142,10 +142,10 @@ module.exports.IntegerType = function(field, options) {
 module.exports.IntegerType.prototype = _.extend(module.exports.IntegerType.prototype, module.exports.JSType.prototype, {
   castDefault: function(value) {
     if(this.typeCheck(value))
-      return value;
+      return true;
 
     try {
-      if(parseInt(value))
+      if(isFinite(parseInt(value)))
         return true;
     } catch(E) {
       return false;
@@ -166,6 +166,19 @@ module.exports.NumberType = function(field, options) {
 }
 
 module.exports.NumberType.prototype = _.extend(module.exports.NumberType.prototype, module.exports.JSType.prototype, {
+  castDefault: function(value) {
+    if(this.typeCheck(value))
+      return true;
+
+    try {
+      if(isFinite(parseFloat(value)))
+        return true;
+    } catch(E) {
+      return false;
+    }
+
+    return false;
+  },
   castCurrency: function(value) {
     value = value.replace(new RegExp('[' + [this.separators, this.currencies].join('') + ']', 'g'), '');
 
@@ -177,7 +190,7 @@ module.exports.NumberType.prototype = _.extend(module.exports.NumberType.prototy
       return false;
 
     try {
-      return parseFloat(value);
+      return isFinite(parseFloat(value));
     } catch(E) {
       return false;
     }

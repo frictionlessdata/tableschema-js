@@ -51,6 +51,11 @@ describe('IntegerType', function() {
     done();
   });
 
+  it('cast string "0"', function(done, err) {
+    assert((new types.IntegerType(BASE_FIELD)).cast('0'));
+    done();
+  });
+
   it('don\'t cast string', function(done, err) {
     assert.notOk((new types.IntegerType(BASE_FIELD)).cast('string'));
     done();
@@ -65,6 +70,11 @@ describe('NumberType', function() {
 
   it('cast float', function(done, err) {
     assert((new types.NumberType(BASE_FIELD)).cast(1.1));
+    done();
+  });
+
+  it('cast string "0"', function(done, err) {
+    assert((new types.NumberType(BASE_FIELD)).cast('0'));
     done();
   });
 
