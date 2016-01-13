@@ -11,8 +11,6 @@ describe('Infer', function() {
   it('produce schema from a generic .csv', function(done, err) {
     csv.parse(CSVData.dataInfer, function(E, D) {
       var schema = infer(D[0], _.rest(D));
-
-
       assert.equal(_.findWhere(schema.fields, {name: 'id'}).type, 'integer');
       assert.equal(_.findWhere(schema.fields, {name: 'age'}).type, 'integer');
       assert.equal(_.findWhere(schema.fields, {name: 'name'}).type, 'string');
@@ -23,7 +21,6 @@ describe('Infer', function() {
   it('respect rowLimit param', function(done, err) {
     csv.parse(CSVData.dataInferRowLimit, function(E, D) {
       var schema = infer(D[0], _.rest(D), {rowLimit: 4});
-
 
       assert.equal(_.findWhere(schema.fields, {name: 'id'}).type, 'integer');
       assert.equal(_.findWhere(schema.fields, {name: 'age'}).type, 'integer');
@@ -73,4 +70,14 @@ describe('Infer', function() {
       done();
     });
   });
+
+  it('Should take the best suitable type', function(done, err) {
+    csv.parse(CSVData.dataDates, function(E, D) {
+      var schema = infer(D[0], _.rest(D));
+      assert.equal(schema.fields[0].type, 'integer');
+      assert.equal(schema.fields[1].type, 'datetime');
+      done();
+    });
+  });
+
 });

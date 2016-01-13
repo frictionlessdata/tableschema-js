@@ -27,7 +27,6 @@ module.exports.JSType.prototype.cast = function(value) {
   var _format;
   var _handler;
 
-
   // We can check on `constraints.required` before we cast
   if(!this.required && _.contains(_.flatten([null, utilities.NULL_VALUES]), value))
     return true;
@@ -35,10 +34,15 @@ module.exports.JSType.prototype.cast = function(value) {
     return false;
 
   // Cast with the appropriate handler, falling back to default if none
-  if(!this.format || this.format.indexOf('fmt') === 0)
-    _format = 'fmt';
-  else
-    _format = this.format;
+  if(!this.format) {
+    _format = 'default';
+  } else {
+    if(!this.format || this.format.indexOf('fmt') === 0) {
+      _format = 'fmt';
+    } else {
+      _format = this.format;
+    }
+  }
 
   _handler = 'cast' + (_format.charAt(0).toUpperCase() + _format.substring(1));
 
@@ -145,8 +149,8 @@ module.exports.IntegerType.prototype = _.extend(module.exports.IntegerType.proto
       return true;
 
     try {
-      if(isFinite(parseInt(value)))
-        return true;
+      var x = parseInt(value);
+      return (isFinite(+value) && isFinite(x) && (+value === x ) );
     } catch(E) {
       return false;
     }
@@ -171,7 +175,7 @@ module.exports.NumberType.prototype = _.extend(module.exports.NumberType.prototy
       return true;
 
     try {
-      if(isFinite(parseFloat(value)))
+      if(isFinite(+value) && isFinite(parseFloat(value)))
         return true;
     } catch(E) {
       return false;
@@ -296,7 +300,6 @@ module.exports.DateType.prototype = _.extend(module.exports.DateType.prototype, 
   castAny: function(value) {
     var date;
 
-
     try {
       date = moment(new Date(value));
     } catch(E) {
@@ -312,7 +315,6 @@ module.exports.DateType.prototype = _.extend(module.exports.DateType.prototype, 
   castDefault: function(value) {
     var date;
 
-
     try {
       date = moment(value, this.ISO8601, true);
     } catch(E) {
@@ -327,7 +329,6 @@ module.exports.DateType.prototype = _.extend(module.exports.DateType.prototype, 
 
   castFmt: function(value) {
     var date;
-
 
     try {
       date = moment(value, this.format.replace(/^fmt:/, ''), true);
@@ -450,13 +451,18 @@ module.exports.AnyType.prototype = _.extend(module.exports.AnyType.prototype, mo
   cast: function(value) { return true; }
 });
 
-// Return available types objects
-function availableTypes() {
+
+function availableTypeNames () {
   return [
     'AnyType', 'StringType', 'BooleanType', 'NumberType', 'IntegerType', 'NullType',
     'DateType', 'TimeType', 'DateTimeType', 'ArrayType', 'ObjectType',
     'GeoPointType', 'GeoJSONType'
-  ].map(function(T) { return module.exports[T]; });
+  ]
+}
+
+// Return available types objects
+function availableTypes() {
+  return (availableTypeNames()).map(function(T) { return module.exports[T]; });
 }
 
 // Guess the type for a value.
@@ -465,6 +471,41 @@ function availableTypes() {
 module.exports.TypeGuesser = function(typeOptions) {
   this.typeOptions = typeOptions || {};
   return this;
+}
+
+module.exports.TypeGuesser.prototype.suitableTypes = function(values) {
+  values = _.filter(values, function (value){
+    return !(_.isUndefined(value) || _.isEmpty(value));
+  });
+
+  if (values.length == 0) {
+    return ['AnyType'];
+  }
+  var possibleTypeList = _.map(values, (function(value) {
+//    if (value) {
+    return _.filter(availableTypeNames().reverse(), (function(T) {
+      try {
+        return (
+          new module.exports[T](this.typeOptions[(new module.exports[T]()).name] || {})
+        ).cast(value);
+      } catch(e) {
+        return false;
+      }
+    }).bind(this) );
+  }).bind(this) );
+
+  return _.reduce(possibleTypeList, function (memo, types) {
+    return _.intersection(memo, types);
+  });
+}
+
+module.exports.TypeGuesser.prototype.multicast = function(values) {
+  var types = this.suitableTypes(values);
+
+  var suitableType =  _.find(availableTypeNames().reverse(), (function(type){
+    return _.indexOf(types, type) >= 0;
+  }).bind(this));
+  return (new module.exports[suitableType]()).name;
 }
 
 module.exports.TypeGuesser.prototype.cast = function(value) {
