@@ -355,7 +355,6 @@ module.exports.TimeType.prototype = _.extend(module.exports.TimeType.prototype, 
   castDefault: function(value) {
     var date;
 
-
     try {
       date = moment(value, 'HH:mm:ss', true);
     } catch(E) {
@@ -482,7 +481,6 @@ module.exports.TypeGuesser.prototype.suitableTypes = function(values) {
     return ['AnyType'];
   }
   var possibleTypeList = _.map(values, (function(value) {
-//    if (value) {
     return _.filter(availableTypeNames().reverse(), (function(T) {
       try {
         return (
