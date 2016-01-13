@@ -19,10 +19,11 @@ module.exports = function(headers, values, options) {
   options = _.extend({
     rowLimit: null,
     explicit: false,
-    primaryKey: null
+    primaryKey: null,
+    cast: {}
   }, options);
 
-  guesser = new types.TypeGuesser();
+  guesser = new types.TypeGuesser(options.cast);
   resolver = new types.TypeResolver();
   schema = {fields: []};
   typeMatches = {};
@@ -53,34 +54,15 @@ module.exports = function(headers, values, options) {
     return descriptor;
   });
 
-  for(var index in values) {
-    var headersLength;
-    var row = values[index];
-    var rowLength;
+  for (var index in headers){
+    var colValues = _.pluck(values, index);
 
+    if(options.rowLimit){
+      colValues = _.first(colValues, options.rowLimit);
+    }
 
-    if(options.rowLimit && (index > options.rowLimit))
-      break;
-
-    // Normalize rows with invalid dimensions for sanity
-    rowLength = row.length;
-    headersLength = headers.length;
-
-    if(rowLength > headersLength)
-      row = _.first(row, headersLength);
-
-    if(rowLength < headersLength)
-      row = row.concat(_.range(headersLength - rowLength).map(function() { return ''; }));
-
-    // Build a column-wise lookup of type matches
-    for(var rowIndex in row)
-      typeMatches[rowIndex] = (typeMatches[rowIndex] || []).concat([guesser.cast(row[rowIndex])]);
+    var suitableType = guesser.multicast(colValues);
+    schema.fields[parseInt(index)] = _.extend(schema.fields[parseInt(index)], {type: suitableType, format: 'default'});
   }
-
-  // Choose a type/format for each column based on the matches
-  _.each(typeMatches, function(V, K) {
-    schema.fields[parseInt(K)] = _.extend(schema.fields[parseInt(K)], resolver.get(V));
-  });
-
   return schema;
 }
