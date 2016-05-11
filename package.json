@@ -4,6 +4,7 @@
   "description": "A utility library for working with JSON Table Schema in Javascript.",
   "keywords": [
     "data package",
+    "json table schema",
     "frictionless data",
     "open data",
     "open knowledge"
@@ -43,11 +44,11 @@
       "url": "http://ottofeller.com/"
     }
   ],
-  "homepage": "https://github.com/okfn/json-table-schema-js",
-  "bugs": "https://github.com/okfn/json-table-schema-js/issues",
+  "homepage": "https://github.com/frictionlessdata/jsontableschema-js",
+  "bugs": "https://github.com/frictionlessdata/jsontableschema-js/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/okfn/json-table-schema-js.git"
+    "url": "https://github.com/frictionlessdata/jsontableschema-js.git"
   },
   "license": "MIT"
 }
