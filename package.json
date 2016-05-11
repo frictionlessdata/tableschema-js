@@ -1,6 +1,6 @@
 {
-  "name": "json-table-schema",
-  "version": "0.0.3-alpha",
+  "name": "jsontableschema",
+  "version": "0.1.0",
   "description": "A utility library for working with JSON Table Schema in Javascript.",
   "keywords": [
     "data package",
