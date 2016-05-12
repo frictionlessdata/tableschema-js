@@ -100,7 +100,7 @@ exports.StringType = function (field) {
   this.js = 'string'
   this.name = 'string'
   this.formats = ['default', 'email', 'uri', 'binary']
-  this.emailPattern = new RegExp('[^@]+@[^@]+\.[^@]+')
+  this.emailPattern = new RegExp('[^@]+@[^@]+\\.[^@]+')
   this.uriPattern = new RegExp('^http[s]?://')
 
   return this
@@ -169,7 +169,7 @@ exports.IntegerType.prototype =
 
         try {
           var x = parseInt(value, 10)
-          return (isFinite(+value) && isFinite(x) && (+value === x ))
+          return (isFinite(+value) && isFinite(x) && (+value === x))
         } catch (e) {
           return false
         }
@@ -206,15 +206,15 @@ exports.NumberType.prototype =
           return false
         }
         return false
-      },
-      castCurrency: function (value) {
-        value = value.replace(
-          new RegExp('[' + [this.separators, this.currencies].join('') +
-                     ']', 'g'), '')
-
+      }
+      , castCurrency: function (value) {
         if (this.typeCheck(value)) {
           return true
         }
+
+        value = String(value).replace(
+          new RegExp('[' + [this.separators, this.currencies].join('') +
+                     ']', 'g'), '')
 
         // parseFloat() parse string even if there are non-digit characters
         if ((new RegExp('[^\\d]+', 'g')).exec(value)) {
@@ -230,80 +230,82 @@ exports.NumberType.prototype =
     })
 
 exports.BooleanType = function (field, options) {
-  exports.JSType.call(this, field, options);
-  this.js = Boolean;
-  this.name = 'boolean';
-  this.trueValues = utilities.TRUE_VALUES;
-  this.falseValues = utilities.FALSE_VALUES;
-  return this;
+  exports.JSType.call(this, field, options)
+
+  this.js = Boolean
+  this.name = 'boolean'
+  this.trueValues = utilities.TRUE_VALUES
+  this.falseValues = utilities.FALSE_VALUES
+
+  return this
 }
 
 exports.BooleanType.prototype =
   _.extend(exports.BooleanType.prototype,
            exports.JSType.prototype, {
              castDefault: function (value) {
-               if (value instanceof this.js) {
-                 return true;
+               if (this.typeCheck(value)) {
+                 return true
                }
 
-               value = value.trim().toLowerCase();
+               value = value.trim().toLowerCase()
 
-               if (_.contains(_.union(this.trueValues, this.falseValues),
-                              value)) {
-                 return true;
-               }
-
-               return false;
+               return !!_.contains(_.union(this.trueValues, this.falseValues),
+                                   value)
              }
-           });
+           })
 
 exports.NullType = function (field, options) {
-  exports.JSType.call(this, field, options);
-  this.name = 'null';
-  this.nullValues = utilities.NULL_VALUES;
-  return this;
+  exports.JSType.call(this, field, options)
+
+  this.name = 'null'
+  this.nullValues = utilities.NULL_VALUES
+
+  return this
 }
 
 exports.NullType.prototype =
-  _.extend(exports.NullType.prototype, exports.JSType.prototype, {
-    castDefault: function (value) {
-      if (_.isNull(value)) {
-        return true;
+  _.extend(
+    exports.NullType.prototype
+    , exports.JSType.prototype
+    , {
+      castDefault: function (value) {
+        if (_.isNull(value)) {
+          return true
+        }
+        value = value.trim().toLowerCase()
+
+        return !!_.contains(this.nullValues, value)
       }
-
-      value = value.trim().toLowerCase();
-
-      if (_.contains(this.nullValues, value)) {
-        return true;
-      }
-
-      return false;
-    }
-  });
+    })
 
 exports.ArrayType = function (field, options) {
-  exports.JSType.call(this, field, options);
-  this.js = Array;
-  this.name = 'array';
-  return this;
+  exports.JSType.call(this, field, options)
+
+  this.js = Array
+  this.name = 'array'
+
+  return this
 }
 
 exports.ArrayType.prototype =
-  _.extend(exports.ArrayType.prototype, exports.JSType.prototype,
-           {
-             castDefault: function (value) {
-               if (value instanceof this.js) {
-                 return true;
-               }
+  _.extend(
+    exports.ArrayType.prototype
+    , exports.JSType.prototype
+    , {
+      castDefault: function (value) {
+        if (this.typeCheck(value)) {
+          return true
+        }
 
-               try {
-                 value = JSON.parse(value);
-                 return value instanceof this.js;
-               } catch (E) {
-                 return false;
-               }
-             }
-           });
+        try {
+          value = JSON.parse(value)
+          return this.typeCheck(value)
+        } catch (e) {
+          return false
+        }
+      }
+    })
 
 exports.ObjectType = function (field, options) {
   exports.JSType.call(this, field, options);
@@ -621,7 +623,6 @@ exports.TypeResolver = function () {
 exports.TypeResolver.prototype.get = function (results) {
   var counts = {};
   var variants = _.uniq(results);
-
 
   // Only one candidate... that's easy.
   if (variants.length == 1) {

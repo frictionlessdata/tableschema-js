@@ -48,15 +48,46 @@ describe('Types', () => {
       done()
     })
 
-    it('fail to cast email with wrong email format', (done) => {
+    it('don\'t cast email with wrong email format', (done) => {
       BASE_FIELD.format = 'email'
-      assert.notOk(
-        (new types.StringType(BASE_FIELD)).cast('exampleexample.com'))
+      assert.notOk((new types.StringType(BASE_FIELD)).cast('example.com'))
       done()
     })
 
-    it('fail to cast email with non-string value', (done) => {
+    it('don\'t cast email with non-string value', (done) => {
       BASE_FIELD.format = 'email'
+      assert.notOk((new types.StringType(BASE_FIELD)).cast(1))
+      done()
+    })
+
+    it('cast uri', (done) => {
+      BASE_FIELD.format = 'uri'
+      assert((new types.StringType(BASE_FIELD)).cast('http://www.example.com/'))
+      done()
+    })
+
+    it('don\'t cast uri with wrong uri format', (done) => {
+      BASE_FIELD.format = 'uri'
+      assert.notOk(
+        (new types.StringType(BASE_FIELD)).cast('http//www.example.com/'))
+      done()
+    })
+
+    it('don\'t cast uri with non-string value', (done) => {
+      BASE_FIELD.format = 'uri'
+      assert.notOk((new types.StringType(BASE_FIELD)).cast(1))
+      done()
+    })
+
+    it('cast binary', (done) => {
+      BASE_FIELD.format = 'binary'
+      assert.ok((new types.StringType(BASE_FIELD)).cast(
+        Buffer.from('test').toString('base64')))
+      done()
+    })
+
+    it('don\'t cast binary with non-string value', (done) => {
+      BASE_FIELD.format = 'binary'
       assert.notOk((new types.StringType(BASE_FIELD)).cast(1))
       done()
     })
@@ -90,13 +121,18 @@ describe('Types', () => {
       done()
     })
 
+    it('cast Number', (done) => {
+      assert.ok((new types.NumberType(BASE_FIELD)).cast(new Number(1)))
+      done()
+    })
+
     it('cast float', (done) => {
-      assert((new types.NumberType(BASE_FIELD)).cast(1.1))
+      assert.ok((new types.NumberType(BASE_FIELD)).cast(1.1))
       done()
     })
 
     it('cast string "0"', (done) => {
-      assert((new types.NumberType(BASE_FIELD)).cast('0'))
+      assert.ok((new types.NumberType(BASE_FIELD)).cast('0'))
       done()
     })
 
@@ -109,9 +145,15 @@ describe('Types', () => {
       BASE_FIELD.format = 'currency'
       let numbers = ['10,000.00', '10;000.00', '$10000.00']
 
-      numbers.forEach((V) => {
-        assert((new types.NumberType(BASE_FIELD)).cast(V))
+      numbers.forEach((value) => {
+        assert.ok((new types.NumberType(BASE_FIELD)).cast(value))
       })
+      done()
+    })
+
+    it('cast currency from Number', (done) => {
+      BASE_FIELD.format = 'currency'
+      assert.ok((new types.NumberType(BASE_FIELD)).cast(new Number(10000.00)))
       done()
     })
 
@@ -119,8 +161,8 @@ describe('Types', () => {
       BASE_FIELD.format = 'currency'
 
       let numbers = ['10,000a.00', '10+000.00', '$10:000.00']
-      numbers.forEach(function (V) {
-        assert.notOk((new types.NumberType(BASE_FIELD)).cast(V))
+      numbers.forEach(function (value) {
+        assert.notOk((new types.NumberType(BASE_FIELD)).cast(value))
       })
       done()
     })
@@ -211,22 +253,22 @@ describe('Types', () => {
     });
   });
 
-  describe('BooleanType', function () {
-    beforeEach(function (done) {
-      BASE_FIELD.type = 'boolean';
-      done();
-    });
+  describe('BooleanType', () => {
+    beforeEach((done) => {
+      BASE_FIELD.type = 'boolean'
+      done()
+    })
 
-    it('cast simple string as True boolean', function (done, err) {
-      assert((new types.BooleanType(BASE_FIELD)).cast('y'));
-      done();
-    });
+    it('cast simple string as True boolean', (done) => {
+      assert((new types.BooleanType(BASE_FIELD)).cast('y'))
+      done()
+    })
 
-    it('cast simple string as False boolean', function (done, err) {
-      assert((new types.BooleanType(BASE_FIELD)).cast('n'));
-      done();
-    });
-  });
+    it('cast simple string as False boolean', (done) => {
+      assert((new types.BooleanType(BASE_FIELD)).cast('n'))
+      done()
+    })
+  })
 
   describe('NullType', function () {
     beforeEach(function (done) {
