@@ -1,11 +1,12 @@
 .Python
 .DS_Store
-.idea
+.idea/
+.publish/
 .projectile
 *.sublime-project
 *.sublime-workspace
-__pycache__/
 *.py[cod]
+__pycache__/
 bower_components/*
 node_modules/*
-.publish/
+coverage/

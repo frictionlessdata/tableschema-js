@@ -9,7 +9,7 @@
     "open data",
     "open knowledge"
   ],
-  "main": "index.js",
+  "main": "src/index.js",
   "dependencies": {
     "bluebird": "^2.9.30",
     "csv": "^0.4.2",
