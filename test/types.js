@@ -78,6 +78,21 @@ describe('NumberType', function() {
     done();
   });
 
+  it('cast localized numbers', function(done, err) {
+    ['10,000.00', '10,000,000.00', '100', '100.23'].forEach(function(V) {
+      assert((new types.NumberType(BASE_FIELD)).cast(V));
+    });
+    BASE_FIELD.decimalChar='#';
+    ['10,000#00', '10,000,000#00', '100', '100#23'].forEach(function(V) {
+      assert((new types.NumberType(BASE_FIELD)).cast(V));
+    });
+    BASE_FIELD.groupChar='Q';
+    ['10Q000#00', '10Q000Q000#00', '100', '100#23'].forEach(function(V) {
+      assert((new types.NumberType(BASE_FIELD)).cast(V));
+    });
+    done();
+  });
+
   it('don\'t cast string', function(done, err) {
     assert.notOk((new types.NumberType(BASE_FIELD)).cast('string'));
     done();
@@ -86,7 +101,17 @@ describe('NumberType', function() {
   it('cast currency', function(done, err) {
     BASE_FIELD.format = 'currency';
 
-    ['10,000.00', '10;000.00', '$10000.00'].forEach(function(V) {
+    ['10,000.00', '10,000.00', '$10000.00'].forEach(function(V) {
+      assert((new types.NumberType(BASE_FIELD)).cast(V));
+    });
+
+    BASE_FIELD.groupChar = ' ';
+    BASE_FIELD.decimalChar = ',';
+
+    ['10 000 000,00', '10000,00', '10,000 €'].forEach(function(V) {
+      if (!(new types.NumberType(BASE_FIELD)).cast(V)) {
+        console.log('BBB',BASE_FIELD,V);
+      }
       assert((new types.NumberType(BASE_FIELD)).cast(V));
     });
 
@@ -190,6 +215,11 @@ describe('DateTimeType', function() {
 describe('BooleanType', function() {
   beforeEach(function(done) {
     BASE_FIELD.type = 'boolean';
+    done();
+  });
+
+  it('cast boolean', function(done, err) {
+    assert((new types.BooleanType(BASE_FIELD)).cast(true));
     done();
   });
 

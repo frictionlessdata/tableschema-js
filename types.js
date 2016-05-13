@@ -59,7 +59,7 @@ module.exports.JSType.prototype.castDefault = function(value) {
 
   try {
     if(_.isFunction(this.js))
-      return this.js(value); 
+      return this.js(value);
   } catch(E) {
     return false;
   }
@@ -76,8 +76,13 @@ module.exports.JSType.prototype.hasFormat = function(_format) {
 
 // Return boolean on type check of value.
 module.exports.JSType.prototype.typeCheck = function(value) {
-  if(value instanceof this.js)
+  if(this.jstype) {
+    if (typeof(value) == this.jstype) {
+      return true;
+    }
+  } else if(this.js && value instanceof this.js) {
     return true;
+  }
 
   return false;
 }
@@ -85,7 +90,7 @@ module.exports.JSType.prototype.typeCheck = function(value) {
 module.exports.StringType = function(field, options) {
   module.exports.JSType.call(this, field, options);
 
-  this.js = 'string';
+  this.jstype = 'string';
   this.name = 'string';
   this.formats = ['default', 'email', 'uri', 'binary'];
   this.emailPattern = new RegExp('[^@]+@[^@]+\.[^@]+');
@@ -161,11 +166,12 @@ module.exports.IntegerType.prototype = _.extend(module.exports.IntegerType.proto
 
 module.exports.NumberType = function(field, options) {
   module.exports.JSType.call(this, field, options);
-  this.js = Number;
+  this.jstype = 'number';
   this.name = 'number';
   this.formats = ['default', 'currency'];
-  this.separators = '.,;';
-  this.currencies = '$';
+  this.groupChar = (field || {}).groupChar || ',';
+  this.decimalChar = (field || {}).decimalChar || '.';
+  this.currencies = '$£€';
   return this;
 }
 
@@ -173,6 +179,9 @@ module.exports.NumberType.prototype = _.extend(module.exports.NumberType.prototy
   castDefault: function(value) {
     if(this.typeCheck(value))
       return true;
+
+    value = value.replace(new RegExp('['+this.groupChar+']','g'),'')
+                 .replace(new RegExp('['+this.decimalChar+']','g'),'.')
 
     try {
       if(isFinite(+value) && isFinite(parseFloat(value)))
@@ -184,13 +193,16 @@ module.exports.NumberType.prototype = _.extend(module.exports.NumberType.prototy
     return false;
   },
   castCurrency: function(value) {
-    value = value.replace(new RegExp('[' + [this.separators, this.currencies].join('') + ']', 'g'), '');
-
-    if(value instanceof this.js)
+    if(this.typeCheck(value))
       return true;
 
+    var orig = value;
+    value = value.replace(new RegExp('['+this.groupChar+']','g'),'')
+                 .replace(new RegExp('['+this.decimalChar+']','g'),'.')
+    value = value.replace(new RegExp('[' + this.currencies + ']', 'g'), '');
+
     // parseFloat() parse string even if there are non-digit characters
-    if((new RegExp('[^\\d]+', 'g')).exec(value))
+    if((new RegExp('[^\\d.]+', 'g')).exec(value))
       return false;
 
     try {
@@ -203,7 +215,7 @@ module.exports.NumberType.prototype = _.extend(module.exports.NumberType.prototy
 
 module.exports.BooleanType = function(field, options) {
   module.exports.JSType.call(this, field, options);
-  this.js = Boolean;
+  this.jstype = 'boolean';
   this.name = 'boolean';
   this.trueValues = utilities.TRUE_VALUES;
   this.falseValues = utilities.FALSE_VALUES;
@@ -212,7 +224,7 @@ module.exports.BooleanType = function(field, options) {
 
 module.exports.BooleanType.prototype = _.extend(module.exports.BooleanType.prototype, module.exports.JSType.prototype, {
   castDefault: function(value) {
-    if(value instanceof this.js)
+    if(this.typeCheck(value))
       return true;
 
     value = value.trim().toLowerCase();
@@ -254,12 +266,12 @@ module.exports.ArrayType = function(field, options) {
 
 module.exports.ArrayType.prototype = _.extend(module.exports.ArrayType.prototype, module.exports.JSType.prototype, {
   castDefault: function(value) {
-    if(value instanceof this.js)
+    if(this.typeCheck(value))
       return true;
 
     try {
       value = JSON.parse(value);
-      return value instanceof this.js;
+      return this.typeCheck(value);
     } catch(E) {
       return false;
     }
@@ -280,7 +292,7 @@ module.exports.ObjectType.prototype = _.extend(module.exports.ObjectType.prototy
 
     try {
       value = JSON.parse(value);
-      return value instanceof this.js;
+      return this.typeCheck(value);
     } catch(E) {
       return false;
     }
