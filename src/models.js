@@ -5,10 +5,10 @@ const _ = require('underscore')
   , types = require('./types')
   , utilities = require('./utilities')
   , DEFAULTS = {
-    constraints: { required: true }
-    , format: 'default'
-    , type: 'string'
-  }
+  constraints: { required: true }
+  , format: 'default'
+  , type: 'string'
+}
 
 /**
  * Model for a JSON Table Schema.
@@ -106,16 +106,16 @@ SchemaModel.prototype = {
    * @param {integer} index
    * @returns {object}
    */
-  , getConstraints(fieldName, index) {
-    return this.getField(fieldName, index || 0).constraints
+  , getConstraints(fieldName, index = 0) {
+    return this.getField(fieldName, index).constraints
   }
 
   // Return the `field` object for `fieldName`.
   // `index` allows accessing a field name by position, as JTS allows
   // duplicate field names.
-  , getField(fieldName, index) {
+  , getField(fieldName, index = 0) {
     try {
-      return _.where(this.fields(), { name: fieldName })[index || 0]
+      return _.where(this.fields(), { name: fieldName })[index]
     } catch (e) {
       return null
     }
@@ -132,7 +132,12 @@ SchemaModel.prototype = {
     return this.typeMap[field.type](field)
   }
 
-  // Return boolean if the field exists in the schema.
+  /**
+   * Check if the field exists in the schema
+   *
+   * @param fieldName
+   * @returns {boolean}
+   */
   , hasField(fieldName) {
     return Boolean(this.getField(fieldName))
   }

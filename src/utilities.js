@@ -11,12 +11,12 @@ exports = module.exports = {
   , TRUE_VALUES: ['yes', 'y', 'true', 't', '1']
   , FALSE_VALUES: ['no', 'n', 'false', 'f', '0']
 
-  , isHash: (value) => {
+  , isHash(value) {
     return _.isObject(value) && !_.isArray(value) && !_.isFunction(value)
   }
 
   // Load a JSON source, from string, URL or buffer, into a Python type.
-  , loadJSONSource: function (source) {
+  , loadJSONSource(source) {
     if (_.isNull(source) || _.isUndefined(source)) {
       return null
     } else if (_.isObject(source) && !_.isFunction(source)) {
@@ -27,12 +27,13 @@ exports = module.exports = {
 
     if (_.contains(this.REMOTE_SCHEMES,
                    url.parse(source).protocol.replace(':', ''))) {
-      return new Promise(function (resolve, reject) {
-        request.get(source).end(function (error, response) {
+      return new Promise((resolve, reject) => {
+        request.get(source).end((error, response) => {
           if (error) {
-            return reject('Failed to download registry file: ' + error)
+            reject(`Failed to download registry file: ${error}`)
+          } else {
+            resolve(JSON.parse(response))
           }
-          resolve(JSON.parse(response))
         })
       })
     }

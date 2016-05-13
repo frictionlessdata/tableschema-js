@@ -8,23 +8,26 @@ parserOptions:
   sourceType: script
 rules:
   strict:
-    - error
+    - 2
     - safe
   quotes:
-    - error
+    - 2
     - single
     - avoid-escape
   semi:
-    - error
+    - 2
     - never
   comma-style:
-    - error
+    - 2
     - first
   comma-dangle:
-    - error
+    - 2
     - never
   one-var:
-    - error
+    - 1
     - var: always
       let: always
       const: always
+  no-use-before-define:
+    - 2
+    - nofunc

@@ -146,7 +146,7 @@ describe('Types', () => {
 
     it('cast currency', (done) => {
       BASE_FIELD.format = 'currency'
-      const numbers = ['10,000.00', '10;000.00', '$10000.00']
+      const numbers = ['10,000.00', '10000.00', '$10000.00']
 
       numbers.forEach((value) => {
         assert.ok(newType(BASE_FIELD).cast(value))
@@ -216,47 +216,47 @@ describe('Types', () => {
        })
   })
 
-  describe('TimeType', function () {
-    beforeEach(function (done) {
-      BASE_FIELD.format = 'default';
-      BASE_FIELD.type = 'time';
-      done();
-    });
+  describe('TimeType', () => {
+    beforeEach((done) => {
+      BASE_FIELD.format = 'default'
+      BASE_FIELD.type = 'time'
+      done()
+    })
 
     it('cast simple time', (done) => {
-      assert((new types.TimeType(BASE_FIELD)).cast('06:00:00'));
-      done();
-    });
+      assert((new types.TimeType(BASE_FIELD)).cast('06:00:00'))
+      done()
+    })
 
     it('don\'t cast wrong simple time', (done) => {
-      assert.notOk((new types.TimeType(BASE_FIELD)).cast('3 am'));
-      done();
-    });
-  });
+      assert.notOk((new types.TimeType(BASE_FIELD)).cast('3 am'))
+      done()
+    })
+  })
 
-  describe('DateTimeType', function () {
-    beforeEach(function (done) {
-      BASE_FIELD.format = 'default';
-      BASE_FIELD.type = 'datetime';
-      done();
-    });
+  describe('DateTimeType', () => {
+    beforeEach((done) => {
+      BASE_FIELD.format = 'default'
+      BASE_FIELD.type = 'datetime'
+      done()
+    })
 
     it('cast simple datetime', (done) => {
-      assert((new types.DateTimeType(BASE_FIELD)).cast('2014-01-01T06:00:00Z'));
-      done();
-    });
+      assert((new types.DateTimeType(BASE_FIELD)).cast('2014-01-01T06:00:00Z'))
+      done()
+    })
 
     it('cast any datetime', (done) => {
-      BASE_FIELD.format = 'any';
-      assert((new types.DateTimeType(BASE_FIELD)).cast('10 Jan 1969 9:00'));
-      done();
-    });
+      BASE_FIELD.format = 'any'
+      assert((new types.DateTimeType(BASE_FIELD)).cast('10 Jan 1969 9:00'))
+      done()
+    })
 
     it('don\'t cast wrong simple date', (done) => {
-      assert.notOk((new types.DateTimeType(BASE_FIELD)).cast('10 Jan 1969 9'));
-      done();
-    });
-  });
+      assert.notOk((new types.DateTimeType(BASE_FIELD)).cast('10 Jan 1969 9'))
+      done()
+    })
+  })
 
   describe('BooleanType', () => {
     beforeEach((done) => {
@@ -275,89 +275,89 @@ describe('Types', () => {
     })
   })
 
-  describe('NullType', function () {
-    beforeEach(function (done) {
-      BASE_FIELD.type = 'null';
-      done();
-    });
+  describe('NullType', () => {
+    beforeEach((done) => {
+      BASE_FIELD.type = 'null'
+      done()
+    })
 
     it('cast simple string as Null', (done) => {
-      assert((new types.NullType(BASE_FIELD)).cast('null'));
-      done();
-    });
+      assert((new types.NullType(BASE_FIELD)).cast('null'))
+      done()
+    })
 
     it('don\'t cast random string as Null', (done) => {
-      assert.notOk((new types.NullType(BASE_FIELD)).cast('isnull'));
-      done();
-    });
-  });
+      assert.notOk((new types.NullType(BASE_FIELD)).cast('isnull'))
+      done()
+    })
+  })
 
-  describe('ArrayType', function () {
-    beforeEach(function (done) {
-      BASE_FIELD.type = 'array';
-      done();
-    });
+  describe('ArrayType', () => {
+    beforeEach((done) => {
+      BASE_FIELD.type = 'array'
+      done()
+    })
 
     it('cast array', (done) => {
-      assert((new types.ArrayType(BASE_FIELD)).cast([1, 2]));
-      done();
-    });
+      assert((new types.ArrayType(BASE_FIELD)).cast([1, 2]))
+      done()
+    })
 
     it('don\'t cast random string as array', (done) => {
-      assert.notOk((new types.ArrayType(BASE_FIELD)).cast('string, string'));
-      done();
-    });
-  });
+      assert.notOk((new types.ArrayType(BASE_FIELD)).cast('string, string'))
+      done()
+    })
+  })
 
-  describe('ObjectType', function () {
-    beforeEach(function (done) {
-      BASE_FIELD.type = 'object';
-      done();
-    });
+  describe('ObjectType', () => {
+    beforeEach((done) => {
+      BASE_FIELD.type = 'object'
+      done()
+    })
 
     it('cast object', (done) => {
-      assert((new types.ObjectType(BASE_FIELD)).cast({ key: 'value' }));
-      done();
-    });
+      assert((new types.ObjectType(BASE_FIELD)).cast({ key: 'value' }))
+      done()
+    })
 
     it('don\'t cast random array as object', (done) => {
-      assert.notOk((new types.ObjectType(BASE_FIELD)).cast(['boo', 'ya']));
-      done();
-    });
-  });
+      assert.notOk((new types.ObjectType(BASE_FIELD)).cast(['boo', 'ya']))
+      done()
+    })
+  })
 
-  describe('GeoPointType', function () {
-    beforeEach(function (done) {
-      BASE_FIELD.type = 'geopoint';
-      done();
-    });
+  describe('GeoPointType', () => {
+    beforeEach((done) => {
+      BASE_FIELD.type = 'geopoint'
+      done()
+    })
 
     it('cast geo point', (done) => {
-      assert((new types.GeoPointType(BASE_FIELD)).cast('10.0, 21.00'));
-      done();
-    });
+      assert((new types.GeoPointType(BASE_FIELD)).cast('10.0, 21.00'))
+      done()
+    })
 
     it('don\'t cast random string as Geopoint', (done) => {
       assert.notOk(
-        (new types.GeoPointType(BASE_FIELD)).cast('this is not a geopoint'));
-      done();
-    });
-  });
+        (new types.GeoPointType(BASE_FIELD)).cast('this is not a geopoint'))
+      done()
+    })
+  })
 
-  describe('GeoJSONType', function () {
-    beforeEach(function (done) {
-      BASE_FIELD.type = 'geojson';
-      done();
-    });
+  describe('GeoJSONType', () => {
+    beforeEach((done) => {
+      BASE_FIELD.type = 'geojson'
+      done()
+    })
 
     it('cast geo json', (done) => {
-      assert((new types.GeoJSONType(BASE_FIELD)).cast({ type: 'Point' }));
-      done();
-    });
+      assert((new types.GeoJSONType(BASE_FIELD)).cast({ type: 'Point' }))
+      done()
+    })
 
     it('don\'t cast random string as GeoJSON', (done) => {
-      assert.notOk((new types.GeoJSONType(BASE_FIELD)).cast(''));
-      done();
-    });
+      assert.notOk((new types.GeoJSONType(BASE_FIELD)).cast(''))
+      done()
+    })
   })
 })

@@ -1,14 +1,12 @@
-/*global describe*/
-/*global it*/
-/*global require*/
+/* global describe, it, require */
 
-let _ = require('underscore')
+'use strict'
+
+const _ = require('underscore')
   , assert = require('chai').assert
   , csv = require('csv')
   , CSVData = require('./CSV')
   , infer = require('../src/').infer
-
-'use strict'
 
 // WARN Use Model in test cases instead of validating schema directly
 describe('Infer', () => {
@@ -16,11 +14,11 @@ describe('Infer', () => {
     csv.parse(CSVData.dataInfer, (error, output) => {
       assert.isNull(error, 'CSV parse failed')
 
-      let schema = infer(output[0], _.rest(output))
+      const schema = infer(output[0], _.rest(output))
 
-      assert.equal(_.findWhere(schema.fields, {name: 'id'}).type, 'integer')
-      assert.equal(_.findWhere(schema.fields, {name: 'age'}).type, 'integer')
-      assert.equal(_.findWhere(schema.fields, {name: 'name'}).type, 'string')
+      assert.equal(_.findWhere(schema.fields, { name: 'id' }).type, 'integer')
+      assert.equal(_.findWhere(schema.fields, { name: 'age' }).type, 'integer')
+      assert.equal(_.findWhere(schema.fields, { name: 'name' }).type, 'string')
       done()
     })
   })
@@ -29,21 +27,21 @@ describe('Infer', () => {
     csv.parse(CSVData.dataInferRowLimit, (error, output) => {
       assert.isNull(error, 'CSV parse failed')
 
-      let schema = infer(output[0], _.rest(output), {rowLimit: 4})
+      const schema = infer(output[0], _.rest(output), { rowLimit: 4 })
 
-      assert.equal(_.findWhere(schema.fields, {name: 'id'}).type, 'integer')
-      assert.equal(_.findWhere(schema.fields, {name: 'age'}).type, 'integer')
-      assert.equal(_.findWhere(schema.fields, {name: 'name'}).type, 'string')
+      assert.equal(_.findWhere(schema.fields, { name: 'id' }).type, 'integer')
+      assert.equal(_.findWhere(schema.fields, { name: 'age' }).type, 'integer')
+      assert.equal(_.findWhere(schema.fields, { name: 'name' }).type, 'string')
       done()
     })
   })
 
   it('respect primaryKey param', (done) => {
-    csv.parse(CSVData.dataInferRowLimit, function (error, output) {
+    csv.parse(CSVData.dataInferRowLimit, (error, output) => {
       assert.isNull(error, 'CSV parse failed')
 
-      let primaryKey = 'id'
-        , schema = infer(output[0], _.rest(output), {primaryKey: primaryKey})
+      const primaryKey = 'id'
+        , schema = infer(output[0], _.rest(output), { primaryKey })
 
       assert.equal(schema.primaryKey, primaryKey)
       done()
@@ -54,8 +52,8 @@ describe('Infer', () => {
     csv.parse(CSVData.dataInfer, (error, output) => {
       assert.isNull(error, 'CSV parse failed')
 
-      let primaryKey = ['id', 'age']
-        , schema = infer(output[0], _.rest(output), {primaryKey: primaryKey})
+      const primaryKey = ['id', 'age']
+        , schema = infer(output[0], _.rest(output), { primaryKey })
 
       assert.equal(schema.primaryKey, primaryKey)
       done()
@@ -66,7 +64,7 @@ describe('Infer', () => {
     csv.parse(CSVData.dataInfer, (error, output) => {
       assert.isNull(error, 'CSV parse failed')
 
-      let schema = infer(output[0], _.rest(output), {explicit: false})
+      const schema = infer(output[0], _.rest(output), { explicit: false })
 
       assert.notProperty(schema.fields[0], 'constraints')
       done()
@@ -77,7 +75,7 @@ describe('Infer', () => {
     csv.parse(CSVData.dataInfer, (error, output) => {
       assert.isNull(error, 'CSV parse failed')
 
-      let schema = infer(output[0], _.rest(output), {explicit: true})
+      const schema = infer(output[0], _.rest(output), { explicit: true })
 
       assert.property(schema.fields[0], 'constraints')
       assert.property(schema.fields[0].constraints, 'required')
@@ -89,7 +87,7 @@ describe('Infer', () => {
     csv.parse(CSVData.dataDates, (error, output) => {
       assert.isNull(error, 'CSV parse failed')
 
-      let schema = infer(output[0], _.rest(output))
+      const schema = infer(output[0], _.rest(output))
 
       assert.equal(schema.fields[0].type, 'integer')
       assert.equal(schema.fields[1].type, 'datetime')

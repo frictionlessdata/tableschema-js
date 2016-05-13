@@ -3,12 +3,46 @@
 const _ = require('underscore')
   , moment = require('moment')
   , utilities = require('./utilities')
+// FIXME: the order is manner, why? probably need to find better way to chek
+// what type of the current value is
+  , typeNames = [
+  , 'BooleanType'
+  , 'IntegerType'
+  , 'NullType'
+  , 'DateType'
+  , 'TimeType'
+  , 'DateTimeType'
+  , 'ArrayType'
+  , 'ObjectType'
+  , 'GeoPointType'
+  , 'GeoJSONType'
+  , 'NumberType'
+  , 'StringType'
+  , 'AnyType'
+]
 
-exports = module.exports = {}
+exports = module.exports = {
+  AnyType
+  , StringType
+  , IntegerType
+  , NumberType
+  , BooleanType
+  , NullType
+  , ArrayType
+  , ObjectType
+  , DateType
+  , TimeType
+  , DateTimeType
+  , GeoPointType
+  , GeoJSONType
+  , TypeGuesser
+}
 
-exports.JSType = function JSType(field) {
+function AbstractType(field) {
   this.js = typeof null
   this.name = ''
+  this.format = 'default'
+  this.required = true
   this.formats = ['default']
 
   // `field` is the field schema.
@@ -17,14 +51,11 @@ exports.JSType = function JSType(field) {
   if (this.field) {
     this.format = this.field.format
     this.required = _.result(this.field.constraints, 'required') || false
-  } else {
-    this.format = 'default'
-    this.required = true
   }
   return this
 }
 
-exports.JSType.prototype = {
+AbstractType.prototype = {
   /**
    * Check if `value` can be cast as type `this.js`
    *
@@ -46,7 +77,7 @@ exports.JSType.prototype = {
     if (!this.format) {
       format = 'default'
     } else {
-      if (!this.format || this.format.indexOf('fmt') === 0) {
+      if (this.format.indexOf('fmt') === 0) {
         format = 'fmt'
       } else {
         format = this.format
@@ -82,8 +113,8 @@ exports.JSType.prototype = {
     }
     return false
   }
-  , hasFormat(_format) {
-    return !!_.contains(this.formats, _format)
+  , hasFormat(format) {
+    return !!_.contains(this.formats, format)
   }
   /**
    * Type check of value
@@ -96,8 +127,8 @@ exports.JSType.prototype = {
   }
 }
 
-exports.StringType = function StringType(field) {
-  exports.JSType.call(this, field)
+function StringType(field) {
+  AbstractType.call(this, field)
 
   this.js = 'string'
   this.name = 'string'
@@ -108,22 +139,21 @@ exports.StringType = function StringType(field) {
   return this
 }
 
-exports.StringType.prototype =
-  _.extend(
-    exports.StringType.prototype,
-    exports.JSType.prototype,
-    {
-      castEmail(value) {
-        if (!this.typeCheck(value)) {
-          return false
-        }
-
-        if (!this.emailPattern.exec(value)) {
-          return false
-        }
-        return value
+StringType.prototype = _.extend(
+  {}
+  , AbstractType.prototype
+  , {
+    castEmail(value) {
+      if (!this.typeCheck(value)) {
+        return false
       }
-      , castUri(value) {
+
+      if (!this.emailPattern.exec(value)) {
+        return false
+      }
+      return value
+    }
+    , castUri(value) {
       if (!this.typeCheck(value)) {
         return false
       }
@@ -134,7 +164,7 @@ exports.StringType.prototype =
 
       return value
     }
-      , castBinary(value) {
+    , castBinary(value) {
       if (!this.typeCheck(value)) {
         return false
       }
@@ -145,92 +175,91 @@ exports.StringType.prototype =
         return false
       }
     }
-      , typeCheck(value) {
+    , typeCheck(value) {
       return typeof value === 'string'
     }
-    }
-  )
+  }
+)
 
-exports.IntegerType = function IntegerType(field, options) {
-  exports.JSType.call(this, field, options)
+function IntegerType(field) {
+  AbstractType.call(this, field)
+
   this.js = Number
   this.name = 'integer'
 
   return this
 }
 
-exports.IntegerType.prototype =
-  _.extend(
-    exports.IntegerType.prototype
-    , exports.JSType.prototype
-    , {
-      castDefault(value) {
-        if (this.typeCheck(value)) {
-          return true
-        }
-
-        try {
-          const x = parseInt(value, 10)
-          return (isFinite(+value) && isFinite(x) && (+value === x))
-        } catch (e) {
-          return false
-        }
+IntegerType.prototype = _.extend(
+  {}
+  , AbstractType.prototype
+  , {
+    castDefault(value) {
+      if (this.typeCheck(value)) {
+        return true
       }
-    })
 
-exports.NumberType = function NumberType(field, options) {
-  exports.JSType.call(this, field, options)
+      try {
+        const x = parseInt(value, 10)
+        return (isFinite(+value) && isFinite(x) && (+value === x))
+      } catch (e) {
+        return false
+      }
+    }
+  })
+
+function NumberType(field) {
+  AbstractType.call(this, field)
 
   this.js = Number
   this.name = 'number'
   this.formats = ['default', 'currency']
-  this.separators = ',;$'
+  this.separators = '.,;$'
 
   return this
 }
 
-exports.NumberType.prototype =
-  _.extend(
-    exports.NumberType.prototype
-    , exports.JSType.prototype
-    , {
-      castDefault(value) {
-        if (this.typeCheck(value)) {
+NumberType.prototype = _.extend(
+  {}
+  , AbstractType.prototype
+  , {
+    castDefault(value) {
+      if (this.typeCheck(value)) {
+        return true
+      }
+
+      try {
+        if (isFinite(+value) && isFinite(parseFloat(value))) {
           return true
         }
-
-        try {
-          if (isFinite(+value) && isFinite(parseFloat(value))) {
-            return true
-          }
-        } catch (e) {
-          return false
-        }
+      } catch (e) {
         return false
       }
-      , castCurrency(value) {
-        if (this.typeCheck(value)) {
-          return true
-        }
-
-        const v = String(value)
-          .replace(new RegExp(`[${this.separators}]`, 'g'), '')
-
-        // parseFloat() parse string even if there are non-digit characters
-        if ((new RegExp('[^\\d]+', 'g')).exec(v)) {
-          return false
-        }
-
-        try {
-          return isFinite(parseFloat(v))
-        } catch (e) {
-          return false
-        }
+      return false
+    }
+    , castCurrency(value) {
+      if (this.typeCheck(value)) {
+        return true
       }
-    })
 
-exports.BooleanType = function (field, options) {
-  exports.JSType.call(this, field, options)
+      const v = String(value)
+        .replace(new RegExp(`[${this.separators}]`, 'g'), '')
+
+      // parseFloat() parse string even if there are non-digit characters
+      if ((new RegExp('[^\\d]+', 'g')).exec(v)) {
+        return false
+      }
+
+      try {
+        return isFinite(parseFloat(v))
+      } catch (e) {
+        return false
+      }
+    }
+  })
+
+function BooleanType(field) {
+  AbstractType.call(this, field)
 
   this.js = Boolean
   this.name = 'boolean'
@@ -240,23 +269,23 @@ exports.BooleanType = function (field, options) {
   return this
 }
 
-exports.BooleanType.prototype =
-  _.extend(exports.BooleanType.prototype,
-           exports.JSType.prototype, {
-             castDefault: function (value) {
-               if (this.typeCheck(value)) {
-                 return true
-               }
+BooleanType.prototype = _.extend(
+  {}
+  , AbstractType.prototype
+  , {
+    castDefault(value) {
+      if (this.typeCheck(value)) {
+        return true
+      }
 
-               value = value.trim().toLowerCase()
+      const v = value.trim().toLowerCase()
 
-               return !!_.contains(_.union(this.trueValues, this.falseValues),
-                                   value)
-             }
-           })
+      return !!_.contains(_.union(this.trueValues, this.falseValues), v)
+    }
+  })
 
-exports.NullType = function (field, options) {
-  exports.JSType.call(this, field, options)
+function NullType(field) {
+  AbstractType.call(this, field)
 
   this.name = 'null'
   this.nullValues = utilities.NULL_VALUES
@@ -264,23 +293,21 @@ exports.NullType = function (field, options) {
   return this
 }
 
-exports.NullType.prototype =
-  _.extend(
-    exports.NullType.prototype
-    , exports.JSType.prototype
-    , {
-      castDefault: function (value) {
-        if (_.isNull(value)) {
-          return true
-        }
-        value = value.trim().toLowerCase()
-
-        return !!_.contains(this.nullValues, value)
+NullType.prototype = _.extend(
+  {}
+  , AbstractType.prototype
+  , {
+    castDefault(value) {
+      if (_.isNull(value)) {
+        return true
       }
-    })
+      const v = value.trim().toLowerCase()
+      return !!_.contains(this.nullValues, v)
+    }
+  })
 
-exports.ArrayType = function (field, options) {
-  exports.JSType.call(this, field, options)
+function ArrayType(field) {
+  AbstractType.call(this, field)
 
   this.js = Array
   this.name = 'array'
@@ -288,368 +315,346 @@ exports.ArrayType = function (field, options) {
   return this
 }
 
-exports.ArrayType.prototype =
-  _.extend(
-    exports.ArrayType.prototype
-    , exports.JSType.prototype
-    , {
-      castDefault: function (value) {
-        if (this.typeCheck(value)) {
-          return true
-        }
-
-        try {
-          value = JSON.parse(value)
-          return this.typeCheck(value)
-        } catch (e) {
-          return false
-        }
+ArrayType.prototype = _.extend(
+  {}
+  , AbstractType.prototype
+  , {
+    castDefault(value) {
+      if (this.typeCheck(value)) {
+        return true
       }
-    })
-
-exports.ObjectType = function (field, options) {
-  exports.JSType.call(this, field, options);
-  this.js = Object;
-  this.name = 'object';
-  return this;
-}
-
-exports.ObjectType.prototype =
-  _.extend(exports.ObjectType.prototype, exports.JSType.prototype,
-           {
-             castDefault: function (value) {
-               if (_.isObject(value) && !_.isArray(value) &&
-                   !_.isFunction(value)) {
-                 return true;
-               }
-
-               try {
-                 value = JSON.parse(value);
-                 return value instanceof this.js;
-               } catch (E) {
-                 return false;
-               }
-             }
-           });
-
-exports.DateType = function (field, options) {
-  exports.JSType.call(this, field, options);
-  this.js = Object;
-  this.name = 'date';
-  this.formats = ['default', 'any', 'fmt'];
-  this.ISO8601 = 'YYYY-MM-DD';
-  return this;
-}
-
-exports.DateType.prototype =
-  _.extend(exports.DateType.prototype, exports.JSType.prototype, {
-    castAny: function (value) {
-      var date;
 
       try {
-        date = moment(new Date(value));
-      } catch (E) {
-        return false;
+        return this.typeCheck(JSON.parse(value))
+      } catch (e) {
+        return false
       }
-
-      if (date.isValid()) {
-        return date;
-      }
-
-      return false;
-    },
-
-    castDefault: function (value) {
-      var date;
-
-      try {
-        date = moment(value, this.ISO8601, true);
-      } catch (E) {
-        return false;
-      }
-
-      if (date.isValid()) {
-        return date;
-      }
-
-      return false;
-    },
-
-    castFmt: function (value) {
-      var date;
-
-      try {
-        date = moment(value, this.format.replace(/^fmt:/, ''), true);
-      } catch (E) {
-        return false;
-      }
-
-      if (date.isValid()) {
-        return date;
-      }
-
-      return false;
     }
-  });
+  })
 
-exports.TimeType = function (field, options) {
-  exports.JSType.call(this, field, options);
-  this.js = Object;
-  this.name = 'time';
-  this.formats = ['default', 'any', 'fmt'];
-  return this;
+function ObjectType(field) {
+  AbstractType.call(this, field)
+
+  this.js = Object
+  this.name = 'object'
+
+  return this
 }
 
-exports.TimeType.prototype =
-  _.extend(exports.TimeType.prototype, exports.DateType.prototype,
-           {
-             castDefault: function (value) {
-               var date;
+ObjectType.prototype = _.extend(
+  {}
+  , AbstractType.prototype
+  , {
+    castDefault(value) {
+      if (_.isObject(value) && !_.isArray(value) && !_.isFunction(value)) {
+        return true
+      }
 
-               try {
-                 date = moment(value, 'HH:mm:ss', true);
-               } catch (E) {
-                 return false;
-               }
+      try {
+        return JSON.parse(value) instanceof this.js
+      } catch (e) {
+        return false
+      }
+    }
+  })
 
-               if (date.isValid()) {
-                 return date;
-               }
+function DateType(field) {
+  AbstractType.call(this, field)
 
-               return false;
-             },
-           });
+  this.js = Object
+  this.name = 'date'
+  this.formats = ['default', 'any', 'fmt']
+  this.ISO8601 = 'YYYY-MM-DD'
 
-exports.DateTimeType = function (field, options) {
-  exports.JSType.call(this, field, options);
-  this.js = Object;
-  this.name = 'datetime';
-  this.formats = ['default', 'any', 'fmt'];
-  this.ISO8601 = moment.ISO_8601;
-  return this;
+  return this
 }
 
-exports.DateTimeType.prototype =
-  _.extend(exports.DateTimeType.prototype,
-           exports.DateType.prototype);
+DateType.prototype = _.extend(
+  {}
+  , AbstractType.prototype
+  , {
+    castAny(value) {
+      let date
 
-exports.GeoPointType = function (field, options) {
-  exports.JSType.call(this, field, options);
-  this.name = 'geopoint';
-  this.formats = ['default', 'array', 'object'];
-  return this;
+      try {
+        date = moment(new Date(value))
+      } catch (e) {
+        return false
+      }
+
+      if (date.isValid()) {
+        return date
+      }
+
+      return false
+    }
+
+    , castDefault(value) {
+      let date
+
+      try {
+        date = moment(value, this.ISO8601, true)
+      } catch (e) {
+        return false
+      }
+
+      if (date.isValid()) {
+        return date
+      }
+
+      return false
+    }
+
+    , castFmt(value) {
+      let date
+
+      try {
+        date = moment(value, this.format.replace(/^fmt:/, ''), true)
+      } catch (e) {
+        return false
+      }
+
+      if (date.isValid()) {
+        return date
+      }
+
+      return false
+    }
+  })
+
+function TimeType(field) {
+  AbstractType.call(this, field)
+
+  this.js = Object
+  this.name = 'time'
+  this.formats = ['default', 'any', 'fmt']
+
+  return this
 }
 
-exports.GeoPointType.prototype =
-  _.extend(exports.GeoPointType.prototype,
-           exports.JSType.prototype, {
-             castDefault: function (value) {
-               if (!this.typeCheck(value)) {
-                 return false
-               }
+TimeType.prototype = _.extend(
+  {}
+  , DateType.prototype
+  , {
+    castDefault(value) {
+      let date
 
-               if (_.isString(value)) {
-                 return value.split(',').length === 2;
-               }
+      try {
+        date = moment(value, 'HH:mm:ss', true)
+      } catch (e) {
+        return false
+      }
 
-               if (_.isObject(value)) {
-                 return value;
-               }
+      if (date.isValid()) {
+        return date
+      }
 
-               try {
-                 return JSON.parse(value);
-               } catch (E) {
-                 return false;
-               }
+      return false
+    }
+  })
 
-               return false;
-             },
+function DateTimeType(field) {
+  AbstractType.call(this, field)
 
-             castArray: function (value) {
-               throw new Error('Not implemented');
-             },
-             castObject: function (value) {
-               throw new Error('Not implemented');
-             },
+  this.js = Object
+  this.name = 'datetime'
+  this.formats = ['default', 'any', 'fmt']
+  this.ISO8601 = moment.ISO_8601
 
-             // Geo point may be passed as string object with keys or array
-             typeCheck: function (value) {
-               return _.isString(value) || _.isArray(value) ||
-                      _.keys(value).length;
-             }
-           });
+  return this
+}
 
-exports.GeoJSONType = function (field, options) {
-  exports.JSType.call(this, field, options);
-  this.js = Object;
-  this.name = 'geojson';
-  this.formats = ['default', 'topojson'];
+DateTimeType.prototype = _.extend({}, DateType.prototype)
+
+function GeoPointType(field) {
+  AbstractType.call(this, field)
+
+  this.name = 'geopoint'
+  this.formats = ['default', 'array', 'object']
+
+  return this
+}
+
+GeoPointType.prototype = _.extend(
+  {}
+  , AbstractType.prototype
+  , {
+    castDefault(value) {
+      if (!this.typeCheck(value)) {
+        return false
+      }
+
+      if (_.isString(value)) {
+        return value.split(',').length === 2
+      }
+
+      if (_.isObject(value)) {
+        return value
+      }
+
+      try {
+        return JSON.parse(value)
+      } catch (e) {
+        return false
+      }
+    }
+
+    , castArray() {
+      throw new Error('Not implemented')
+    }
+    , castObject() {
+      throw new Error('Not implemented')
+    }
+
+    // Geo point may be passed as string object with keys or array
+    , typeCheck(value) {
+      return _.isString(value) || _.isArray(value) || _.keys(value).length
+    }
+  })
+
+function GeoJSONType(field) {
+  AbstractType.call(this, field)
+
+  this.js = Object
+  this.name = 'geojson'
+  this.formats = ['default', 'topojson']
 
   this.spec = {
-    'types': [
-      'Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon',
-      'MultiPolygon',
-      'GeometryCollection', 'Feature', 'FeatureCollection'
+    types: [
+      'Point'
+      , 'MultiPoint'
+      , 'LineString'
+      , 'MultiLineString'
+      , 'Polygon'
+      , 'MultiPolygon'
+      , 'GeometryCollection'
+      , 'Feature'
+      , 'FeatureCollection'
     ]
-  };
+  }
 
-  return this;
+  return this
 }
 
-exports.GeoJSONType.prototype =
-  _.extend(exports.GeoJSONType.prototype,
-           exports.JSType.prototype, {
-             castDefault: exports.GeoPointType.prototype.castDefault,
+GeoJSONType.prototype = _.extend(
+  {}
+  , AbstractType.prototype
+  , {
+    castDefault: GeoPointType.prototype.castDefault
 
-             castTopojson: function (value) {
-               throw new Error('Not implemented');
-             },
-
-             // Geo JSON is always an object
-             typeCheck: function (value) {
-               return _.isObject(value) && !_.isFunction(value);
-             }
-           });
-
-exports.AnyType = function (field, options) {
-  exports.JSType.call(this, field, options);
-  this.name = 'any';
-  return this;
-}
-
-exports.AnyType.prototype =
-  _.extend(exports.AnyType.prototype, exports.JSType.prototype, {
-    cast: function (value) {
-      return true;
+    , castTopojson() {
+      throw new Error('Not implemented');
     }
-  });
 
-function availableTypeNames() {
-  return [
-    'AnyType'
-    , 'StringType'
-    , 'BooleanType'
-    , 'NumberType'
-    , 'IntegerType'
-    , 'NullType'
-    , 'DateType'
-    , 'TimeType'
-    , 'DateTimeType'
-    , 'ArrayType'
-    , 'ObjectType'
-    , 'GeoPointType'
-    , 'GeoJSONType'
-  ]
-}
-
-/**
- * Return available types objects
- *
- * @returns {Array|Object|*}
- */
-function availableTypes() {
-  return (availableTypeNames()).map((type) => {
-    return module.exports[type]
+    // Geo JSON is always an object
+    , typeCheck(value) {
+      return _.isObject(value) && !_.isFunction(value)
+    }
   })
+
+function AnyType(field) {
+  AbstractType.call(this, field)
+
+  this.name = 'any'
+
+  return this
 }
+
+AnyType.prototype = _.extend(
+  {}
+  , AbstractType.prototype
+  , {
+    cast() {
+      return true
+    }
+  })
 
 /**
  * Guess the type for a value
  *
- * @param typeOptions - TODO add description
- *
- * @returns {object} A tuple  of ('type', 'format')
+ * @param options - TODO add description
  */
-exports.TypeGuesser = function (typeOptions) {
-  this.typeOptions = typeOptions || {}
+function TypeGuesser(options) {
+  const typeOptions = options || {}
+
+  this.multiCast = function multiCast(values) {
+    const types = suitableTypes(values)
+      , suitableType = _.find(typeNames, type => _.indexOf(types, type) !== -1)
+    return (new exports[suitableType]()).name
+  }
+
+  this.cast = function cast(value) {
+    try {
+      return [
+        (new (_.find(availableTypes(), (T =>
+            new exports[T](typeOptions[(new exports[T]()).name] || {})
+              .cast(value)
+        )))()).name
+        , 'default'
+      ]
+    } catch (e) {
+      return null
+    }
+  }
+
+  return this
+
+  /**
+   * Return available types objects
+   *
+   * @returns {Array}
+   */
+  function availableTypes() {
+    return typeNames.map(type => exports[type])
+  }
+
+  /**
+   * Return types suitable to the provided multiple values
+   *
+   * @param values
+   * @returns {Array}
+   */
+  function suitableTypes(values) {
+    const filtered = values.filter(v => !_.isUndefined(v) || _.isEmpty(v))
+
+    if (filtered.length === 0) {
+      return ['AnyType']
+    }
+
+    const typeList = filtered.map(value => typeNames.filter(
+      T => {
+        const typeName = (new exports[T]()).name
+        return (new exports[T](typeOptions[typeName] || {})).cast(value)
+      }, this))
+    return _.reduce(typeList, (memo, types) => _.intersection(memo, types))
+  }
+}
+
+function TypeResolver() {
   return this
 }
 
-exports.TypeGuesser.prototype.suitableTypes = function (values) {
-  values = _.filter(values, (value) => {
-    return !(_.isUndefined(value) || _.isEmpty(value))
-  })
+TypeResolver.prototype = {
+  get(results) {
+    const counts = {}
+      , variants = _.uniq(results)
 
-  if (values.length === 0) {
-    return ['AnyType']
-  }
-
-  let possibleTypeList = _.map(values, (function (value) {
-    return _.filter(availableTypeNames().reverse(), (function (T) {
-      try {
-        return (
-          new module.exports[T](this.typeOptions[(new module.exports[T]()).name] ||
-            {})
-        ).cast(value)
-      } catch (e) {
-        return false
-      }
-    }).bind(this))
-  }).bind(this))
-
-  return _.reduce(possibleTypeList, (memo, types) => {
-    return _.intersection(memo, types)
-  })
-}
-
-exports.TypeGuesser.prototype.multicast = function (values) {
-  let types = this.suitableTypes(values)
-    , suitableType = _.find(availableTypeNames().reverse(), (
-    (type) => {
-      return _.indexOf(types, type) >= 0
-    }))
-  return (new module.exports[suitableType]()).name
-}
-
-exports.TypeGuesser.prototype.cast = function (value) {
-  try {
-    return [
-      (new (_.find(availableTypes().reverse(), (function (T) {
-        return (
-          new T(this.typeOptions[(new T()).name] || {})
-        ).cast(value);
-      }).bind(this)))()).name,
-      'default'
-    ];
-  } catch (E) {
-    return null;
-  }
-}
-
-exports.TypeResolver = function () {
-  return this;
-}
-
-exports.TypeResolver.prototype.get = function (results) {
-  var counts = {};
-  var variants = _.uniq(results);
-
-  // Only one candidate... that's easy.
-  if (variants.length == 1) {
-    return { type: results[0][0], format: results[0][1] };
-  }
-
-  results.forEach(function (R) {
-    counts[R] = (counts[R] || 0) + 1;
-  });
-
-  // Tuple representation of
-  `counts`
-  dict, sorted
-  by
-  values
-  of
-    `counts`
-
-  sortedCounts = _.sortBy(
-    _.pairs(counts),
-    function (C) {
-      return C[1];
+    // Only one candidate... that's easy.
+    if (variants.length === 1) {
+      return { type: results[0][0], format: results[0][1] }
     }
-  ).reverse();
 
-  return {
-    type: sortedCounts[0][0].split(',')[0],
-    format: sortedCounts[0][0].split(',')[1]
-  };
+    results.forEach((result) => {
+      counts[result] = (counts[result] || 0) + 1
+    })
+
+    // Tuple representation of  `counts`  dict, sorted  by  values  of
+    // `counts`
+    const sortedCounts = _.sortBy(_.pairs(counts), (cnt) => cnt[1]).reverse()
+
+    return {
+      type: sortedCounts[0][0].split(',')[0]
+      , format: sortedCounts[0][0].split(',')[1]
+    }
+  }
 }

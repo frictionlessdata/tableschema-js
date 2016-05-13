@@ -1,13 +1,15 @@
-let _ = require('underscore')
+'use strict'
+
+const _ = require('underscore')
   , types = require('./types')
 
 /**
  * Return a schema from the passed headers and values.
  *
- * @param {array} headers - a list of header names
- * @param {array} values - a reader over data, yielding each row as a list of
+ * @param headers {Array} - a list of header names
+ * @param values {Array} - a reader over data, yielding each row as a list of
  *   values
- * @param {object} options:
+ * @param options {Object}:
  *  - {integer} rowLimit - limit amount of rows to be proceed
  *  - {boolean} explicit - be explicit
  *  - {string} primaryKey - pass in a primary key or iterable of keys
@@ -15,37 +17,35 @@ let _ = require('underscore')
  *
  * @returns {object} a JSON Table Schema as a Python dict
  */
-module.exports = (headers, values, options) => {
+module.exports = (headers, values, options = {}) => {
   // Set up default options
-  options = _.extend(
+  const opts = _.extend(
     {
       rowLimit: null
       , explicit: false
       , primaryKey: null
       , cast: {}
-    }, options
-  )
+    }, options)
+    , guesser = new types.TypeGuesser(opts.cast)
+    , schema = { fields: [] }
 
-  let guesser = new types.TypeGuesser(options.cast)
-    , schema = {fields: []}
-
-  if (options.primaryKey) {
-    schema['primaryKey'] = options.primaryKey
+  if (opts.primaryKey) {
+    schema.primaryKey = opts.primaryKey
   }
 
-  schema['fields'] = headers.map((header) => {
-    let constraints = {}
+  schema.fields = headers.map(header => {
+    const constraints = {}
       , descriptor = {
-        name: header
-        , title: ''
-        , description: ''
-      }
+      name: header
+      , title: ''
+      , description: ''
+    }
 
-    if (options.explicit) {
+    if (opts.explicit) {
       constraints.required = true
     }
 
-    if (header === options.primaryKey) {
+    if (header === opts.primaryKey) {
       constraints.unique = true
     }
 
@@ -56,21 +56,18 @@ module.exports = (headers, values, options) => {
     return descriptor
   })
 
-  for (let index in headers) {
-    if (headers.hasOwnProperty(index)) {
-      index = parseInt(index, 10)
+  headers.forEach((header, index) => {
+    let columnValues = _.pluck(values, index)
 
-      let columnValues = _.pluck(values, index)
-
-      if (options.rowLimit) {
-        columnValues = _.first(columnValues, options.rowLimit)
-      }
-
-      schema.fields[index] = _.extend(schema.fields[index], {
-        type: guesser.multicast(columnValues)
-        , format: 'default'
-      })
+    if (opts.rowLimit) {
+      columnValues = _.first(columnValues, opts.rowLimit)
     }
-  }
+
+    schema.fields[index] = _.extend(schema.fields[index], {
+      type: guesser.multiCast(columnValues)
+      , format: 'default'
+    })
+  })
+
   return schema
 }
