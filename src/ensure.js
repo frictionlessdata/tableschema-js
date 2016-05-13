@@ -1,8 +1,5 @@
-'use strict'
 const _ = require('underscore')
   , utilities = require('./utilities')
-
-module.exports = ensure
 
 /**
  Validate that `schema` is a valid JSON Table Schema.
@@ -13,7 +10,7 @@ module.exports = ensure
  Returns:
  * A tuple of `valid`, `errors`
  */
-function ensure(schema) {
+export function ensure(schema) {
   const fieldsNames = _.map(_.result(schema, 'fields') || [],
                             _.property('name'))
 
@@ -258,3 +255,5 @@ function ensure(schema) {
     }
   }
 }
+
+//module.exports = ensure

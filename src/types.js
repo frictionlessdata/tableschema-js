@@ -1,42 +1,24 @@
-'use strict'
+import * as _ from 'underscore'
+import * as utilities from './utilities'
 
-const _ = require('underscore')
-  , moment = require('moment')
-  , utilities = require('./utilities')
-// FIXME: the order is manner, why? probably need to find better way to chek
+const moment = require('moment')
+// FIXME: the order is manner, why? probably need to find better way to check
 // what type of the current value is
   , typeNames = [
-  , 'BooleanType'
-  , 'IntegerType'
-  , 'NullType'
-  , 'DateType'
-  , 'TimeType'
-  , 'DateTimeType'
-  , 'ArrayType'
-  , 'ObjectType'
-  , 'GeoPointType'
-  , 'GeoJSONType'
-  , 'NumberType'
-  , 'StringType'
-  , 'AnyType'
-]
-
-exports = module.exports = {
-  AnyType
-  , StringType
-  , IntegerType
-  , NumberType
-  , BooleanType
-  , NullType
-  , ArrayType
-  , ObjectType
-  , DateType
-  , TimeType
-  , DateTimeType
-  , GeoPointType
-  , GeoJSONType
-  , TypeGuesser
-}
+    'BooleanType'
+    , 'IntegerType'
+    , 'NullType'
+    , 'DateType'
+    , 'TimeType'
+    , 'DateTimeType'
+    , 'ArrayType'
+    , 'ObjectType'
+    , 'GeoPointType'
+    , 'GeoJSONType'
+    , 'NumberType'
+    , 'StringType'
+    , 'AnyType'
+  ]
 
 function AbstractType(field) {
   this.js = typeof null
@@ -195,16 +177,7 @@ IntegerType.prototype = _.extend(
   , AbstractType.prototype
   , {
     castDefault(value) {
-      if (this.typeCheck(value)) {
-        return true
-      }
-
-      try {
-        const x = parseInt(value, 10)
-        return (isFinite(+value) && isFinite(x) && (+value === x))
-      } catch (e) {
-        return false
-      }
+      return Number(value) == value && value % 1 === 0
     }
   })
 
@@ -214,7 +187,6 @@ function NumberType(field) {
   this.js = Number
   this.name = 'number'
   this.formats = ['default', 'currency']
-  this.separators = '.,;$'
 
   return this
 }
@@ -224,26 +196,11 @@ NumberType.prototype = _.extend(
   , AbstractType.prototype
   , {
     castDefault(value) {
-      if (this.typeCheck(value)) {
-        return true
-      }
-
-      try {
-        if (isFinite(+value) && isFinite(parseFloat(value))) {
-          return true
-        }
-      } catch (e) {
-        return false
-      }
-      return false
+      return Number(value) == value && value % 1 !== 0
     }
     , castCurrency(value) {
-      if (this.typeCheck(value)) {
-        return true
-      }
-
       const v = String(value)
-        .replace(new RegExp(`[${this.separators}]`, 'g'), '')
+        .replace(new RegExp('[.,;$]', 'g'), '')
 
       // parseFloat() parse string even if there are non-digit characters
       if ((new RegExp('[^\\d]+', 'g')).exec(v)) {
@@ -657,4 +614,21 @@ TypeResolver.prototype = {
       , format: sortedCounts[0][0].split(',')[1]
     }
   }
+}
+
+exports = module.exports = {
+  AnyType
+  , StringType
+  , IntegerType
+  , NumberType
+  , BooleanType
+  , NullType
+  , ArrayType
+  , ObjectType
+  , DateType
+  , TimeType
+  , DateTimeType
+  , GeoPointType
+  , GeoJSONType
+  , TypeGuesser
 }

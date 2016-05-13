@@ -1,5 +1,3 @@
-'use strict'
-
 const _ = require('underscore')
   , Promise = require('bluebird')
   , request = require('superagent')

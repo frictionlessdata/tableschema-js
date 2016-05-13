@@ -1,8 +1,6 @@
 /* global describe, beforeEach, it, require */
-'use strict'
-
 const assert = require('chai').assert
-  , types = require('../src/').types
+  , types = require('../lib/').types
 
 let BASE_FIELD
 
@@ -106,7 +104,7 @@ describe('Types', () => {
     })
 
     it('cast string "0"', (done) => {
-      assert(newType(BASE_FIELD).cast('0'))
+      assert.ok(newType(BASE_FIELD).cast('0'))
       done()
     })
 
@@ -124,8 +122,8 @@ describe('Types', () => {
       done()
     })
 
-    it('cast Number', (done) => {
-      assert.ok(newType(BASE_FIELD).cast(new Number(1)))
+    it('don\'t cast float .00', (done) => {
+      assert.notOk(newType(BASE_FIELD).cast(1.00))
       done()
     })
 
@@ -134,8 +132,8 @@ describe('Types', () => {
       done()
     })
 
-    it('cast string "0"', (done) => {
-      assert.ok(newType(BASE_FIELD).cast('0'))
+    it('don\'t cast string "0"', (done) => {
+      assert.notOk(newType(BASE_FIELD).cast('0'))
       done()
     })
 

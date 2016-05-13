@@ -1,12 +1,10 @@
 /* global describe, it, require */
 
-'use strict'
-
 const _ = require('underscore')
   , assert = require('chai').assert
   , csv = require('csv')
   , CSVData = require('./CSV')
-  , infer = require('../src/').infer
+  , infer = require('../lib/').infer
 
 // WARN Use Model in test cases instead of validating schema directly
 describe('Infer', () => {

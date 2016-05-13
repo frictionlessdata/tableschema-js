@@ -1,9 +1,7 @@
 /* global describe, beforeEach, it, require */
-'use strict'
-
 const _ = require('underscore')
   , assert = require('chai').assert
-  , SchemaModel = require('../src/models')
+  , SchemaModel = require('../lib/models')
 
 let SCHEMA
 

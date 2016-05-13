@@ -1,15 +1,14 @@
-'use strict'
-const _ = require('underscore')
-  , ensure = require('./ensure')
-  , Promise = require('bluebird')
-  , types = require('./types')
-  , utilities = require('./utilities')
-  , DEFAULTS = {
+import {_} from 'underscore'
+import {Promise} from 'bluebird'
+import { ensure } from './ensure'
+import * as types from './types'
+import * as utilities from './utilities'
+
+const DEFAULTS = {
   constraints: { required: true }
   , format: 'default'
   , type: 'string'
 }
-
 /**
  * Model for a JSON Table Schema.
  *

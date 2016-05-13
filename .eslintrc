@@ -1,15 +1,14 @@
 ---
 extends:
   airbnb
+environment:
+  es6
 env:
   node: true
   browser: true
 parserOptions:
-  sourceType: script
+  sourceType: module
 rules:
-  strict:
-    - 2
-    - safe
   quotes:
     - 2
     - single

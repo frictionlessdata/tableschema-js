@@ -1,7 +1,5 @@
-'use strict'
-
-const _ = require('underscore')
-  , types = require('./types')
+import * as _ from 'underscore'
+import * as types from './types'
 
 /**
  * Return a schema from the passed headers and values.
@@ -17,7 +15,7 @@ const _ = require('underscore')
  *
  * @returns {object} a JSON Table Schema as a Python dict
  */
-module.exports = (headers, values, options = {}) => {
+export default (headers, values, options = {}) => {
   // Set up default options
   const opts = _.extend(
     {
