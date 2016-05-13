@@ -1,0 +1,30 @@
+---
+extends:
+  airbnb
+env:
+  node: true
+  browser: true
+parserOptions:
+  sourceType: script
+rules:
+  strict:
+    - error
+    - safe
+  quotes:
+    - error
+    - single
+    - avoid-escape
+  semi:
+    - error
+    - never
+  comma-style:
+    - error
+    - first
+  comma-dangle:
+    - error
+    - never
+  one-var:
+    - error
+    - var: always
+      let: always
+      const: always

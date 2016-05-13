@@ -1,10 +1,11 @@
-let _ = require('underscore')
+'use strict'
+const _ = require('underscore')
   , ensure = require('./ensure')
   , Promise = require('bluebird')
   , types = require('./types')
   , utilities = require('./utilities')
   , DEFAULTS = {
-    constraints: {required: true}
+    constraints: { required: true }
     , format: 'default'
     , type: 'string'
   }
@@ -30,7 +31,7 @@ function SchemaModel(source, caseInsensitiveHeaders = false) {
   this.source = source
   this.caseInsensitiveHeaders = caseInsensitiveHeaders
 
-  let asJs = this.toJs()
+  const asJs = this.toJs()
 
   // Manually use .loadSource() to get schema in case of URL passed instead of
   // schema
@@ -42,155 +43,172 @@ function SchemaModel(source, caseInsensitiveHeaders = false) {
   this.validateAndExpand(asJs)
 }
 
-SchemaModel.prototype = _.extend(
-  SchemaModel.prototype
-  , {
-    // Return boolean if value can be cast to fieldName's type.
-    cast: function (fieldName, value, index) {
-      return this.getType(fieldName, index || 0).cast(value)
-    }
+SchemaModel.prototype = {
+  /**
+   * Check if value can be cast to fieldName's type
+   *
+   * @param fieldName
+   * @param value
+   * @param index
+   *
+   * @returns {Boolean}
+   */
+  cast(fieldName, value, index) {
+    return this.getType(fieldName, index || 0).cast(value)
+  }
 
-    // Expand the schema with additional default properties.
-    , expand: function (schema) {
-      return _.extend(
-        schema
-        , {
-          fields: _.map(schema.fields || [], function (field) {
-            // Ensure we have a default type if no type was declared
-            if (!field.type) {
-              field.type = DEFAULTS.type
-            }
+  /**
+   * Expand the schema with additional default properties
+   *
+   * @param schema
+   * @returns {*}
+   */
+  , expand(schema) {
+    return _.extend(
+      schema
+      , {
+        fields: (schema.fields || []).map((field) => {
+          const copyField = _.extend({}, field)
 
-            // Ensure we have a default format if no format was declared
-            if (!field.format) {
-              field.format = DEFAULTS.format
-            }
+          // Ensure we have a default type if no type was declared
+          if (!copyField.type) {
+            copyField.type = DEFAULTS.type
+          }
 
-            // Ensure we have a minimum constraints declaration
-            if (!field.constraints) {
-              field.constraints = DEFAULTS.constraints
-            } else if (_.isUndefined(field.constraints.required)) {
-              field.constraints.required = DEFAULTS.constraints.required
-            }
+          // Ensure we have a default format if no format was
+          // declared
+          if (!copyField.format) {
+            copyField.format = DEFAULTS.format
+          }
 
-            return field
-          }, this)
+          // Ensure we have a minimum constraints declaration
+          if (!copyField.constraints) {
+            copyField.constraints = DEFAULTS.constraints
+          } else if (_.isUndefined(field.constraints.required)) {
+            copyField.constraints.required =
+              DEFAULTS.constraints.required
+          }
+          return copyField
         })
+      })
+  }
+
+  , fields() {
+    return this.asJs.fields
+  }
+  , foreignKeys() {
+    return this.asJs.foreignKeys
+  }
+
+  /**
+   * Return the `constraints` object for `fieldName`.
+   * @param {string} fieldName
+   * @param {integer} index
+   * @returns {object}
+   */
+  , getConstraints(fieldName, index) {
+    return this.getField(fieldName, index || 0).constraints
+  }
+
+  // Return the `field` object for `fieldName`.
+  // `index` allows accessing a field name by position, as JTS allows
+  // duplicate field names.
+  , getField(fieldName, index) {
+    try {
+      return _.where(this.fields(), { name: fieldName })[index || 0]
+    } catch (e) {
+      return null
+    }
+  }
+
+  // Return all fields that match the given type.
+  , getFieldsByType(typeName) {
+    return _.where(this.fields(), { type: typeName })
+  }
+
+  // Return the `type` for `fieldName`.
+  , getType(fieldName, index) {
+    const field = this.getField(fieldName, index || 0)
+    return this.typeMap[field.type](field)
+  }
+
+  // Return boolean if the field exists in the schema.
+  , hasField(fieldName) {
+    return Boolean(this.getField(fieldName))
+  }
+
+  , headers() {
+    const raw = _.chain(this.asJs.fields).map(_.property('name')).value()
+
+    if (this.caseInsensitiveHeaders) {
+      return _.invoke(raw, 'toLowerCase')
+    }
+    return raw
+  }
+
+  // Load schema from URL passed in init
+  , loadSchema() {
+    return this.schemaPromise.then(this.validateAndExpand)
+  }
+
+  , primaryKey() {
+    return this.asJs.primaryKey
+  }
+
+  , requiredHeaders() {
+    const raw = _.chain(this.asJs.fields)
+      .filter(field => field.constraints.required)
+      .map(_.property('name'))
+      .value()
+
+    if (this.caseInsensitiveHeaders) {
+      return _.invoke(raw, 'toLowerCase')
     }
 
-    , fields: function () {
-      return this.asJs.fields
-    }
-    , foreignKeys: function () {
-      return this.asJs.foreignKeys
-    }
+    return raw
+  }
 
-    // Return the `constraints` object for `fieldName`.
-    , getConstraints: function (fieldName, index) {
-      return this.getField(fieldName, index || 0).constraints
+  // Return schema as an Object.
+  , toJs() {
+    try {
+      return utilities.loadJSONSource(this.source)
+    } catch (e) {
+      return null
     }
+  }
 
-    // Return the `field` object for `fieldName`.
-    // `index` allows accessing a field name by position, as JTS allows
-    // duplicate field names.
-    , getField: function (fieldName, index) {
-      try {
-        return _.where(this.fields(), {name: fieldName})[index || 0]
-      } catch (e) {
-        return null
-      }
-    }
+  /**
+   * Map a JSON Table Schema type to a JTSKit type class
+   */
+  , typeMap: {
+    string: types.StringType
+    , number: types.NumberType
+    , integer: types.IntegerType
+    , boolean: types.BooleanType
+    , null: types.NullType
+    , array: types.ArrayType
+    , object: types.ObjectType
+    , date: types.DateType
+    , time: types.TimeType
+    , datetime: types.DateTimeType
+    , geopoint: types.GeoPointType
+    , geojson: types.GeoJSONType
+    , any: types.AnyType
+  }
 
-    // Return all fields that match the given type.
-    , getFieldsByType: function (typeName) {
-      return _.where(this.fields(), {type: typeName})
-    }
-
-    // Return the `type` for `fieldName`.
-    , getType: function (fieldName, index) {
-      let field = this.getField(fieldName, index || 0)
-
-      return this.typeMap[field.type](field)
-    }
-
-    // Return boolean if the field exists in the schema.
-    , hasField: function (fieldName) {
-      return Boolean(this.getField(fieldName))
+  , validateAndExpand(value) {
+    if (_.isUndefined(value) || _.isNull(value)) {
+      throw new Error('Invalid JSON')
     }
 
-    , headers: function () {
-      let raw = _.chain(this.asJs.fields).map(_.property('name')).value()
-
-      if (this.caseInsensitiveHeaders) {
-        return _.invoke(raw, 'toLowerCase')
-      }
-      return raw
+    if (!ensure(value)[0]) {
+      throw new Error('Invalid schema')
     }
 
-    // Load schema from URL passed in init
-    , loadSchema: function () {
-      return this.schemaPromise.then(this.validateAndExpand)
-    }
+    this.asJs = this.expand(value)
 
-    , primaryKey: function () {
-      return this.asJs.primaryKey
-    }
-
-    , requiredHeaders: function () {
-      let raw = _.chain(this.asJs.fields)
-        .filter(function (field) {
-          return field.constraints.required
-        })
-        .map(_.property('name'))
-        .value()
-
-      if (this.caseInsensitiveHeaders) {
-        return _.invoke(raw, 'toLowerCase')
-      }
-
-      return raw
-    }
-
-    // Return schema as an Object.
-    , toJs: function () {
-      try {
-        return utilities.loadJSONSource(this.source)
-      } catch (e) {
-        return null
-      }
-    }
-
-    // Map a JSON Table Schema type to a JTSKit type class.
-    , typeMap: {
-      string: types.StringType
-      , number: types.NumberType
-      , integer: types.IntegerType
-      , boolean: types.BooleanType
-      , null: types.NullType
-      , array: types.ArrayType
-      , object: types.ObjectType
-      , date: types.DateType
-      , time: types.TimeType
-      , datetime: types.DateTimeType
-      , geopoint: types.GeoPointType
-      , geojson: types.GeoJSONType
-      , any: types.AnyType
-    }
-
-    , validateAndExpand: function (value) {
-      if (_.isUndefined(value) || _.isNull(value)) {
-        throw new Error('Invalid JSON')
-      }
-
-      if (!ensure(value)[0]) {
-        throw new Error('Invalid schema')
-      }
-
-      this.asJs = this.expand(value)
-      this.asJSON = JSON.stringify(this.asJs)
-
-      return this
-    }
-  })
+    return this
+  }
+}
 
 module.exports = SchemaModel

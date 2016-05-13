@@ -1,4 +1,6 @@
-let _ = require('underscore')
+'use strict'
+
+const _ = require('underscore')
   , Promise = require('bluebird')
   , request = require('superagent')
   , url = require('url')

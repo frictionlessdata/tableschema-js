@@ -1,10 +1,12 @@
-let _ = require('underscore')
+'use strict'
+
+const _ = require('underscore')
   , moment = require('moment')
   , utilities = require('./utilities')
 
 exports = module.exports = {}
 
-exports.JSType = function (field) {
+exports.JSType = function JSType(field) {
   this.js = typeof null
   this.name = ''
   this.formats = ['default']
@@ -13,8 +15,8 @@ exports.JSType = function (field) {
   this.field = field
 
   if (this.field) {
-    this.format = this.field['format']
-    this.required = _.result(this.field['constraints'], 'required') || false
+    this.format = this.field.format
+    this.required = _.result(this.field.constraints, 'required') || false
   } else {
     this.format = 'default'
     this.required = true
@@ -29,9 +31,8 @@ exports.JSType.prototype = {
    * @param value
    * @returns {Boolean}
    */
-  cast: function (value) {
-    let _format
-      , _handler
+  cast(value) {
+    let format
 
     // We can check on `constraints.required` before we cast
     if (!this.required &&
@@ -43,19 +44,20 @@ exports.JSType.prototype = {
 
     // Cast with the appropriate handler, falling back to default if none
     if (!this.format) {
-      _format = 'default'
+      format = 'default'
     } else {
       if (!this.format || this.format.indexOf('fmt') === 0) {
-        _format = 'fmt'
+        format = 'fmt'
       } else {
-        _format = this.format
+        format = this.format
       }
     }
 
-    _handler = 'cast' + (_format.charAt(0).toUpperCase() + _format.substring(1))
+    const handler = `cast${format.charAt(0).toUpperCase() +
+                           format.substring(1)}`
 
-    if (this.hasFormat(_format) && this[_handler]) {
-      return this[_handler](value)
+    if (this.hasFormat(format) && this[handler]) {
+      return this[handler](value)
     }
 
     return this.castDefault(value)
@@ -66,7 +68,7 @@ exports.JSType.prototype = {
    * @param value
    * @returns {Boolean}
    */
-  , castDefault: function (value) {
+  , castDefault(value) {
     if (this.typeCheck(value)) {
       return true
     }
@@ -80,7 +82,7 @@ exports.JSType.prototype = {
     }
     return false
   }
-  , hasFormat: function (_format) {
+  , hasFormat(_format) {
     return !!_.contains(this.formats, _format)
   }
   /**
@@ -89,12 +91,12 @@ exports.JSType.prototype = {
    * @param value
    * @returns {boolean}
    */
-  , typeCheck: function (value) {
+  , typeCheck(value) {
     return !!(value instanceof this.js)
   }
 }
 
-exports.StringType = function (field) {
+exports.StringType = function StringType(field) {
   exports.JSType.call(this, field)
 
   this.js = 'string'
@@ -111,7 +113,7 @@ exports.StringType.prototype =
     exports.StringType.prototype,
     exports.JSType.prototype,
     {
-      castEmail: function (value) {
+      castEmail(value) {
         if (!this.typeCheck(value)) {
           return false
         }
@@ -121,7 +123,7 @@ exports.StringType.prototype =
         }
         return value
       }
-      , castUri: function (value) {
+      , castUri(value) {
       if (!this.typeCheck(value)) {
         return false
       }
@@ -132,7 +134,7 @@ exports.StringType.prototype =
 
       return value
     }
-      , castBinary: function (value) {
+      , castBinary(value) {
       if (!this.typeCheck(value)) {
         return false
       }
@@ -143,13 +145,13 @@ exports.StringType.prototype =
         return false
       }
     }
-      , typeCheck: function (value) {
+      , typeCheck(value) {
       return typeof value === 'string'
     }
     }
   )
 
-exports.IntegerType = function (field, options) {
+exports.IntegerType = function IntegerType(field, options) {
   exports.JSType.call(this, field, options)
   this.js = Number
   this.name = 'integer'
@@ -162,13 +164,13 @@ exports.IntegerType.prototype =
     exports.IntegerType.prototype
     , exports.JSType.prototype
     , {
-      castDefault: function (value) {
+      castDefault(value) {
         if (this.typeCheck(value)) {
           return true
         }
 
         try {
-          var x = parseInt(value, 10)
+          const x = parseInt(value, 10)
           return (isFinite(+value) && isFinite(x) && (+value === x))
         } catch (e) {
           return false
@@ -176,14 +178,13 @@ exports.IntegerType.prototype =
       }
     })
 
-exports.NumberType = function (field, options) {
+exports.NumberType = function NumberType(field, options) {
   exports.JSType.call(this, field, options)
 
   this.js = Number
   this.name = 'number'
   this.formats = ['default', 'currency']
-  this.separators = '.,;'
-  this.currencies = '$'
+  this.separators = ',;$'
 
   return this
 }
@@ -193,7 +194,7 @@ exports.NumberType.prototype =
     exports.NumberType.prototype
     , exports.JSType.prototype
     , {
-      castDefault: function (value) {
+      castDefault(value) {
         if (this.typeCheck(value)) {
           return true
         }
@@ -207,22 +208,21 @@ exports.NumberType.prototype =
         }
         return false
       }
-      , castCurrency: function (value) {
+      , castCurrency(value) {
         if (this.typeCheck(value)) {
           return true
         }
 
-        value = String(value).replace(
-          new RegExp('[' + [this.separators, this.currencies].join('') +
-                     ']', 'g'), '')
+        const v = String(value)
+          .replace(new RegExp(`[${this.separators}]`, 'g'), '')
 
         // parseFloat() parse string even if there are non-digit characters
-        if ((new RegExp('[^\\d]+', 'g')).exec(value)) {
+        if ((new RegExp('[^\\d]+', 'g')).exec(v)) {
           return false
         }
 
         try {
-          return isFinite(parseFloat(value))
+          return isFinite(parseFloat(v))
         } catch (e) {
           return false
         }
@@ -626,14 +626,21 @@ exports.TypeResolver.prototype.get = function (results) {
 
   // Only one candidate... that's easy.
   if (variants.length == 1) {
-    return {type: results[0][0], format: results[0][1]};
+    return { type: results[0][0], format: results[0][1] };
   }
 
   results.forEach(function (R) {
     counts[R] = (counts[R] || 0) + 1;
   });
 
-  // Tuple representation of `counts` dict, sorted by values of `counts`
+  // Tuple representation of
+  `counts`
+  dict, sorted
+  by
+  values
+  of
+    `counts`
+
   sortedCounts = _.sortBy(
     _.pairs(counts),
     function (C) {
