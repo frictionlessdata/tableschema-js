@@ -1,1 +1,1 @@
-{"version":3,"sources":["../src/index.js"],"names":[],"mappings":";;AAAA;;IAAY,K;;AACZ;;;;;;;;AAEA,OAAO,OAAP,GAAiB,EAAE,sBAAF,EAAS,YAAT,EAAjB","file":"index.js","sourcesContent":["import * as types from './types'\nimport infer from './infer'\n\nmodule.exports = { infer, types }\n"]}
+{"version":3,"sources":["../src/index.js"],"names":[],"mappings":";;AAAA;;;;AACA;;;;;;AAEA,OAAO,OAAP,GAAiB,EAAE,sBAAF,EAAS,sBAAT,EAAjB","file":"index.js","sourcesContent":["import types from './types'\nimport infer from './infer'\n\nmodule.exports = { infer, types }\n"]}

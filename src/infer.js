@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import * as types from './types'
+import types from './types'
 
 /**
  * Return a schema from the passed headers and values.

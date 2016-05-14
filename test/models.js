@@ -1,7 +1,7 @@
 /* global describe, beforeEach, it, require */
 var _ = require('underscore')
   , assert = require('chai').assert
-  , SchemaModel = require('../lib/models')
+  , SchemaModel = require('../lib/models').default
   , SCHEMA
 
 describe('Models', function () {

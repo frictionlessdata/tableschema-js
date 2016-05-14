@@ -1,8 +1,8 @@
-import {_} from 'underscore'
-import {Promise} from 'bluebird'
-import { ensure } from './ensure'
-import * as types from './types'
-import * as utilities from './utilities'
+import { _ } from 'underscore'
+import { Promise } from 'bluebird'
+import ensure from './ensure'
+import utilities from './utilities'
+import types from './types'
 
 const DEFAULTS = {
   constraints: { required: true }
@@ -26,23 +26,22 @@ const DEFAULTS = {
  * such as as_python and as_json are **not** subject to this flag.
  */
 
-function SchemaModel(source, caseInsensitiveHeaders = false) {
-  this.source = source
-  this.caseInsensitiveHeaders = caseInsensitiveHeaders
+export default class SchemaModel {
+  constructor(source, caseInsensitiveHeaders = false) {
+    this.source = source
+    this.caseInsensitiveHeaders = caseInsensitiveHeaders
 
-  const asJs = this.toJs()
+    const asJs = this.toJs()
 
-  // Manually use .loadSource() to get schema in case of URL passed instead of
-  // schema
-  if (asJs instanceof Promise) {
-    this.schemaPromise = asJs
-    return this
+    // Manually use .loadSource() to get schema in case of URL passed instead of
+    // schema
+    if (asJs instanceof Promise) {
+      this.schemaPromise = asJs
+    } else {
+      this.validateAndExpand(asJs)
+    }
   }
 
-  this.validateAndExpand(asJs)
-}
-
-SchemaModel.prototype = {
   /**
    * Check if value can be cast to fieldName's type
    *
@@ -62,7 +61,7 @@ SchemaModel.prototype = {
    * @param schema
    * @returns {*}
    */
-  , expand(schema) {
+  expand(schema) {
     return _.extend(
       schema
       , {
@@ -92,10 +91,11 @@ SchemaModel.prototype = {
       })
   }
 
-  , fields() {
+  fields() {
     return this.asJs.fields
   }
-  , foreignKeys() {
+
+  foreignKeys() {
     return this.asJs.foreignKeys
   }
 
@@ -105,14 +105,14 @@ SchemaModel.prototype = {
    * @param {integer} index
    * @returns {object}
    */
-  , getConstraints(fieldName, index = 0) {
+  getConstraints(fieldName, index = 0) {
     return this.getField(fieldName, index).constraints
   }
 
   // Return the `field` object for `fieldName`.
   // `index` allows accessing a field name by position, as JTS allows
   // duplicate field names.
-  , getField(fieldName, index = 0) {
+  getField(fieldName, index = 0) {
     try {
       return _.where(this.fields(), { name: fieldName })[index]
     } catch (e) {
@@ -121,12 +121,12 @@ SchemaModel.prototype = {
   }
 
   // Return all fields that match the given type.
-  , getFieldsByType(typeName) {
+  getFieldsByType(typeName) {
     return _.where(this.fields(), { type: typeName })
   }
 
   // Return the `type` for `fieldName`.
-  , getType(fieldName, index) {
+  getType(fieldName, index) {
     const field = this.getField(fieldName, index || 0)
     return this.typeMap[field.type](field)
   }
@@ -137,11 +137,11 @@ SchemaModel.prototype = {
    * @param fieldName
    * @returns {boolean}
    */
-  , hasField(fieldName) {
+  hasField(fieldName) {
     return Boolean(this.getField(fieldName))
   }
 
-  , headers() {
+  headers() {
     const raw = _.chain(this.asJs.fields).map(_.property('name')).value()
 
     if (this.caseInsensitiveHeaders) {
@@ -151,15 +151,15 @@ SchemaModel.prototype = {
   }
 
   // Load schema from URL passed in init
-  , loadSchema() {
+  loadSchema() {
     return this.schemaPromise.then(this.validateAndExpand)
   }
 
-  , primaryKey() {
+  primaryKey() {
     return this.asJs.primaryKey
   }
 
-  , requiredHeaders() {
+  requiredHeaders() {
     const raw = _.chain(this.asJs.fields)
       .filter(field => field.constraints.required)
       .map(_.property('name'))
@@ -173,7 +173,7 @@ SchemaModel.prototype = {
   }
 
   // Return schema as an Object.
-  , toJs() {
+  toJs() {
     try {
       return utilities.loadJSONSource(this.source)
     } catch (e) {
@@ -184,23 +184,25 @@ SchemaModel.prototype = {
   /**
    * Map a JSON Table Schema type to a JTSKit type class
    */
-  , typeMap: {
-    string: types.StringType
-    , number: types.NumberType
-    , integer: types.IntegerType
-    , boolean: types.BooleanType
-    , null: types.NullType
-    , array: types.ArrayType
-    , object: types.ObjectType
-    , date: types.DateType
-    , time: types.TimeType
-    , datetime: types.DateTimeType
-    , geopoint: types.GeoPointType
-    , geojson: types.GeoJSONType
-    , any: types.AnyType
+  get typeMap() {
+    return {
+      string: types.StringType
+      , number: types.NumberType
+      , integer: types.IntegerType
+      , boolean: types.BooleanType
+      , null: types.NullType
+      , array: types.ArrayType
+      , object: types.ObjectType
+      , date: types.DateType
+      , time: types.TimeType
+      , datetime: types.DateTimeType
+      , geopoint: types.GeoPointType
+      , geojson: types.GeoJSONType
+      , any: types.AnyType
+    }
   }
 
-  , validateAndExpand(value) {
+  validateAndExpand(value) {
     if (_.isUndefined(value) || _.isNull(value)) {
       throw new Error('Invalid JSON')
     }
@@ -214,5 +216,3 @@ SchemaModel.prototype = {
     return this
   }
 }
-
-module.exports = SchemaModel

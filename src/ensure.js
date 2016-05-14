@@ -1,5 +1,5 @@
-const _ = require('underscore')
-  , utilities = require('./utilities')
+import { _ } from 'underscore'
+import utilities from './utilities'
 
 /**
  Validate that `schema` is a valid JSON Table Schema.
@@ -10,7 +10,7 @@ const _ = require('underscore')
  Returns:
  * A tuple of `valid`, `errors`
  */
-export function ensure(schema) {
+export default (schema) => {
   const fieldsNames = _.map(_.result(schema, 'fields') || [],
                             _.property('name'))
 

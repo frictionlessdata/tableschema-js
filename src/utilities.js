@@ -1,9 +1,9 @@
-const _ = require('underscore')
-  , Promise = require('bluebird')
-  , request = require('superagent')
-  , url = require('url')
+import { _ } from 'underscore'
+import { Promise } from 'bluebird'
+import { request } from 'superagent'
+import { url } from 'url'
 
-exports = module.exports = {
+export default {
   REMOTE_SCHEMES: ['http', 'https', 'ftp', 'ftps']
   , NULL_VALUES: ['null', 'none', 'nil', 'nan', '-', '']
   , TRUE_VALUES: ['yes', 'y', 'true', 't', '1']
@@ -35,6 +35,7 @@ exports = module.exports = {
         })
       })
     }
+    return null
     // WARN There is no possibility to have browser compatable code which can
     // load file
   }
