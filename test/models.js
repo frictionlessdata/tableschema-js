@@ -1,12 +1,11 @@
 /* global describe, beforeEach, it, require */
-const _ = require('underscore')
+var _ = require('underscore')
   , assert = require('chai').assert
   , SchemaModel = require('../lib/models')
+  , SCHEMA
 
-let SCHEMA
-
-describe('Models', () => {
-  beforeEach((done) => {
+describe('Models', function () {
+  beforeEach(function (done) {
     SCHEMA = {
       fields: [
         {
@@ -39,28 +38,28 @@ describe('Models', () => {
     done()
   })
 
-  it('have a correct number of header columns', (done) => {
+  it('have a correct number of header columns', function (done) {
     assert.equal((new SchemaModel(SCHEMA)).headers().length, 5)
     done()
   })
 
-  it('have a correct number of header required columns', (done) => {
+  it('have a correct number of header required columns', function (done) {
     assert.equal((new SchemaModel(SCHEMA)).requiredHeaders().length, 2)
     done()
   })
 
-  it('have one of a field from passed schema', (done) => {
+  it('have one of a field from passed schema', function (done) {
     assert((new SchemaModel(SCHEMA)).hasField('name'))
     done()
   })
 
-  it('do not have fields not specified in passed schema', (done) => {
+  it('do not have fields not specified in passed schema', function (done) {
     assert.notOk((new SchemaModel(SCHEMA)).hasField('religion'))
     done()
   })
 
-  it('have correct number of fields of certain type', (done) => {
-    const model = new SchemaModel(SCHEMA)
+  it('have correct number of fields of certain type', function (done) {
+    var model = new SchemaModel(SCHEMA)
 
     assert.equal(model.getFieldsByType('string').length, 3)
     assert.equal(model.getFieldsByType('number').length, 1)
@@ -68,9 +67,9 @@ describe('Models', () => {
     done()
   })
 
-  it('respect caseInsensitiveHeaders option', (done) => {
+  it('respect caseInsensitiveHeaders option', function (done) {
     SCHEMA.fields = SCHEMA.fields.map((field) => {
-      const copyField = _.extend({}, field)
+      var copyField = _.extend({}, field)
       copyField.name = copyField.name[0].toUpperCase() +
                        _.rest(copyField.name).join('').toLowerCase()
       return copyField
@@ -84,9 +83,9 @@ describe('Models', () => {
     done()
   })
 
-  it('raise exception when invalid json passed as schema', (done) => {
+  it('raise exception when invalid json passed as schema', function (done) {
     try {
-      const schema = new SchemaModel('this is string')
+      var schema = new SchemaModel('this is string')
       assert.isObject(schema)
       assert.isTrue(false)
     } catch (e) {
@@ -95,9 +94,9 @@ describe('Models', () => {
     done()
   })
 
-  it('raise exception when invalid format schema passed', (done) => {
+  it('raise exception when invalid format schema passed', function (done) {
     try {
-      const schema = new SchemaModel({})
+      var schema = new SchemaModel({})
       assert.isObject(schema)
       assert.isTrue(false)
     } catch (e) {

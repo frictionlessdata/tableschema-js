@@ -200,7 +200,7 @@ NumberType.prototype = _.extend(
     }
     , castCurrency(value) {
       const v = String(value)
-        .replace(new RegExp('[.,;$]', 'g'), '')
+        .replace(new RegExp('[.,;$€]', 'g'), '')
 
       // parseFloat() parse string even if there are non-digit characters
       if ((new RegExp('[^\\d]+', 'g')).exec(v)) {
@@ -500,7 +500,7 @@ GeoJSONType.prototype = _.extend(
     castDefault: GeoPointType.prototype.castDefault
 
     , castTopojson() {
-      throw new Error('Not implemented');
+      throw new Error('Not implemented')
     }
 
     // Geo JSON is always an object
