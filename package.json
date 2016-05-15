@@ -9,7 +9,7 @@
     "open data",
     "open knowledge"
   ],
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "dependencies": {
     "bluebird": "^2.9.30",
     "csv": "^0.4.2",
@@ -18,7 +18,7 @@
     "underscore": "^1.8.3"
   },
   "devDependencies": {
-    "babel": "^6.8.0",
+    "babel": "^6.5.2",
     "babel-cli": "^6.8.0",
     "babel-plugin-transform-es2015-arrow-functions": "^6.8.0",
     "babel-plugin-transform-es2015-classes": "^6.8.0",
@@ -35,8 +35,15 @@
     "superagent-mock": "^1.1.0"
   },
   "scripts": {
+    "review": "eslint src/**",
+	"fix":"eslint --fix src/**",
     "test": "mocha"
   },
+  "files": [
+    "lib",
+	"dist",
+	"src"
+  ],
   "author": {
     "name": "Open Knowledge",
     "email": "info@okfn.org",

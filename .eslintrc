@@ -30,3 +30,6 @@ rules:
   no-use-before-define:
     - 2
     - nofunc
+  eqeqeq:
+    - 1
+    - smart

@@ -110,11 +110,10 @@ export default (schema) => {
           valid = false
           addError('minimum constraint which is an integer is only valid if ' +
                    'the encompassing field is also of type integer')
-        }
-
-        // WARN Probably need to chack for moment() type if we decide to go
-        // with moment() for dates IF `type` is date
-        else if (_.isDate(field.type) && !_.isDate(field.constraints.minimum)) {
+        } else if (_.isDate(field.type) &&
+                   !_.isDate(field.constraints.minimum)) {
+          // WARN Probably need to chack for moment() type if we decide to go
+          // with moment() for dates IF `type` is date
           valid = false
           addError('minimum constraint which is a date is only valid if the ' +
                    'encompassing field is also of type date')
@@ -131,10 +130,10 @@ export default (schema) => {
           valid = false
           addError('maximum constraint which is an integer is only valid if' +
                    ' the encompassing field is also of type integer')
-        }
-        // WARN Probably need to check for moment() type if we decide to go
-        // with moment() for dates IF `type` is date
-        else if (_.isDate(field.type) && !_.isDate(field.constraints.maximum)) {
+        } else if (_.isDate(field.type) &&
+                   !_.isDate(field.constraints.maximum)) {
+          // WARN Probably need to check for moment() type if we decide to go
+          // with moment() for dates IF `type` is date
           valid = false
           addError('maximum constraint which is a date is only valid if the' +
                    ' encompassing field is also of type date')
@@ -256,4 +255,4 @@ export default (schema) => {
   }
 }
 
-//module.exports = ensure
+// module.exports = ensure

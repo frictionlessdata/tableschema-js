@@ -5,7 +5,7 @@ const moment = require('moment')
 // FIXME: the order is matter, why? probably need to find better way to check
 // what type of the current value is
   , typeNames = [
-  'BooleanType'
+    'BooleanType'
   , 'IntegerType'
   , 'NullType'
   , 'DateType'
@@ -18,7 +18,7 @@ const moment = require('moment')
   , 'NumberType'
   , 'StringType'
   , 'AnyType'
-]
+  ]
 
 function AbstractType(field) {
   this.js = typeof null
