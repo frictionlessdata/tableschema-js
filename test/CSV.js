@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   dataInfer: 'id,age,name\n1,39,Paul\n2,23,Jimmy\n3,36,Jane\n4,28,Judy'
   , dataInferRowLimit: 'id,age,name\n1,39,Paul\n2,23,Jimmy\n3,36,Jane\n' +
                        '4,28,Judy\nqwerty,nineteen,Rose\nwerty,nineteen,Red\n' +

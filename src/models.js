@@ -31,6 +31,23 @@ export default class SchemaModel {
     this.source = source
     this.caseInsensitiveHeaders = caseInsensitiveHeaders
 
+    // Map a JSON Table Schema type to a JTSKit type class
+    this.typeMap = {
+      string: types.StringType
+      , number: types.NumberType
+      , integer: types.IntegerType
+      , boolean: types.BooleanType
+      , null: types.NullType
+      , array: types.ArrayType
+      , object: types.ObjectType
+      , date: types.DateType
+      , time: types.TimeType
+      , datetime: types.DateTimeType
+      , geopoint: types.GeoPointType
+      , geojson: types.GeoJSONType
+      , any: types.AnyType
+    }
+
     const asJs = this.toJs()
 
     // Manually use .loadSource() to get schema in case of URL passed instead of
@@ -178,27 +195,6 @@ export default class SchemaModel {
       return utilities.loadJSONSource(this.source)
     } catch (e) {
       return null
-    }
-  }
-
-  /**
-   * Map a JSON Table Schema type to a JTSKit type class
-   */
-  get typeMap() {
-    return {
-      string: types.StringType
-      , number: types.NumberType
-      , integer: types.IntegerType
-      , boolean: types.BooleanType
-      , null: types.NullType
-      , array: types.ArrayType
-      , object: types.ObjectType
-      , date: types.DateType
-      , time: types.TimeType
-      , datetime: types.DateTimeType
-      , geopoint: types.GeoPointType
-      , geojson: types.GeoJSONType
-      , any: types.AnyType
     }
   }
 

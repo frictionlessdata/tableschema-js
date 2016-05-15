@@ -1,18 +1,17 @@
 /* global describe, it, require */
-
-var _ = require('underscore')
-  , assert = require('chai').assert
-  , csv = require('csv')
-  , CSVData = require('./CSV')
-  , infer = require('../lib/').infer
+import { _ } from 'underscore'
+import { assert } from 'chai'
+import csv from 'csv'
+import infer from '../src/infer'
+import CSVData from './CSV'
 
 // WARN Use Model in test cases instead of validating schema directly
-describe('Infer', function () {
-  it('produce schema from a generic .csv', function (done) {
-    csv.parse(CSVData.dataInfer, function (error, output) {
+describe('Infer', () => {
+  it('produce schema from a generic .csv', (done) => {
+    csv.parse(CSVData.dataInfer, (error, output) => {
       assert.isNull(error, 'CSV parse failed')
 
-      var schema = infer(output[0], _.rest(output))
+      const schema = infer(output[0], _.rest(output))
 
       assert.equal(_.findWhere(schema.fields, { name: 'id' }).type, 'integer')
       assert.equal(_.findWhere(schema.fields, { name: 'age' }).type, 'integer')
@@ -21,11 +20,11 @@ describe('Infer', function () {
     })
   })
 
-  it('respect rowLimit param', function (done) {
-    csv.parse(CSVData.dataInferRowLimit, function (error, output) {
+  it('respect rowLimit param', (done) => {
+    csv.parse(CSVData.dataInferRowLimit, (error, output) => {
       assert.isNull(error, 'CSV parse failed')
 
-      var schema = infer(output[0], _.rest(output), { rowLimit: 4 })
+      const schema = infer(output[0], _.rest(output), { rowLimit: 4 })
 
       assert.equal(_.findWhere(schema.fields, { name: 'id' }).type, 'integer')
       assert.equal(_.findWhere(schema.fields, { name: 'age' }).type, 'integer')
@@ -34,11 +33,11 @@ describe('Infer', function () {
     })
   })
 
-  it('respect primaryKey param', function (done) {
-    csv.parse(CSVData.dataInferRowLimit, function (error, output) {
+  it('respect primaryKey param', (done) => {
+    csv.parse(CSVData.dataInferRowLimit, (error, output) => {
       assert.isNull(error, 'CSV parse failed')
 
-      var primaryKey = 'id'
+      const primaryKey = 'id'
         , schema = infer(output[0], _.rest(output), { primaryKey })
 
       assert.equal(schema.primaryKey, primaryKey)
@@ -46,11 +45,11 @@ describe('Infer', function () {
     })
   })
 
-  it('respect primaryKey param passed as list of fields', function (done) {
-    csv.parse(CSVData.dataInfer, function (error, output) {
+  it('respect primaryKey param passed as list of fields', (done) => {
+    csv.parse(CSVData.dataInfer, (error, output) => {
       assert.isNull(error, 'CSV parse failed')
 
-      var primaryKey = ['id', 'age']
+      const primaryKey = ['id', 'age']
         , schema = infer(output[0], _.rest(output), { primaryKey })
 
       assert.equal(schema.primaryKey, primaryKey)
@@ -59,22 +58,22 @@ describe('Infer', function () {
   })
 
   it('do not create constraints if explicit param passed as False',
-     function (done) {
-       csv.parse(CSVData.dataInfer, function (error, output) {
+     (done) => {
+       csv.parse(CSVData.dataInfer, (error, output) => {
          assert.isNull(error, 'CSV parse failed')
 
-         var schema = infer(output[0], _.rest(output), { explicit: false })
+         const schema = infer(output[0], _.rest(output), { explicit: false })
 
          assert.notProperty(schema.fields[0], 'constraints')
          done()
        })
      })
 
-  it('create constraints if explicit param passed as True', function (done) {
-    csv.parse(CSVData.dataInfer, function (error, output) {
+  it('create constraints if explicit param passed as True', (done) => {
+    csv.parse(CSVData.dataInfer, (error, output) => {
       assert.isNull(error, 'CSV parse failed')
 
-      var schema = infer(output[0], _.rest(output), { explicit: true })
+      const schema = infer(output[0], _.rest(output), { explicit: true })
 
       assert.property(schema.fields[0], 'constraints')
       assert.property(schema.fields[0].constraints, 'required')
@@ -82,11 +81,11 @@ describe('Infer', function () {
     })
   })
 
-  it('Should take the best suitable type', function (done) {
-    csv.parse(CSVData.dataDates, function (error, output) {
+  it('Should take the best suitable type', (done) => {
+    csv.parse(CSVData.dataDates, (error, output) => {
       assert.isNull(error, 'CSV parse failed')
 
-      var schema = infer(output[0], _.rest(output))
+      const schema = infer(output[0], _.rest(output))
 
       assert.equal(schema.fields[0].type, 'integer')
       assert.equal(schema.fields[1].type, 'datetime')

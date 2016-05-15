@@ -1,17 +1,6 @@
 ---
-environment:
-  es5
-parserOptions:
-  sourceType: script
+extend: '../eslintrc'
 rules:
-  comma-style:
-    - 2
-    - first
-  one-var:
-    - 1
-    - var: always
-      let: always
-      const: always
   no-use-before-define:
     - 2
     - nofunc
