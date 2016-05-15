@@ -45,13 +45,13 @@
     "build": "npm run build:lib && npm run build:dist && npm run build:dist:min",
     "prepublish": "npm run build",
     "review": "eslint src/**",
-	"fix":"eslint --fix src/**",
+    "fix": "eslint --fix src/**",
     "test": "mocha"
   },
   "files": [
     "lib",
-	"dist",
-	"src"
+    "dist",
+    "src"
   ],
   "author": {
     "name": "Open Knowledge",
