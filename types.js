@@ -1,5 +1,6 @@
 var _ = require('underscore');
 var moment = require('moment');
+var d3time = require('d3-time-format');
 var utilities = require('./utilities');
 
 
@@ -320,7 +321,6 @@ module.exports.DateType.prototype = _.extend(module.exports.DateType.prototype, 
 
     if(date.isValid())
       return date;
-
     return false;
   },
 
@@ -343,12 +343,12 @@ module.exports.DateType.prototype = _.extend(module.exports.DateType.prototype, 
     var date;
 
     try {
-      date = moment(value, this.format.replace(/^fmt:/, ''), true);
+      date = d3time.timeParse(this.format.replace(/^fmt:/, ''))(value);
     } catch(E) {
       return false;
     }
 
-    if(date.isValid())
+    if(date != null)
       return date;
 
     return false;
