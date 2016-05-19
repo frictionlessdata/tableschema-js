@@ -1,11 +1,13 @@
 import { _ } from 'underscore'
 import { Promise } from 'bluebird'
+import { request } from 'superagent'
+import { url } from 'url'
 import ensure from './ensure'
 import utilities from './utilities'
 import types from './types'
 
 const DEFAULTS = {
-  constraints: { required: true }
+  constraints: { required: false }
   , format: 'default'
   , type: 'string'
 }
@@ -28,7 +30,6 @@ const DEFAULTS = {
 
 export default class SchemaModel {
   constructor(source, caseInsensitiveHeaders = false) {
-    this.source = source
     this.caseInsensitiveHeaders = caseInsensitiveHeaders
 
     // Map a JSON Table Schema type to a JTSKit type class
@@ -37,7 +38,6 @@ export default class SchemaModel {
       , number: types.NumberType
       , integer: types.IntegerType
       , boolean: types.BooleanType
-      , null: types.NullType
       , array: types.ArrayType
       , object: types.ObjectType
       , date: types.DateType
@@ -48,15 +48,12 @@ export default class SchemaModel {
       , any: types.AnyType
     }
 
-    const asJs = this.toJs()
+    this.loadJSON(source)
 
-    // Manually use .loadSource() to get schema in case of URL passed instead of
-    // schema
-    if (asJs instanceof Promise) {
-      this.schemaPromise = asJs
-    } else {
-      this.validateAndExpand(asJs)
-    }
+    // FIXME is it needed to manually call loadSchema method or it should load
+    // schema automatically?
+    // Manually use .loadSource() to get schema in case
+    // of URL passed instead of schema
   }
 
   /**
@@ -72,6 +69,43 @@ export default class SchemaModel {
     return this.getType(fieldName, index || 0).cast(value)
   }
 
+  convertRow(...items) {
+    const headers = this.headers()
+      , result = []
+      , errors = []
+      , last = _.last(items)
+
+    let failFast = false
+
+    if (last && last.hasOwnProperty('failFast') && last.failFast === true) {
+      items.pop()
+      failFast = true
+    }
+
+    if (headers.length !== items.length) {
+      throw new Error('The number of items to convert does not match the ' +
+                      'number of fields given in the schema')
+    }
+    for (let i = 0, length = items.length; i < length; i++) {
+      const value = this.cast(headers[i], items[i])
+
+      if (value === false) {
+        const error = `Wrong type for header: ${headers[i]} and item: ${items[i]}`
+        if (failFast === true) {
+          throw new Error(error)
+        } else {
+          errors.push(error)
+        }
+      }
+      result.push(value)
+    }
+
+    if (errors.length > 0) {
+      throw new Error(errors)
+    }
+    return result
+  }
+
   /**
    * Expand the schema with additional default properties
    *
@@ -80,9 +114,10 @@ export default class SchemaModel {
    */
   expand(schema) {
     return _.extend(
-      schema
+      {}
+      , schema
       , {
-        fields: (schema.fields || []).map((field) => {
+        fields: (schema.fields || []).map(field => {
           const copyField = _.extend({}, field)
 
           // Ensure we have a default type if no type was declared
@@ -109,26 +144,32 @@ export default class SchemaModel {
   }
 
   fields() {
-    return this.asJs.fields
+    return this.schema.fields
   }
 
   foreignKeys() {
-    return this.asJs.foreignKeys
+    return this.schema.foreignKeys
   }
 
   /**
    * Return the `constraints` object for `fieldName`.
    * @param {string} fieldName
-   * @param {integer} index
+   * @param {number} index
    * @returns {object}
    */
   getConstraints(fieldName, index = 0) {
     return this.getField(fieldName, index).constraints
   }
 
-  // Return the `field` object for `fieldName`.
-  // `index` allows accessing a field name by position, as JTS allows
-  // duplicate field names.
+  /**
+   * Return the `field` object for `fieldName`.
+   * `index` allows accessing a field name by position, as JTS allows duplicate
+   * field names.
+   *
+   * @param fieldName
+   * @param index
+   * @returns {Object|Null}
+   */
   getField(fieldName, index = 0) {
     try {
       return _.where(this.fields(), { name: fieldName })[index]
@@ -137,15 +178,26 @@ export default class SchemaModel {
     }
   }
 
-  // Return all fields that match the given type.
+  /**
+   * Return all fields that match the given type
+   *
+   * @param typeName
+   * @returns {Array}
+   */
   getFieldsByType(typeName) {
     return _.where(this.fields(), { type: typeName })
   }
 
-  // Return the `type` for `fieldName`.
-  getType(fieldName, index) {
-    const field = this.getField(fieldName, index || 0)
-    return this.typeMap[field.type](field)
+  /**
+   * Return the `type` for `fieldName`.
+   *
+   * @param fieldName
+   * @param index
+   * @returns {Type}
+   */
+  getType(fieldName, index = 0) {
+    const field = this.getField(fieldName, index)
+    return new this.typeMap[field.type](field)
   }
 
   /**
@@ -155,11 +207,11 @@ export default class SchemaModel {
    * @returns {boolean}
    */
   hasField(fieldName) {
-    return Boolean(this.getField(fieldName))
+    return !!this.getField(fieldName)
   }
 
   headers() {
-    const raw = _.chain(this.asJs.fields).map(_.property('name')).value()
+    const raw = _.chain(this.schema.fields).map(_.property('name')).value()
 
     if (this.caseInsensitiveHeaders) {
       return _.invoke(raw, 'toLowerCase')
@@ -167,35 +219,59 @@ export default class SchemaModel {
     return raw
   }
 
-  // Load schema from URL passed in init
+  // Load a JSON source, from string, URL or buffer, into a Python type.
+  loadJSON(source) {
+    if (_.isNull(source) || _.isUndefined(source)) {
+      return
+    } else if (_.isObject(source) && !_.isFunction(source)) {
+      // The source has already been loaded. Return JSON
+      this.validateAndExpand(source)
+      return
+    }
+
+    if (_.contains(utilities.REMOTE_SCHEMES,
+                   url.parse(source).protocol.replace(':', ''))) {
+      this.schemaPromise = new Promise((resolve, reject) => {
+        request.get(source).end((error, response) => {
+          if (error) {
+            reject(`Failed to download registry file: ${error}`)
+          } else {
+            try {
+              resolve(JSON.parse(response))
+            } catch (e) {
+              reject('Failed to parse JSON from registry file')
+            }
+          }
+        })
+      })
+    }
+    // WARN There is no possibility to have browser compatable code which can
+    // load file
+  }
+
+  /**
+   * Load schema from URL
+   *
+   * @returns {Promise}
+   */
   loadSchema() {
     return this.schemaPromise.then(this.validateAndExpand)
   }
 
   primaryKey() {
-    return this.asJs.primaryKey
+    return this.schema.primaryKey
   }
 
   requiredHeaders() {
-    const raw = _.chain(this.asJs.fields)
-      .filter(field => field.constraints.required)
+    const raw = _.chain(this.schema.fields)
+      .filter(field => field.constraints.required === true)
       .map(_.property('name'))
       .value()
 
     if (this.caseInsensitiveHeaders) {
       return _.invoke(raw, 'toLowerCase')
     }
-
     return raw
-  }
-
-  // Return schema as an Object.
-  toJs() {
-    try {
-      return utilities.loadJSONSource(this.source)
-    } catch (e) {
-      return null
-    }
   }
 
   validateAndExpand(value) {
@@ -207,7 +283,7 @@ export default class SchemaModel {
       throw new Error('Invalid schema')
     }
 
-    this.asJs = this.expand(value)
+    this.schema = this.expand(value)
 
     return this
   }

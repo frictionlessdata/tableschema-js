@@ -1,5 +1,4 @@
 import { _ } from 'underscore'
-import utilities from './utilities'
 
 /**
  Validate that `schema` is a valid JSON Table Schema.
@@ -18,7 +17,7 @@ export default (schema) => {
     , errors = []
 
   // A schema is a hash
-  if (!utilities.isHash(schema)) {
+  if (!isHash(schema)) {
     valid = false
     addError('should be a hash.')
 
@@ -45,7 +44,7 @@ export default (schema) => {
   }
 
   // Each entry in the `fields` array MUST be a hash
-  if (!_.every(schema.fields, (field) => utilities.isHash(field))) {
+  if (!_.every(schema.fields, (field) => isHash(field))) {
     valid = false
     addError('Each field in JSON Table Schema must be a hash.', false)
   }
@@ -60,7 +59,7 @@ export default (schema) => {
   // if `constraints` is present, then `constraints` MUST be a hash
   if (!_.every(schema.fields,
                (field) => !field.constraints ||
-                          utilities.isHash(field.constraints)
+                          isHash(field.constraints)
     )) {
     valid = false
     errors =
@@ -178,7 +177,7 @@ export default (schema) => {
     }
 
     // Each `foreignKey` in `foreignKeys` MUST be a hash
-    if (!_.every(schema.foreignKeys, FK => utilities.isHash(FK))) {
+    if (!_.every(schema.foreignKeys, FK => isHash(FK))) {
       valid = false
       addError('`foreignKey` must be a hash.')
     }
@@ -212,7 +211,7 @@ export default (schema) => {
       }
 
       // Ensure that `foreignKey.reference` is present and is a hash
-      if (!utilities.isHash(FK.reference)) {
+      if (!isHash(FK.reference)) {
         valid = false
         addError('foreignKey.reference must be a hash.')
       }
@@ -253,6 +252,8 @@ export default (schema) => {
       errors.push(error)
     }
   }
-}
 
-// module.exports = ensure
+  function isHash(value) {
+    return _.isObject(value) && !_.isArray(value) && !_.isFunction(value)
+  }
+}

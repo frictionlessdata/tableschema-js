@@ -99,27 +99,27 @@ describe('Types', () => {
     })
 
     it('cast integer', (done) => {
-      assert(newType(BASE_FIELD).cast(1))
+      assert.equal(newType(BASE_FIELD).cast(1), 1)
       done()
     })
 
     it('cast string "0"', (done) => {
-      assert.ok(newType(BASE_FIELD).cast('0'))
+      assert.equal(newType(BASE_FIELD).cast('0'), 0)
       done()
     })
 
     it('don\'t cast string "1.00"', (done) => {
-      assert.notOk(newType(BASE_FIELD).cast('1.00'))
+      assert.isFalse(newType(BASE_FIELD).cast('1.00'))
       done()
     })
 
     it('don\'t cast float', (done) => {
-      assert.notOk(newType(BASE_FIELD).cast(1.01))
+      assert.isFalse(newType(BASE_FIELD).cast(1.01))
       done()
     })
 
     it('don\'t cast string', (done) => {
-      assert.notOk(newType(BASE_FIELD).cast('string'))
+      assert.isFalse(newType(BASE_FIELD).cast('string'))
       done()
     })
   })

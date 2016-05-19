@@ -82,7 +82,7 @@ class Abstract {
    */
   castDefault(value) {
     if (this.typeCheck(value)) {
-      return true
+      return value
     }
 
     try {
@@ -182,7 +182,10 @@ class IntegerType extends Abstract {
     if (String(value).indexOf('.') !== -1) {
       return false
     }
-    return Number.isInteger(+value)
+    if (Number.isInteger(+value)) {
+      return Number(value)
+    }
+    return false
   }
 }
 
@@ -210,10 +213,14 @@ class NumberType extends Abstract {
 
     // need to cover the case then number has .00 format
     if (newValue.indexOf('.') !== -1 && Number.isInteger(+newValue)) {
-      return true
+      const toFixed = newValue.split('.')[1].length
+      return Number(newValue).toFixed(toFixed)
     }
     // here probably normal float number
-    return Number(newValue) == newValue && +newValue % 1 !== 0
+    if (Number(newValue) == newValue && +newValue % 1 !== 0) {
+      return Number(newValue)
+    }
+    return false
   }
 
   castCurrency(value) {
@@ -550,29 +557,29 @@ function TypeGuesser(options) {
   }
 }
 
-function TypeResolver() {
-  this.get = (results) => {
-    const counts = {}
-      , variants = _.uniq(results)
-
-    // Only one candidate... that's easy.
-    if (variants.length === 1) {
-      return { type: results[0][0], format: results[0][1] }
-    }
-
-    results.forEach((result) => {
-      counts[result] = (counts[result] || 0) + 1
-    })
-
-    // Tuple representation of  `counts`  dict, sorted  by  values  of
-    // `counts`
-    const sortedCounts = _.sortBy(_.pairs(counts), (cnt) => cnt[1]).reverse()
-
-    return {
-      type: sortedCounts[0][0].split(',')[0]
-      , format: sortedCounts[0][0].split(',')[1]
-    }
-  }
-}
+//function TypeResolver() {
+//  this.get = (results) => {
+//    const counts = {}
+//      , variants = _.uniq(results)
+//
+//    // Only one candidate... that's easy.
+//    if (variants.length === 1) {
+//      return { type: results[0][0], format: results[0][1] }
+//    }
+//
+//    results.forEach((result) => {
+//      counts[result] = (counts[result] || 0) + 1
+//    })
+//
+//    // Tuple representation of  `counts`  dict, sorted  by  values  of
+//    // `counts`
+//    const sortedCounts = _.sortBy(_.pairs(counts), (cnt) => cnt[1]).reverse()
+//
+//    return {
+//      type: sortedCounts[0][0].split(',')[0]
+//      , format: sortedCounts[0][0].split(',')[1]
+//    }
+//  }
+//}
 
 export default Types

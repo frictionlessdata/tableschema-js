@@ -4,6 +4,16 @@ import { assert } from 'chai'
 import SchemaModel from '../src/models'
 
 let SCHEMA
+const SCHEMA_MIN = {
+  fields: [
+    {
+      name: 'id'
+    }
+    , {
+      name: 'height'
+    }
+  ]
+}
 
 describe('Models', () => {
   beforeEach((done) => {
@@ -50,21 +60,41 @@ describe('Models', () => {
   })
 
   it('have one of a field from passed schema', (done) => {
-    assert((new SchemaModel(SCHEMA)).hasField('name'))
+    const model = (new SchemaModel(SCHEMA))
+    assert.isTrue(model.hasField('id'))
+    assert.isTrue(model.hasField('height'))
+    assert.isTrue(model.hasField('age'))
+    assert.isTrue(model.hasField('name'))
+    assert.isTrue(model.hasField('occupation'))
     done()
   })
 
   it('do not have fields not specified in passed schema', (done) => {
-    assert.notOk((new SchemaModel(SCHEMA)).hasField('religion'))
+    assert.isFalse((new SchemaModel(SCHEMA)).hasField('religion'))
     done()
   })
 
   it('have correct number of fields of certain type', (done) => {
     const model = new SchemaModel(SCHEMA)
+      , stringTypes = model.getFieldsByType('string')
+      , numberTypes = model.getFieldsByType('number')
+      , integerTypes = model.getFieldsByType('integer')
 
-    assert.equal(model.getFieldsByType('string').length, 3)
-    assert.equal(model.getFieldsByType('number').length, 1)
-    assert.equal(model.getFieldsByType('integer').length, 1)
+    assert.isArray(stringTypes)
+    assert.equal(stringTypes.length, 3)
+    assert.equal(_.findWhere(stringTypes, { name: 'id' }).type, 'string')
+    assert.equal(_.findWhere(stringTypes, { name: 'name' }).type, 'string')
+    assert.equal(_.findWhere(stringTypes, { name: 'occupation' }).type,
+                 'string')
+
+    assert.isArray(numberTypes)
+    assert.equal(numberTypes.length, 1)
+    assert.equal(_.findWhere(numberTypes, { name: 'height' }).type, 'number')
+
+    assert.isArray(integerTypes)
+    assert.equal(integerTypes.length, 1)
+    assert.equal(_.findWhere(integerTypes, { name: 'age' }).type, 'integer')
+
     done()
   })
 
@@ -76,11 +106,9 @@ describe('Models', () => {
       return copyField
     })
 
-    assert.deepEqual(
-      (new SchemaModel(SCHEMA, { caseInsensitiveHeaders: true })).headers()
-        .sort(),
-      ['id', 'height', 'name', 'age', 'occupation'].sort()
-    )
+    const model = (new SchemaModel(SCHEMA, { caseInsensitiveHeaders: true }))
+    assert.deepEqual(model.headers().sort(),
+                     ['id', 'height', 'name', 'age', 'occupation'].sort())
     done()
   })
 
@@ -103,6 +131,83 @@ describe('Models', () => {
     } catch (e) {
       assert.isTrue(true)
     }
+    done()
+  })
+
+  it('set default types if not provided', (done) => {
+    const model = new SchemaModel(SCHEMA_MIN)
+      , stringTypes = model.getFieldsByType('string')
+
+    assert.isArray(stringTypes)
+    assert.equal(stringTypes.length, 2)
+    assert.equal(_.findWhere(stringTypes, { name: 'id' }).type, 'string')
+    assert.equal(_.findWhere(stringTypes, { name: 'height' }).type, 'string')
+
+    done()
+  })
+
+  it('fields are not required by default', (done) => {
+    const schema = {
+      fields: [
+        { name: 'id', constraints: { required: true } }
+        , { name: 'label' }
+      ]
+    }
+      , model = new SchemaModel(schema)
+
+    assert.isArray(model.requiredHeaders())
+    assert.equal(model.requiredHeaders().length, 1)
+
+    done()
+  })
+
+  it('schema should not mutate', (done) => {
+    const schema = { fields: [{ name: 'id' }] }
+      , schemaCopy = _.extend({}, schema)
+      , model = new SchemaModel(schema)
+
+    assert.deepEqual(schema, schemaCopy)
+
+    done()
+  })
+
+  it('convert row', (done) => {
+    const model = new SchemaModel(SCHEMA)
+      , convertedRow = model.convertRow('string', '10.0', '1', 'string',
+                                        'string')
+    assert.deepEqual(['string', '10.0', 1, 'string', 'string'], convertedRow)
+
+    done()
+  })
+
+  it('shouldn\'t convert row with less items than headers count', (done) => {
+    const model = new SchemaModel(SCHEMA)
+
+    assert.throws(() => {
+      model.convertRow('string', '10.0', '1', 'string')
+    }, Error)
+
+    done()
+  })
+
+  it('shouldn\'t convert row with too many items', (done) => {
+    const model = new SchemaModel(SCHEMA)
+
+    assert.throws(() => {
+      model.convertRow('string', '10.0', '1', 'string', 'string', 'string')
+    }, Error)
+
+    done()
+  })
+
+  it('shouldn\'t convert row with wrong type (fail fast)', (done) => {
+    const model = new SchemaModel(SCHEMA)
+
+    assert.throws(() => {
+      model.convertRow('string', 'notdecimal', '10.6',
+                       'string', 'string', { failFast: true })
+    }, Error)
+
     done()
   })
 })
