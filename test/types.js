@@ -108,6 +108,16 @@ describe('Types', () => {
       done()
     })
 
+    it('don\'t cast string "1.00"', (done) => {
+      assert.notOk(newType(BASE_FIELD).cast('1.00'))
+      done()
+    })
+
+    it('don\'t cast float', (done) => {
+      assert.notOk(newType(BASE_FIELD).cast(1.01))
+      done()
+    })
+
     it('don\'t cast string', (done) => {
       assert.notOk(newType(BASE_FIELD).cast('string'))
       done()
@@ -132,6 +142,21 @@ describe('Types', () => {
       done()
     })
 
+    it('cast localized numbers', (done) => {
+      ['10,000.00', '10,000,000.00', '100.23'].forEach(function (value) {
+        assert.ok((newType(BASE_FIELD)).cast(value))
+      })
+      BASE_FIELD.decimalChar = '#';
+      ['10,000#00', '10,000,000#00', '100#23'].forEach(function (value) {
+        assert.ok(newType(BASE_FIELD).cast(value))
+      })
+      BASE_FIELD.groupChar = 'Q';
+      ['10Q000#00', '10Q000Q000#00', '100#23'].forEach(function (value) {
+        assert.ok(newType(BASE_FIELD).cast(value))
+      })
+      done()
+    })
+
     it('don\'t cast string "0"', (done) => {
       assert.notOk(newType(BASE_FIELD).cast('0'))
       done()
@@ -143,11 +168,19 @@ describe('Types', () => {
     })
 
     it('cast currency', (done) => {
-      BASE_FIELD.format = 'currency'
-      const numbers = ['10,000.00', '10000.00', '$10000.00']
+      BASE_FIELD.format = 'currency';
 
-      numbers.forEach((value) => {
+      ['10,000.00', '$10000.00'].forEach((value) => {
         assert.ok(newType(BASE_FIELD).cast(value))
+      })
+
+      BASE_FIELD.groupChar = ' '
+      BASE_FIELD.decimalChar = ',';
+      ['10 000 000,00', '10000,00', '10,000 €'].forEach(function (V) {
+        if (!(newType(BASE_FIELD)).cast(V)) {
+          console.log('BBB', BASE_FIELD, V)
+        }
+        assert((newType(BASE_FIELD)).cast(V))
       })
       done()
     })
@@ -262,13 +295,20 @@ describe('Types', () => {
       done()
     })
 
+    const newType = base => new types.BooleanType(base)
+
+    it('cast boolean', (done) => {
+      assert.ok(newType(BASE_FIELD).cast(true))
+      done()
+    })
+
     it('cast simple string as True boolean', (done) => {
-      assert((new types.BooleanType(BASE_FIELD)).cast('y'))
+      assert.ok(newType(BASE_FIELD).cast('y'))
       done()
     })
 
     it('cast simple string as False boolean', (done) => {
-      assert((new types.BooleanType(BASE_FIELD)).cast('n'))
+      assert.ok(newType(BASE_FIELD).cast('n'))
       done()
     })
   })

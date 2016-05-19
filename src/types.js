@@ -2,10 +2,9 @@ import * as _ from 'underscore'
 import utilities from './utilities'
 
 const moment = require('moment')
-// FIXME: the order is matter, why? probably need to find better way to check
-// what type of the current value is
+// the order is important
   , typeNames = [
-    'BooleanType'
+  'BooleanType'
   , 'IntegerType'
   , 'NullType'
   , 'DateType'
@@ -18,100 +17,12 @@ const moment = require('moment')
   , 'NumberType'
   , 'StringType'
   , 'AnyType'
-  ]
-
-function AbstractType(field) {
-  this.js = typeof null
-  this.name = ''
-  this.format = 'default'
-  this.required = true
-  this.formats = ['default']
-
-  // `field` is the field schema.
-  this.field = field
-
-  if (field) {
-    this.format = field.format
-    this.required = !!_.result(field.constraints, 'required')
-  }
-  return this
-}
-
-AbstractType.prototype = {
-  /**
-   * Check if `value` can be cast as type `this.js`
-   *
-   * @param value
-   * @returns {Boolean}
-   */
-  cast(value) {
-    let format
-
-    // We can check on `constraints.required` before we cast
-    if (!this.required &&
-        _.contains(_.flatten([null, utilities.NULL_VALUES]), value)) {
-      return true
-    } else if (this.required && _.contains([null, undefined, ''], value)) {
-      return false
-    }
-
-    // Cast with the appropriate handler, falling back to default if none
-    if (!this.format) {
-      format = 'default'
-    } else {
-      if (this.format.indexOf('fmt') === 0) {
-        format = 'fmt'
-      } else {
-        format = this.format
-      }
-    }
-
-    const handler = `cast${format.charAt(0).toUpperCase() +
-                           format.substring(1)}`
-
-    if (this.hasFormat(format) && this[handler]) {
-      return this[handler](value)
-    }
-
-    return this.castDefault(value)
-  }
-  /**
-   * Check if the value can be cast to the type/format
-   *
-   * @param value
-   * @returns {Boolean}
-   */
-  , castDefault(value) {
-    if (this.typeCheck(value)) {
-      return true
-    }
-
-    try {
-      if (_.isFunction(this.js)) {
-        return this.js(value)
-      }
-    } catch (e) {
-      return false
-    }
-    return false
-  }
-  , hasFormat(format) {
-    return !!_.contains(this.formats, format)
-  }
-  /**
-   * Type check of value
-   *
-   * @param value
-   * @returns {boolean}
-   */
-  , typeCheck(value) {
-    return !!(value instanceof this.js)
-  }
-}
+]
 
 class Abstract {
   constructor(field) {
     this.js = typeof null
+    this.jstype = undefined
     this.name = ''
     this.format = 'default'
     this.required = true
@@ -196,7 +107,15 @@ class Abstract {
    * @returns {boolean}
    */
   typeCheck(value) {
-    return !!(value instanceof this.js)
+    if (this.jstype) {
+      if (typeof(value) == this.jstype) {
+        return true
+      }
+    } else if (this.js && value instanceof this.js) {
+      return true
+    }
+
+    return false
   }
 }
 
@@ -204,7 +123,7 @@ class StringType extends Abstract {
   constructor(field) {
     super(field)
 
-    this.js = 'string'
+    this.jstype = 'string'
     this.name = 'string'
     this.formats = ['default', 'email', 'uri', 'binary']
     this.emailPattern = new RegExp('[^@]+@[^@]+\\.[^@]+')
@@ -260,7 +179,11 @@ class IntegerType extends Abstract {
   }
 
   castDefault(value) {
-    return Number(value) == value && value % 1 === 0
+    // probably it is float number
+    if (String(value).indexOf('.') !== -1) {
+      return false
+    }
+    return Number.isInteger(+value)
   }
 }
 
@@ -268,28 +191,39 @@ class NumberType extends Abstract {
   constructor(field) {
     super(field)
 
-    this.js = Number
+    const groupChar = (field || {}).groupChar || ','
+      , decimalChar = (field || {}).decimalChar || '.'
+
+    this.jstype = 'number'
     this.name = 'number'
     this.formats = ['default', 'currency']
+    this.regex = {
+      group: new RegExp(`[${groupChar}]`, 'g')
+      , decimal: new RegExp(`[${decimalChar}]`, 'g')
+      , currency: new RegExp('[$£€]', 'g')
+    }
   }
 
   castDefault(value) {
-    return Number(value) == value && value % 1 !== 0
+    const newValue = String(value)
+      .replace(this.regex.group, '')
+      .replace(this.regex.decimal, '.')
+
+    // need to cover the case then number has .00 format
+    if (newValue.indexOf('.') !== -1 && Number.isInteger(+newValue)) {
+      return true
+    }
+    // here probably normal float number
+    return Number(newValue) == newValue && +newValue % 1 !== 0
   }
 
   castCurrency(value) {
-    const v = String(value).replace(new RegExp('[.,;$€]', 'g'), '')
+    const v = String(value)
+      .replace(this.regex.group, '')
+      .replace(this.regex.decimal, '.')
+      .replace(this.regex.currency, '')
 
-    // parseFloat() parse string even if there are non-digit characters
-    if ((new RegExp('[^\\d]+', 'g')).exec(v)) {
-      return false
-    }
-
-    try {
-      return isFinite(parseFloat(v))
-    } catch (e) {
-      return false
-    }
+    return this.castDefault(v)
   }
 }
 
@@ -297,7 +231,7 @@ class BooleanType extends Abstract {
   constructor(field) {
     super(field)
 
-    this.js = Boolean
+    this.jstype = 'boolean'
     this.name = 'boolean'
     this.trueValues = utilities.TRUE_VALUES
     this.falseValues = utilities.FALSE_VALUES
