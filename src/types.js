@@ -6,7 +6,6 @@ const moment = require('moment')
   , typeNames = [
   'BooleanType'
   , 'IntegerType'
-  , 'NullType'
   , 'DateType'
   , 'TimeType'
   , 'DateTimeType'
@@ -248,23 +247,6 @@ class BooleanType extends Abstract {
   }
 }
 
-class NullType extends Abstract {
-  constructor(field) {
-    super(field)
-
-    this.name = 'null'
-    this.nullValues = utilities.NULL_VALUES
-  }
-
-  castDefault(value) {
-    if (_.isNull(value)) {
-      return true
-    }
-    const v = value.trim().toLowerCase()
-    return !!_.contains(this.nullValues, v)
-  }
-}
-
 class ArrayType extends Abstract {
   constructor(field) {
     super(field)
@@ -495,7 +477,6 @@ const Types = {
   IntegerType
   , NumberType
   , BooleanType
-  , NullType
   , ArrayType
   , ObjectType
   , DateType
@@ -570,11 +551,7 @@ function TypeGuesser(options) {
 }
 
 function TypeResolver() {
-  return this
-}
-
-TypeResolver.prototype = {
-  get(results) {
+  this.get = (results) => {
     const counts = {}
       , variants = _.uniq(results)
 

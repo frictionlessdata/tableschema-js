@@ -313,23 +313,6 @@ describe('Types', () => {
     })
   })
 
-  describe('NullType', () => {
-    beforeEach((done) => {
-      BASE_FIELD.type = 'null'
-      done()
-    })
-
-    it('cast simple string as Null', (done) => {
-      assert((new types.NullType(BASE_FIELD)).cast('null'))
-      done()
-    })
-
-    it('don\'t cast random string as Null', (done) => {
-      assert.notOk((new types.NullType(BASE_FIELD)).cast('isnull'))
-      done()
-    })
-  })
-
   describe('ArrayType', () => {
     beforeEach((done) => {
       BASE_FIELD.type = 'array'
