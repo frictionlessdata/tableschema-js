@@ -1,95 +1,146 @@
 /* global describe, it, require */
+import fs from 'fs'
 import { _ } from 'underscore'
 import { assert } from 'chai'
 import csv from 'csv'
 import infer from '../src/infer'
-import CSVData from './CSV'
 
-// WARN Use Model in test cases instead of validating schema directly
 describe('Infer', () => {
   it('produce schema from a generic .csv', (done) => {
-    csv.parse(CSVData.dataInfer, (error, output) => {
-      assert.isNull(error, 'CSV parse failed')
+    fs.readFile('data/data_infer.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-      const schema = infer(output[0], _.rest(output))
+      csv.parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.rest(output))
 
-      assert.equal(_.findWhere(schema.fields, { name: 'id' }).type, 'integer')
-      assert.equal(_.findWhere(schema.fields, { name: 'age' }).type, 'integer')
-      assert.equal(_.findWhere(schema.fields, { name: 'name' }).type, 'string')
-      done()
+        assert.property(schema, 'fields')
+        assert.isArray(schema.fields)
+        for (const field of schema.fields) {
+          assert.property(field, 'name')
+          assert.property(field, 'title')
+          assert.property(field, 'description')
+          assert.property(field, 'type')
+          assert.property(field, 'format')
+        }
+        done()
+      })
     })
   })
 
-  it('respect rowLimit param', (done) => {
-    csv.parse(CSVData.dataInferRowLimit, (error, output) => {
-      assert.isNull(error, 'CSV parse failed')
+  it('produce schema from a generic .csv UTF-8 encoded', (done) => {
+    fs.readFile('data/data_infer_utf8.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer_utf8.csv failed')
 
-      const schema = infer(output[0], _.rest(output), { rowLimit: 4 })
+      csv.parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.rest(output))
 
-      assert.equal(_.findWhere(schema.fields, { name: 'id' }).type, 'integer')
-      assert.equal(_.findWhere(schema.fields, { name: 'age' }).type, 'integer')
-      assert.equal(_.findWhere(schema.fields, { name: 'name' }).type, 'string')
-      done()
+        assert.property(schema, 'fields')
+        assert.isArray(schema.fields)
+        for (const field of schema.fields) {
+          assert.property(field, 'name')
+          assert.property(field, 'title')
+          assert.property(field, 'description')
+          assert.property(field, 'type')
+          assert.property(field, 'format')
+        }
+        done()
+      })
     })
   })
 
-  it('respect primaryKey param', (done) => {
-    csv.parse(CSVData.dataInferRowLimit, (error, output) => {
-      assert.isNull(error, 'CSV parse failed')
+  it('respect row limit parameter', (done) => {
+    fs.readFile('data/data_infer_row_limit.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer_row_limit.csv failed')
 
-      const primaryKey = 'id'
-        , schema = infer(output[0], _.rest(output), { primaryKey })
+      csv.parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.rest(output), { rowLimit: 4 })
 
-      assert.equal(schema.primaryKey, primaryKey)
-      done()
+        assert.property(schema, 'fields')
+        assert.isArray(schema.fields)
+        for (const field of schema.fields) {
+          assert.property(field, 'name')
+          assert.property(field, 'title')
+          assert.property(field, 'description')
+          assert.property(field, 'type')
+          assert.property(field, 'format')
+        }
+        // here need to check the type of the value, because without row limit
+        // parameter the type of value can change
+        assert.equal(_.findWhere(schema.fields, { name: 'id' }).type, 'integer')
+        assert.equal(_.findWhere(schema.fields, { name: 'age' }).type,
+                     'integer')
+        assert.equal(_.findWhere(schema.fields, { name: 'name' }).type,
+                     'string')
+        done()
+      })
     })
   })
 
-  it('respect primaryKey param passed as list of fields', (done) => {
-    csv.parse(CSVData.dataInfer, (error, output) => {
-      assert.isNull(error, 'CSV parse failed')
+  it('respect primaryKey parameter', (done) => {
+    fs.readFile('data/data_infer.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-      const primaryKey = ['id', 'age']
-        , schema = infer(output[0], _.rest(output), { primaryKey })
+      csv.parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.rest(output), { primaryKey: 'id' })
 
-      assert.equal(schema.primaryKey, primaryKey)
-      done()
+        assert.property(schema, 'primaryKey')
+        assert.equal(schema.primaryKey, 'id')
+        done()
+      })
     })
   })
 
-  it('do not create constraints if explicit param passed as False',
-     (done) => {
-       csv.parse(CSVData.dataInfer, (error, output) => {
-         assert.isNull(error, 'CSV parse failed')
+  it('respect primaryKey parameter as an array', (done) => {
+    fs.readFile('data/data_infer.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-         const schema = infer(output[0], _.rest(output), { explicit: false })
+      csv.parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.rest(output),
+                             { primaryKey: ['id', 'age'] })
 
-         assert.notProperty(schema.fields[0], 'constraints')
-         done()
-       })
-     })
-
-  it('create constraints if explicit param passed as True', (done) => {
-    csv.parse(CSVData.dataInfer, (error, output) => {
-      assert.isNull(error, 'CSV parse failed')
-
-      const schema = infer(output[0], _.rest(output), { explicit: true })
-
-      assert.property(schema.fields[0], 'constraints')
-      assert.property(schema.fields[0].constraints, 'required')
-      done()
+        assert.property(schema, 'primaryKey')
+        assert.isArray(schema.primaryKey)
+        assert.isTrue(schema.primaryKey.indexOf('id') !== -1)
+        assert.isTrue(schema.primaryKey.indexOf('age') !== -1)
+        done()
+      })
     })
   })
 
-  it('Should take the best suitable type', (done) => {
-    csv.parse(CSVData.dataDates, (error, output) => {
-      assert.isNull(error, 'CSV parse failed')
+  it('do not create constraints if explicit param passed as FALSE', (done) => {
+    fs.readFile('data/data_infer.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-      const schema = infer(output[0], _.rest(output))
+      csv.parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.rest(output), { explicit: false })
 
-      assert.equal(schema.fields[0].type, 'integer')
-      assert.equal(schema.fields[1].type, 'datetime')
-      done()
+        for (const field of schema.fields) {
+          assert.notProperty(field, 'constraints')
+        }
+        done()
+      })
+    })
+  })
+
+  it('create constraints if explicit param passed as TRUE', (done) => {
+    fs.readFile('data/data_infer.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer.csv failed')
+
+      csv.parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.rest(output), { explicit: true })
+
+        for (const field of schema.fields) {
+          assert.property(field, 'constraints')
+        }
+        done()
+      })
     })
   })
 })
