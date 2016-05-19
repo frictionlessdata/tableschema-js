@@ -5,3 +5,7 @@
 [![Coveralls](http://img.shields.io/coveralls/frictionlessdata/jsontableschema-js.svg?branch=master)](https://coveralls.io/r/frictionlessdata/jsontableschema-js?branch=master)
 
 A utility library for working with JSON Table Schema in Javascript.
+
+Create coverage suing istanbul:
+
+`node_modules/.bin/babel-node node_modules/.bin/babel-istanbul cover node_modules/.bin/_mocha -- test/*.js`
