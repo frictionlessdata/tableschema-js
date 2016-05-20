@@ -1,5 +1,6 @@
 import * as _ from 'underscore'
 import utilities from './utilities'
+import d3time from 'd3-time-format'
 
 const moment = require('moment')
 // the order is important
@@ -37,20 +38,23 @@ class Abstract {
   }
 
   /**
-   * Check if `value` can be cast as type `this.js`
+   * Try to cast the value
    *
    * @param value
-   * @returns {Boolean}
+   * @returns {*} casted value
+   * @throws Error if value can't be casted
    */
   cast(value) {
     let format
+      , result
+      , func
 
     // We can check on `constraints.required` before we cast
     if (!this.required &&
         _.contains(_.flatten([null, utilities.NULL_VALUES]), value)) {
-      return true
+      return value
     } else if (this.required && _.contains([null, undefined, ''], value)) {
-      return false
+      throw new Error('Field is required')
     }
 
     // Cast with the appropriate handler, falling back to default if none
@@ -67,11 +71,29 @@ class Abstract {
     const handler = `cast${format.charAt(0).toUpperCase() +
                            format.substring(1)}`
 
-    if (this.hasFormat(format) && this[handler]) {
-      return this[handler](value)
+    try {
+      if (this.hasFormat(format) && this[handler]) {
+        return this[handler](value)
+      }
+      return this.castDefault(value)
+    } catch (e) {
+      throw new Error('Invalid Cast Error')
     }
+  }
 
-    return this.castDefault(value)
+  /**
+   * Test if it possible to cast the value
+   *
+   * @param value
+   * @returns {boolean}
+   */
+  test(value) {
+    try {
+      this.cast(value)
+      return true
+    } catch (e) {
+      return false
+    }
   }
 
   /**
@@ -107,14 +129,13 @@ class Abstract {
    */
   typeCheck(value) {
     if (this.jstype) {
-      if (typeof(value) == this.jstype) {
+      if (typeof value === this.jstype) {
         return true
       }
     } else if (this.js && value instanceof this.js) {
       return true
     }
-
-    return false
+    throw new Error()
   }
 }
 
@@ -130,42 +151,34 @@ class StringType extends Abstract {
   }
 
   castEmail(value) {
-    if (!this.typeCheck(value)) {
-      return false
-    }
+    this.typeCheck(value)
 
     if (!this.emailPattern.exec(value)) {
-      return false
+      throw new Error()
     }
     return value
   }
 
   castUri(value) {
-    if (!this.typeCheck(value)) {
-      return false
-    }
+    this.typeCheck(value)
 
     if (!this.uriPattern.exec(value)) {
-      return false
+      throw new Error()
     }
 
     return value
   }
 
   castBinary(value) {
-    if (!this.typeCheck(value)) {
-      return false
-    }
-
-    try {
-      return (new Buffer(value, 'base64')).toString()
-    } catch (e) {
-      return false
-    }
+    this.typeCheck(value)
+    return (new Buffer(value, 'base64')).toString()
   }
 
   typeCheck(value) {
-    return typeof value === 'string'
+    if (typeof value !== 'string') {
+      throw new Error()
+    }
+    return true
   }
 }
 
@@ -180,12 +193,12 @@ class IntegerType extends Abstract {
   castDefault(value) {
     // probably it is float number
     if (String(value).indexOf('.') !== -1) {
-      return false
+      throw new Error()
     }
     if (Number.isInteger(+value)) {
       return Number(value)
     }
-    return false
+    throw new Error()
   }
 }
 
@@ -220,7 +233,7 @@ class NumberType extends Abstract {
     if (Number(newValue) == newValue && +newValue % 1 !== 0) {
       return Number(newValue)
     }
-    return false
+    throw new Error()
   }
 
   castCurrency(value) {
@@ -237,6 +250,7 @@ class BooleanType extends Abstract {
   constructor(field) {
     super(field)
 
+    this.js = Boolean
     this.jstype = 'boolean'
     this.name = 'boolean'
     this.trueValues = utilities.TRUE_VALUES
@@ -244,13 +258,20 @@ class BooleanType extends Abstract {
   }
 
   castDefault(value) {
-    if (this.typeCheck(value)) {
-      return true
+    try {
+      this.typeCheck(value)
+      return value
+    } catch (e) {
+
     }
 
     const v = String(value).trim().toLowerCase()
-
-    return !!_.contains(_.union(this.trueValues, this.falseValues), v)
+    if (_.contains(this.trueValues, v)) {
+      return true
+    } else if (_.contains(this.falseValues, v)) {
+      return false
+    }
+    throw new Error()
   }
 }
 
@@ -264,14 +285,9 @@ class ArrayType extends Abstract {
 
   castDefault(value) {
     if (this.typeCheck(value)) {
-      return true
+      return value
     }
-
-    try {
-      return this.typeCheck(JSON.parse(value))
-    } catch (e) {
-      return false
-    }
+    return this.typeCheck(JSON.parse(value))
   }
 }
 
@@ -285,14 +301,13 @@ class ObjectType extends Abstract {
 
   castDefault(value) {
     if (_.isObject(value) && !_.isArray(value) && !_.isFunction(value)) {
-      return true
+      return value
     }
-
-    try {
-      return JSON.parse(value) instanceof this.js
-    } catch (e) {
-      return false
+    const v = JSON.parse(value)
+    if (!v instanceof this.js) {
+      throw new Error()
     }
+    return v
   }
 }
 
@@ -307,48 +322,26 @@ class DateType extends Abstract {
   }
 
   castAny(value) {
-    let date
+    const date = moment(new Date(value))
 
-    try {
-      date = moment(new Date(value))
-
-      if (date.isValid()) {
-        return date
-      }
-    } catch (e) {
-      return false
+    if (!date.isValid()) {
+      throw new Error()
     }
-    return false
+    return date
   }
 
   castDefault(value) {
-    let date
-
-    try {
-      date = moment(value, this.ISO8601, true)
-
-      if (date.isValid()) {
-        return date
-      }
-    } catch (e) {
-      return false
+    const date = moment(value, this.ISO8601, true)
+    if (!date.isValid()) {
+      throw new Error()
     }
-    return false
+    return date
   }
 
   castFmt(value) {
-    let date
-
-    try {
-      date = moment(value, this.format.replace(/^fmt:/, ''), true)
-
-      if (date.isValid()) {
-        return date
-      }
-    } catch (e) {
-      return false
-    }
-    return false
+    const date = d3time.timeParse(this.format.replace(/^fmt:/, ''))(value)
+    if (date == null)    throw new Error()
+    return date
   }
 }
 
@@ -362,19 +355,12 @@ class TimeType extends DateType {
   }
 
   castDefault(value) {
-    let date
+    const date = moment(value, 'HH:mm:ss', true)
 
-    try {
-      date = moment(value, 'HH:mm:ss', true)
-    } catch (e) {
-      return false
+    if (!date.isValid()) {
+      throw new Error()
     }
-
-    if (date.isValid()) {
-      return date
-    }
-
-    return false
+    return date
   }
 }
 
@@ -389,6 +375,7 @@ class DateTimeType extends DateType {
   }
 }
 
+// TODO copy functionality from Python lib
 class GeoPointType extends Abstract {
   constructor(field) {
     super(field)
@@ -398,23 +385,21 @@ class GeoPointType extends Abstract {
   }
 
   castDefault(value) {
-    if (!this.typeCheck(value)) {
-      return false
-    }
+    this.typeCheck(value)
 
     if (_.isString(value)) {
-      return value.split(',').length === 2
+      const points = value.split(',')
+      if (points.length === 2) {
+        return [points[0].trim(), points[1].trim()]
+      }
+      throw new Error()
     }
 
     if (_.isObject(value)) {
       return value
     }
 
-    try {
-      return JSON.parse(value)
-    } catch (e) {
-      return false
-    }
+    return JSON.parse(value)
   }
 
   castArray() {
@@ -427,10 +412,14 @@ class GeoPointType extends Abstract {
 
   // Geo point may be passed as string object with keys or array
   typeCheck(value) {
-    return _.isString(value) || _.isArray(value) || _.keys(value).length
+    if (_.isString(value) || _.isArray(value) || _.keys(value).length) {
+      return true
+    }
+    throw new Error()
   }
 }
 
+// TODO copy functionality from Python lib
 class GeoJSONType extends GeoPointType {
   constructor(field) {
     super(field)
@@ -464,7 +453,10 @@ class GeoJSONType extends GeoPointType {
 
   // Geo JSON is always an object
   typeCheck(value) {
-    return _.isObject(value) && !_.isFunction(value)
+    if (_.isObject(value) && !_.isFunction(value)) {
+      return true
+    }
+    throw new Error()
   }
 }
 
@@ -515,7 +507,7 @@ function TypeGuesser(options) {
       return [
         (new (_.find(availableTypes(), (T =>
             new Types[T](typeOptions[(new Types[T]()).name] || {})
-              .cast(value)
+              .test(value)
         )))()).name
         , 'default'
       ]
@@ -551,35 +543,10 @@ function TypeGuesser(options) {
     const typeList = filtered.map(value => typeNames.filter(
       T => {
         const typeName = (new Types[T]()).name
-        return (new Types[T](typeOptions[typeName] || {})).cast(value)
+        return (new Types[T](typeOptions[typeName] || {})).test(value)
       }, this))
     return _.reduce(typeList, (memo, types) => _.intersection(memo, types))
   }
 }
-
-//function TypeResolver() {
-//  this.get = (results) => {
-//    const counts = {}
-//      , variants = _.uniq(results)
-//
-//    // Only one candidate... that's easy.
-//    if (variants.length === 1) {
-//      return { type: results[0][0], format: results[0][1] }
-//    }
-//
-//    results.forEach((result) => {
-//      counts[result] = (counts[result] || 0) + 1
-//    })
-//
-//    // Tuple representation of  `counts`  dict, sorted  by  values  of
-//    // `counts`
-//    const sortedCounts = _.sortBy(_.pairs(counts), (cnt) => cnt[1]).reverse()
-//
-//    return {
-//      type: sortedCounts[0][0].split(',')[0]
-//      , format: sortedCounts[0][0].split(',')[1]
-//    }
-//  }
-//}
 
 export default Types
