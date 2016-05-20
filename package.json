@@ -13,7 +13,8 @@
   "dependencies": {
     "bluebird": "^2.9.30",
     "csv": "^0.4.2",
-    "moment": "^2.10.3",
+    "d3-time-format": "^0.3.2",
+    "moment": "^2.13.0",
     "superagent": "^1.2.0",
     "underscore": "^1.8.3"
   },

@@ -148,7 +148,7 @@ describe('DateType', function() {
   });
 
   it('cast date with format specified', function(done, err) {
-    BASE_FIELD.format = 'fmt:DD/MM/YYYY';
+    BASE_FIELD.format = 'fmt:%d/%m/%Y';
     assert((new types.DateType(BASE_FIELD)).cast('10/06/2014'));
     done();
   });
@@ -164,7 +164,7 @@ describe('DateType', function() {
   });
 
   it('don\'t cast date if it do not correspond specified format', function(done, err) {
-    BASE_FIELD.format = 'fmt:DD/MM/YYYY';
+    BASE_FIELD.format = 'fmt:%d/%m/%Y';
     assert.notOk((new types.DateType(BASE_FIELD)).cast('2014/12/19'));
     done();
   });
