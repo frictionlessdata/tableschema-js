@@ -375,7 +375,6 @@ class DateTimeType extends DateType {
   }
 }
 
-// TODO copy functionality from Python lib
 class GeoPointType extends Abstract {
   constructor(field) {
     super(field)
@@ -384,38 +383,85 @@ class GeoPointType extends Abstract {
     this.formats = ['default', 'array', 'object']
   }
 
+  /**
+   * Cast string of format "latitude, longitude"
+   * @param value
+   * @returns {*}
+   * @throws Error in case String has incorrect format or wrong values
+   * for latitude or longitude
+   */
   castDefault(value) {
-    this.typeCheck(value)
-
     if (_.isString(value)) {
-      const points = value.split(',')
-      if (points.length === 2) {
-        return [points[0].trim(), points[1].trim()]
+      let geoPoint = value.split(',')
+      if (geoPoint.length === 2) {
+        geoPoint = [geoPoint[0].trim(), geoPoint[1].trim()]
+        this.checkRange(geoPoint)
+        return geoPoint
       }
-      throw new Error()
+    } else if (_.isArray(value)) {
+      return this.castArray(value)
+    } else if (_.isObject(value)) {
+      return this.castObject(value)
     }
+    throw new Error()
+  }
 
-    if (_.isObject(value)) {
-      return value
+  castArray(value) {
+    if (_.isArray(value) && value.length === 2) {
+      const longitude = String(value[0]).trim()
+        , latitude = String(value[1]).trim()
+        , geoPoint = [longitude, latitude]
+
+      this.checkRange(geoPoint)
+      return geoPoint
     }
-
-    return JSON.parse(value)
+    throw new Error()
   }
 
-  castArray() {
-    throw new Error('Not implemented')
+  castObject(value) {
+    if (value &&
+        (_.isUndefined(value.longitude) || _.isUndefined(value.latitude))) {
+      throw new Error('Invalid Geo Point format')
+    }
+    const longitude = String(value.longitude).trim()
+      , latitude = String(value.latitude).trim()
+      , geoPoint = [longitude, latitude]
+    this.checkRange(geoPoint)
+    return geoPoint
   }
 
-  castObject() {
-    throw new Error('Not implemented')
-  }
-
-  // Geo point may be passed as string object with keys or array
+  /**
+   * Geo point may be passed as a string, an object with keys or an array
+   * @param value
+   * @returns {boolean}
+   */
   typeCheck(value) {
     if (_.isString(value) || _.isArray(value) || _.keys(value).length) {
       return true
     }
     throw new Error()
+  }
+
+  /**
+   * Check the range of geo points
+   *
+   * @param geoPoint
+   * @throws Error
+   */
+  checkRange(geoPoint = []) {
+    const number = new NumberType(this.field)
+      , longitude = number.cast(geoPoint[0])
+      , latitude = number.cast(geoPoint[1])
+
+    if (longitude >= 180 || longitude <= -180) {
+      throw new Error('longtitude should be between -180 and 180, ' +
+                      `found: ${longitude}`)
+    }
+
+    if (latitude >= 90 || latitude <= -90) {
+      throw new Error('latitude should be between -90 and 90, ' +
+                      `found: ${latitude}`)
+    }
   }
 }
 

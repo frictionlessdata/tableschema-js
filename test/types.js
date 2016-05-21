@@ -464,31 +464,56 @@ describe('Types', () => {
   })
 
   // TODO rewrite completely Geo types
-  //describe('GeoPointType', () => {
-  //  const newType = base => new types.GeoPointType(base)
-  //
-  //  beforeEach((done) => {
-  //    BASE_FIELD.type = 'geopoint'
-  //    done()
-  //  })
-  //
-  //  it('cast geo point', (done) => {
-  //    assert.deepEqual(newType(BASE_FIELD).cast('10.0, 21.00'),
-  //                     ['10.0', '21.00'])
-  //    assert.isTrue(newType(BASE_FIELD).test('10.0, 21.00'))
-  //    done()
-  //  })
-  //
-  //  it('don\'t cast random string as Geopoint', (done) => {
-  //    const value = 'this is not a geopoint'
-  //    assert.throws(() => {
-  //      newType(BASE_FIELD).cast(value)
-  //    }, Error)
-  //    assert.isFalse(newType(BASE_FIELD).test(value))
-  //    done()
-  //  })
-  //})
-  //
+  describe('GeoPointType', () => {
+    const newType = base => new types.GeoPointType(base)
+
+    beforeEach((done) => {
+      BASE_FIELD.type = 'geopoint'
+      done()
+    })
+
+    it('cast geo point from string', (done) => {
+      assert.deepEqual(newType(BASE_FIELD).cast('10.0, 21.00'),
+                       ['10.0', '21.00'])
+      assert.isTrue(newType(BASE_FIELD).test('10.0, 21.00'))
+      done()
+    })
+
+    it('don\'t cast random string as Geopoint', (done) => {
+      const value = 'this is not a geopoint'
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('cast geo point from array', (done) => {
+      const value = ['10.0', '21.00']
+      assert.deepEqual(newType(BASE_FIELD).cast(value), value)
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('don\'t cast geo point from strings array', (done) => {
+      const value = ['ddd', 'ddd']
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('don\'t cast array with incorrect length of values', (done) => {
+      const value = ['10.0']
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(value))
+      done()
+    })
+  })
+
   //describe('GeoJSONType', () => {
   //  const newType = base => new types.GeoPointType(base)
   //  beforeEach((done) => {
