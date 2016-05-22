@@ -495,6 +495,13 @@ describe('Types', () => {
       done()
     })
 
+    it('cast geo point from array of numbers', (done) => {
+      const value = [10.0, 21.00]
+      assert.deepEqual(newType(BASE_FIELD).cast(value), ['10.0', '21.0'])
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
+
     it('don\'t cast geo point from strings array', (done) => {
       const value = ['ddd', 'ddd']
       assert.throws(() => {
@@ -506,6 +513,31 @@ describe('Types', () => {
 
     it('don\'t cast array with incorrect length of values', (done) => {
       const value = ['10.0']
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('cast geo point from object', (done) => {
+      const value = { longitude: 10.0, latitude: 21.0 }
+      assert.deepEqual(newType(BASE_FIELD).cast(value), ['10.0', '21.0'])
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('don\'t cast geo point from any object', (done) => {
+      const value = { l: 10.0, t: 21.0 }
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('don\'t cast geo point from object with not numbers', (done) => {
+      const value = { longitude: 'asd', latitude: 'asd' }
       assert.throws(() => {
         newType(BASE_FIELD).cast(value)
       }, Error)

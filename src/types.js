@@ -396,7 +396,7 @@ class GeoPointType extends Abstract {
       if (geoPoint.length === 2) {
         geoPoint = [geoPoint[0].trim(), geoPoint[1].trim()]
         this.checkRange(geoPoint)
-        return geoPoint
+        return this.reFormat(geoPoint)
       }
     } else if (_.isArray(value)) {
       return this.castArray(value)
@@ -413,7 +413,7 @@ class GeoPointType extends Abstract {
         , geoPoint = [longitude, latitude]
 
       this.checkRange(geoPoint)
-      return geoPoint
+      return this.reFormat(geoPoint)
     }
     throw new Error()
   }
@@ -426,8 +426,9 @@ class GeoPointType extends Abstract {
     const longitude = String(value.longitude).trim()
       , latitude = String(value.latitude).trim()
       , geoPoint = [longitude, latitude]
+
     this.checkRange(geoPoint)
-    return geoPoint
+    return this.reFormat(geoPoint)
   }
 
   /**
@@ -449,9 +450,12 @@ class GeoPointType extends Abstract {
    * @throws Error
    */
   checkRange(geoPoint = []) {
-    const number = new NumberType(this.field)
-      , longitude = number.cast(geoPoint[0])
-      , latitude = number.cast(geoPoint[1])
+    const longitude = Number(geoPoint[0])
+      , latitude = Number(geoPoint[1])
+
+    if (isNaN(longitude) || isNaN(latitude)) {
+      throw new Error('longtitude and latitude should be number')
+    }
 
     if (longitude >= 180 || longitude <= -180) {
       throw new Error('longtitude should be between -180 and 180, ' +
@@ -462,6 +466,23 @@ class GeoPointType extends Abstract {
       throw new Error('latitude should be between -90 and 90, ' +
                       `found: ${latitude}`)
     }
+  }
+
+  /**
+   * Bring array values to the same format
+   * @param geoPoint
+   * @returns {Array}
+   */
+  reFormat(geoPoint) {
+    const result = []
+    for (let point of geoPoint) {
+      point = String(point)
+      if (point.indexOf('.') === -1) {
+        point = Number(point).toFixed(1)
+      }
+      result.push(point)
+    }
+    return result
   }
 }
 
