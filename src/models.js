@@ -69,17 +69,22 @@ export default class SchemaModel {
     return this.getType(fieldName, index || 0).cast(value)
   }
 
-  convertRow(...items) {
+  convertRow(...args) {
+    let items = args
+      , failFast = false
+    if (_.isArray(args[0])) {
+      items = args[0]
+    }
     const headers = this.headers()
       , result = []
       , errors = []
       , last = _.last(items)
 
-    let failFast = false
-
-    if (last && last.hasOwnProperty('failFast') && last.failFast === true) {
+    if (last && last.hasOwnProperty('failFast')) {
       items.pop()
-      failFast = true
+      if (last.failFast === true) {
+        failFast = true
+      }
     }
 
     if (headers.length !== items.length) {
@@ -87,9 +92,10 @@ export default class SchemaModel {
                       'number of fields given in the schema')
     }
     for (let i = 0, length = items.length; i < length; i++) {
-      const value = this.cast(headers[i], items[i])
-
-      if (value === false) {
+      try {
+        const value = this.cast(headers[i], items[i])
+        result.push(value)
+      } catch (e) {
         const error = `Wrong type for header: ${headers[i]} and item: ${items[i]}`
         if (failFast === true) {
           throw new Error(error)
@@ -97,11 +103,31 @@ export default class SchemaModel {
           errors.push(error)
         }
       }
-      result.push(value)
     }
 
     if (errors.length > 0) {
-      throw new Error(errors)
+      throw errors
+    }
+    return result
+  }
+
+  convert(items, failFast = false) {
+    const result = []
+    let errors = []
+    for (const item of items) {
+      try {
+        item.push({ failFast })
+        result.push(this.convertRow(item))
+      } catch (e) {
+        if (failFast === true) {
+          throw e
+        } else {
+          errors = errors.concat(e)
+        }
+      }
+    }
+    if (errors.length > 0) {
+      throw errors
     }
     return result
   }

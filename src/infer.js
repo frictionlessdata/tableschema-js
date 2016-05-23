@@ -56,15 +56,14 @@ export default (headers, values, options = {}) => {
 
   headers.forEach((header, index) => {
     let columnValues = _.pluck(values, index)
+    const field = schema.fields[index]
 
     if (opts.rowLimit) {
       columnValues = _.first(columnValues, opts.rowLimit)
     }
 
-    schema.fields[index] = _.extend(schema.fields[index], {
-      type: guesser.multiCast(columnValues)
-      , format: 'default'
-    })
+    field.type = guesser.multiCast(columnValues)
+    field.format = 'default'
   })
 
   return schema

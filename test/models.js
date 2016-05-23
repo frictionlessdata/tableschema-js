@@ -167,7 +167,6 @@ describe('Models', () => {
       , model = new SchemaModel(schema)
 
     assert.deepEqual(schema, schemaCopy)
-
     done()
   })
 
@@ -186,7 +185,6 @@ describe('Models', () => {
     assert.throws(() => {
       model.convertRow('string', '10.0', '1', 'string')
     }, Error)
-
     done()
   })
 
@@ -196,7 +194,6 @@ describe('Models', () => {
     assert.throws(() => {
       model.convertRow('string', '10.0', '1', 'string', 'string', 'string')
     }, Error)
-
     done()
   })
 
@@ -207,7 +204,98 @@ describe('Models', () => {
       model.convertRow('string', 'notdecimal', '10.6',
                        'string', 'string', { failFast: true })
     }, Error)
+    done()
+  })
+
+  it('shouldn\'t convert row with wrong type multiple errors', (done) => {
+    const model = new SchemaModel(SCHEMA)
+
+    try {
+      model.convertRow('string', 'notdecimal', '10.6', 'string',
+                       true)
+    } catch (e) {
+      assert.isArray(e)
+      assert.equal(e.length, 3)
+    }
+    done()
+  })
+
+  it('convert multiple rows', (done) => {
+    const model = new SchemaModel(SCHEMA)
+      , rows = model.convert([['string', '10.0', '1', 'string', 'string']
+                               , ['string', '10.0', '1', 'string', 'string']
+                               , ['string', '10.0', '1', 'string', 'string']
+                               , ['string', '10.0', '1', 'string', 'string']
+                               , ['string', '10.0', '1', 'string', 'string']])
+    for (const row of rows) {
+      assert.deepEqual(['string', '10.0', 1, 'string', 'string'],
+                       row)
+    }
+    done()
+  })
+
+  it('shouldn\'t convert rows with wrong types fail fast', (done) => {
+    const model = new SchemaModel(SCHEMA)
+
+    assert.throws(() => {
+      model.convert([['string', 'not', '1', 'string', 'string']
+                      , ['string', '10.0', '1', 'string', 'string']
+                      , ['string', 'an', '1', 'string', 'string']
+                      , ['string', '10.0', '1', 'string', 'string']
+                      , ['string', '10.0', 'integer', 'string', 'string']],
+                    true)
+    }, Error)
 
     done()
   })
+
+  it('shouldn\'t convert rows with wrong types multiple errors', (done) => {
+    const model = new SchemaModel(SCHEMA)
+
+    try {
+      model.convert([['string', 'not', '1', 'string', 'string']
+                      , ['string', '10.0', '1', 'string', 'string']
+                      , ['string', 'an', '1', 'string', 'string']
+                      , ['string', '10.0', '1', 'string', 'string']
+                      , ['string', '10.0', 'integer', 'string', 'string']])
+    } catch (e) {
+      assert.isArray(e)
+      assert.equal(e.length, 3)
+    }
+
+    done()
+  })
+
+  it('shouldn\'t convert rows with incorrect row length fail fast',
+     (done) => {
+       const model = new SchemaModel(SCHEMA)
+
+       assert.throws(() => {
+         model.convert([['string', '10.0', '1', 'string']
+                         , ['string', '10.0', '1', 'string', 'string']
+                         , ['string', '10.0', '1', 'string', 'string', 1]
+                         , ['string', '10.0', '1', 'string', 'string']
+                         , ['string', '10.0', '1', 'string', 'string']], true)
+       }, Error)
+
+       done()
+     })
+
+  it('shouldn\'t convert rows with incorrect row length multiple errors',
+     (done) => {
+       const model = new SchemaModel(SCHEMA)
+
+       try {
+         model.convert([['string', '10.0', '1', 'string']
+                         , ['string', '10.0', '1', 'string', 'string']
+                         , ['string', '10.0', '1', 'string', 'string', 1]
+                         , ['string', '10.0', '1', 'string', 'string']
+                         , ['string', '10.0', '1', 'string', 'string']])
+       } catch (e) {
+         assert.isArray(e)
+         assert.equal(e.length, 2)
+       }
+
+       done()
+     })
 })

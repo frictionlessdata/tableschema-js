@@ -46,8 +46,6 @@ class Abstract {
    */
   cast(value) {
     let format
-      , result
-      , func
 
     // We can check on `constraints.required` before we cast
     if (!this.required &&
