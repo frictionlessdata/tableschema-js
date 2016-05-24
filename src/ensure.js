@@ -10,60 +10,53 @@ import { _ } from 'underscore'
  * A tuple of `valid`, `errors`
  */
 export default (schema) => {
-  const fieldsNames = _.map(_.result(schema, 'fields') || [],
-                            _.property('name'))
-
+  const errors = []
+    , fieldsNames = _.map(_.result(schema, 'fields') || [], _.property('name'))
   let valid = true
-    , errors = []
 
-  // A schema is a hash
+  /**
+   * Check if schema is an object
+   */
   if (!isHash(schema)) {
     valid = false
-    addError('should be a hash.')
-
-    // Return early in this case.
-    return [valid, errors]
+    addError('should be an object')
+    throw errors
   }
 
-  // Which MUST contain a key `fields`
-  if (!schema.fields) {
+  /**
+   * Check if schema contains fields
+   */
+  if (!schema.fields || !_.isArray(schema.fields) ||
+      schema.fields.length === 0) {
     valid = false
-    addError('must have a fields key.')
-
-    // Return early in this case.
-    return [valid, errors]
+    addError('must have an array of fields')
+    throw errors
   }
 
-  // `fields` MUST be an array
-  if (!_.isArray(schema.fields)) {
-    valid = false
-    addError('must have an array of fields.')
-
-    // Return early in this case.
-    return [valid, errors]
-  }
-
-  // Each entry in the `fields` array MUST be a hash
+  /**
+   * Each entry in the `fields` array MUST be an object
+   */
   if (!_.every(schema.fields, (field) => isHash(field))) {
     valid = false
-    addError('Each field in JSON Table Schema must be a hash.', false)
+    addError('Each field in JSON Table Schema must be an object.', false)
   }
 
-  // Each entry in the `fields` array MUST have a `name` key
+  /**
+   * Each entry in the `fields` array MUST have a `name` key
+   */
   if (!_.every(schema.fields, (field) => Boolean(field.name))) {
     valid = false
     addError('field must have a name key.')
   }
 
-  // Each entry in the `fields` array MAY have a `constraints` key
-  // if `constraints` is present, then `constraints` MUST be a hash
+  /**
+   * Each entry in the `fields` array MAY have a `constraints` key if
+   * `constraints` is present, then `constraints` MUST be an object
+   */
   if (!_.every(schema.fields,
-               (field) => !field.constraints ||
-                          isHash(field.constraints)
-    )) {
+               (field) => !field.constraints || isHash(field.constraints))) {
     valid = false
-    errors =
-      addError('field constraint must be a hash.')
+    addError('field constraint must be an object')
   }
 
   // Constraints may contain certain keys (each has a specific meaning)
@@ -243,7 +236,7 @@ export default (schema) => {
     })
   }
 
-  return [valid, errors]
+  if (!valid) throw errors
 
   function addError(error, isSuffix = true) {
     if (isSuffix) {

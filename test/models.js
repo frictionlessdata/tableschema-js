@@ -1,4 +1,4 @@
-/* global describe, beforeEach, it, require */
+/* global describe, beforeEach, it */
 import { _ } from 'underscore'
 import { assert } from 'chai'
 import SchemaModel from '../src/models'
@@ -118,7 +118,7 @@ describe('Models', () => {
       assert.isObject(schema)
       assert.isTrue(false)
     } catch (e) {
-      assert.isTrue(true)
+      assert.isArray(e)
     }
     done()
   })
@@ -129,7 +129,7 @@ describe('Models', () => {
       assert.isObject(schema)
       assert.isTrue(false)
     } catch (e) {
-      assert.isTrue(true)
+      assert.isArray(e)
     }
     done()
   })

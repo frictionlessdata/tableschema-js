@@ -22,14 +22,17 @@ rules:
   comma-dangle:
     - 2
     - never
+  no-empty:
+    - 2
+    - allowEmptyCatch: true
+  no-use-before-define:
+    - 2
+    - nofunc
   one-var:
     - 1
     - var: always
       let: always
       const: always
-  no-use-before-define:
-    - 2
-    - nofunc
   eqeqeq:
     - 1
     - smart

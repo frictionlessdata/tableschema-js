@@ -1,7 +1,7 @@
 import { _ } from 'underscore'
 import { Promise } from 'bluebird'
 import { request } from 'superagent'
-import { url } from 'url'
+import url from 'url'
 import ensure from './ensure'
 import utilities from './utilities'
 import types from './types'
@@ -24,36 +24,18 @@ const DEFAULTS = {
  * considered case insensitive, and `SchemaModel` forces all
  * headers to lowercase when they are represented via a model
  * instance. This setting **does not** mutate the actual strings
- * that come from the the input schema source, so out put methods
- * such as as_python and as_json are **not** subject to this flag.
+ * that come from the the input schema source.
  */
 
 export default class SchemaModel {
   constructor(source, caseInsensitiveHeaders = false) {
     this.caseInsensitiveHeaders = caseInsensitiveHeaders
-
-    // Map a JSON Table Schema type to a JTSKit type class
-    this.typeMap = {
-      string: types.StringType
-      , number: types.NumberType
-      , integer: types.IntegerType
-      , boolean: types.BooleanType
-      , array: types.ArrayType
-      , object: types.ObjectType
-      , date: types.DateType
-      , time: types.TimeType
-      , datetime: types.DateTimeType
-      , geopoint: types.GeoPointType
-      , geojson: types.GeoJSONType
-      , any: types.AnyType
-    }
-
+    this.typeGuesser = new types.TypeGuesser()
     this.loadJSON(source)
 
-    // FIXME is it needed to manually call loadSchema method or it should load
-    // schema automatically?
-    // Manually use .loadSource() to get schema in case
-    // of URL passed instead of schema
+    if (this.schemaPromise) {
+      return this.loadSchema()
+    }
   }
 
   /**
@@ -161,8 +143,7 @@ export default class SchemaModel {
           if (!copyField.constraints) {
             copyField.constraints = DEFAULTS.constraints
           } else if (_.isUndefined(field.constraints.required)) {
-            copyField.constraints.required =
-              DEFAULTS.constraints.required
+            copyField.constraints.required = DEFAULTS.constraints.required
           }
           return copyField
         })
@@ -223,7 +204,7 @@ export default class SchemaModel {
    */
   getType(fieldName, index = 0) {
     const field = this.getField(fieldName, index)
-    return new this.typeMap[field.type](field)
+    return this.typeGuesser.getType(field.type, field)
   }
 
   /**
@@ -247,32 +228,27 @@ export default class SchemaModel {
 
   // Load a JSON source, from string, URL or buffer, into a Python type.
   loadJSON(source) {
-    if (_.isNull(source) || _.isUndefined(source)) {
-      return
-    } else if (_.isObject(source) && !_.isFunction(source)) {
-      // The source has already been loaded. Return JSON
-      this.validateAndExpand(source)
-      return
-    }
-
-    if (_.contains(utilities.REMOTE_SCHEMES,
-                   url.parse(source).protocol.replace(':', ''))) {
-      this.schemaPromise = new Promise((resolve, reject) => {
-        request.get(source).end((error, response) => {
-          if (error) {
-            reject(`Failed to download registry file: ${error}`)
-          } else {
-            try {
-              resolve(JSON.parse(response))
-            } catch (e) {
-              reject('Failed to parse JSON from registry file')
+    if (_.isString(source)) {
+      const protocol = url.parse(source).protocol
+      if (protocol &&
+          _.contains(utilities.REMOTE_SCHEMES, protocol.replace(':', ''))) {
+        this.schemaPromise = new Promise((resolve, reject) => {
+          request.get(source).end((error, response) => {
+            if (error) {
+              reject(`Failed to download registry file: ${error}`)
+            } else {
+              try {
+                resolve(JSON.parse(response))
+              } catch (e) {
+                reject('Failed to parse JSON from registry file')
+              }
             }
-          }
+          })
         })
-      })
+        return
+      }
     }
-    // WARN There is no possibility to have browser compatable code which can
-    // load file
+    this.validateAndExpand(source)
   }
 
   /**
@@ -301,16 +277,8 @@ export default class SchemaModel {
   }
 
   validateAndExpand(value) {
-    if (_.isUndefined(value) || _.isNull(value)) {
-      throw new Error('Invalid JSON')
-    }
-
-    if (!ensure(value)[0]) {
-      throw new Error('Invalid schema')
-    }
-
+    ensure(value)
     this.schema = this.expand(value)
-
     return this
   }
 }

@@ -23,7 +23,6 @@ class Abstract {
   constructor(field) {
     this.js = typeof null
     this.jstype = undefined
-    this.name = ''
     this.format = 'default'
     this.required = true
     this.formats = ['default']
@@ -105,14 +104,10 @@ class Abstract {
       return value
     }
 
-    try {
-      if (_.isFunction(this.js)) {
-        return this.js(value)
-      }
-    } catch (e) {
-      return false
+    if (_.isFunction(this.js)) {
+      return this.js(value)
     }
-    return false
+    throw new Error()
   }
 
   hasFormat(format) {
@@ -138,11 +133,14 @@ class Abstract {
 }
 
 class StringType extends Abstract {
+  static get name() {
+    return 'string'
+  }
+
   constructor(field) {
     super(field)
 
     this.jstype = 'string'
-    this.name = 'string'
     this.formats = ['default', 'email', 'uri', 'binary']
     this.emailPattern = new RegExp('[^@]+@[^@]+\\.[^@]+')
     this.uriPattern = new RegExp('^http[s]?://')
@@ -181,11 +179,13 @@ class StringType extends Abstract {
 }
 
 class IntegerType extends Abstract {
+  static get name() {
+    return 'integer'
+  }
+
   constructor(field) {
     super(field)
-
     this.js = Number
-    this.name = 'integer'
   }
 
   castDefault(value) {
@@ -201,6 +201,10 @@ class IntegerType extends Abstract {
 }
 
 class NumberType extends Abstract {
+  static get name() {
+    return 'number'
+  }
+
   constructor(field) {
     super(field)
 
@@ -208,7 +212,6 @@ class NumberType extends Abstract {
       , decimalChar = (field || {}).decimalChar || '.'
 
     this.jstype = 'number'
-    this.name = 'number'
     this.formats = ['default', 'currency']
     this.regex = {
       group: new RegExp(`[${groupChar}]`, 'g')
@@ -245,12 +248,15 @@ class NumberType extends Abstract {
 }
 
 class BooleanType extends Abstract {
+  static get name() {
+    return 'boolean'
+  }
+
   constructor(field) {
     super(field)
 
     this.js = Boolean
     this.jstype = 'boolean'
-    this.name = 'boolean'
     this.trueValues = utilities.TRUE_VALUES
     this.falseValues = utilities.FALSE_VALUES
   }
@@ -274,11 +280,13 @@ class BooleanType extends Abstract {
 }
 
 class ArrayType extends Abstract {
+  static get name() {
+    return 'array'
+  }
+
   constructor(field) {
     super(field)
-
     this.js = Array
-    this.name = 'array'
   }
 
   castDefault(value) {
@@ -290,11 +298,13 @@ class ArrayType extends Abstract {
 }
 
 class ObjectType extends Abstract {
+  static get name() {
+    return 'object'
+  }
+
   constructor(field) {
     super(field)
-
     this.js = Object
-    this.name = 'object'
   }
 
   castDefault(value) {
@@ -310,11 +320,14 @@ class ObjectType extends Abstract {
 }
 
 class DateType extends Abstract {
+  static get name() {
+    return 'date'
+  }
+
   constructor(field) {
     super(field)
 
     this.js = Object
-    this.name = 'date'
     this.formats = ['default', 'any', 'fmt']
     this.ISO8601 = 'YYYY-MM-DD'
   }
@@ -344,11 +357,13 @@ class DateType extends Abstract {
 }
 
 class TimeType extends DateType {
+  static get name() {
+    return 'time'
+  }
+
   constructor(field) {
     super(field)
-
     this.js = Object
-    this.name = 'time'
     this.formats = ['default', 'any', 'fmt']
   }
 
@@ -363,22 +378,46 @@ class TimeType extends DateType {
 }
 
 class DateTimeType extends DateType {
+  static get name() {
+    return 'datetime'
+  }
+
   constructor(field) {
     super(field)
-
     this.js = Object
-    this.name = 'datetime'
     this.formats = ['default', 'any', 'fmt']
     this.ISO8601 = moment.ISO_8601
   }
 }
 
 class GeoPointType extends Abstract {
+  static get name() {
+    return 'geopoint'
+  }
+
   constructor(field) {
     super(field)
-
-    this.name = 'geopoint'
     this.formats = ['default', 'array', 'object']
+  }
+
+  castDefault(value) {
+    try {
+      return this.castString(value)
+    } catch (e) {
+
+    }
+
+    try {
+      return this.castArray(value)
+    } catch (e) {
+
+    }
+    try {
+      return this.castObject(value)
+    } catch (e) {
+
+    }
+    throw new Error()
   }
 
   /**
@@ -388,7 +427,7 @@ class GeoPointType extends Abstract {
    * @throws Error in case String has incorrect format or wrong values
    * for latitude or longitude
    */
-  castDefault(value) {
+  castString(value) {
     if (_.isString(value)) {
       let geoPoint = value.split(',')
       if (geoPoint.length === 2) {
@@ -396,10 +435,6 @@ class GeoPointType extends Abstract {
         this.checkRange(geoPoint)
         return this.reFormat(geoPoint)
       }
-    } else if (_.isArray(value)) {
-      return this.castArray(value)
-    } else if (_.isObject(value)) {
-      return this.castObject(value)
     }
     throw new Error()
   }
@@ -486,11 +521,14 @@ class GeoPointType extends Abstract {
 
 // TODO copy functionality from Python lib
 class GeoJSONType extends GeoPointType {
+  static get name() {
+    return 'geojson'
+  }
+
   constructor(field) {
     super(field)
 
     this.js = Object
-    this.name = 'geojson'
     this.formats = ['default', 'topojson']
 
     this.spec = {
@@ -526,13 +564,15 @@ class GeoJSONType extends GeoPointType {
 }
 
 class AnyType extends Abstract {
-  constructor(field) {
-    super(field)
-
-    this.name = 'any'
+  static get name() {
+    return 'any'
   }
 
-  cast() {
+  cast(value) {
+    return value
+  }
+
+  test(value) {
     return true
   }
 }
@@ -564,14 +604,14 @@ function TypeGuesser(options) {
   this.multiCast = function multiCast(values) {
     const types = suitableTypes(values)
       , suitableType = _.find(typeNames, type => _.indexOf(types, type) !== -1)
-    return (new Types[suitableType]()).name
+    return Types[suitableType].name
   }
 
   this.cast = function cast(value) {
     try {
       return [
         (new (_.find(availableTypes(), (T =>
-            new Types[T](typeOptions[(new Types[T]()).name] || {})
+            new Types[T](typeOptions[Types[T].name] || {})
               .test(value)
         )))()).name
         , 'default'
@@ -581,7 +621,14 @@ function TypeGuesser(options) {
     }
   }
 
-  return this
+  this.getType = function getType(name, field) {
+    for (const T of Object.keys(Types)) {
+      if (Types[T].name === name) {
+        return new Types[T](field)
+      }
+    }
+    return null
+  }
 
   /**
    * Return available types objects
@@ -607,8 +654,7 @@ function TypeGuesser(options) {
 
     const typeList = filtered.map(value => typeNames.filter(
       T => {
-        const typeName = (new Types[T]()).name
-        return (new Types[T](typeOptions[typeName] || {})).test(value)
+        return (new Types[T](typeOptions[Types[T].name] || {})).test(value)
       }, this))
     return _.reduce(typeList, (memo, types) => _.intersection(memo, types))
   }
