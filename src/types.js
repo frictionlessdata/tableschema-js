@@ -130,6 +130,10 @@ class Abstract {
     }
     throw new Error()
   }
+
+  isNumeric(value) {
+    return !isNaN(parseInt(value, 10)) && isFinite(value)
+  }
 }
 
 class StringType extends Abstract {
@@ -193,7 +197,7 @@ class IntegerType extends Abstract {
     if (String(value).indexOf('.') !== -1) {
       throw new Error()
     }
-    if (Number.isInteger(+value)) {
+    if (this.isNumeric(value) && Number.isInteger(+value)) {
       return Number(value)
     }
     throw new Error()
@@ -224,6 +228,10 @@ class NumberType extends Abstract {
     const newValue = String(value)
       .replace(this.regex.group, '')
       .replace(this.regex.decimal, '.')
+
+    if (!this.isNumeric(newValue)) {
+      throw new Error()
+    }
 
     // need to cover the case then number has .00 format
     if (newValue.indexOf('.') !== -1 && Number.isInteger(+newValue)) {
@@ -627,7 +635,7 @@ function TypeGuesser(options) {
         return new Types[T](field)
       }
     }
-    return null
+    throw new Error('Unsupported field type')
   }
 
   /**
@@ -653,9 +661,7 @@ function TypeGuesser(options) {
     }
 
     const typeList = filtered.map(value => typeNames.filter(
-      T => {
-        return (new Types[T](typeOptions[Types[T].name] || {})).test(value)
-      }, this))
+      T => (new Types[T](typeOptions[Types[T].name] || {})).test(value)))
     return _.reduce(typeList, (memo, types) => _.intersection(memo, types))
   }
 }

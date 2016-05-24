@@ -75,10 +75,9 @@ export default class SchemaModel {
     }
     for (let i = 0, length = items.length; i < length; i++) {
       try {
-        const value = this.cast(headers[i], items[i])
-        result.push(value)
+        result.push(this.cast(headers[i], items[i]))
       } catch (e) {
-        const error = `Wrong type for header: ${headers[i]} and item: ${items[i]}`
+        const error = `Wrong type for header: ${headers[i]} and value: ${items[i]}`
         if (failFast === true) {
           throw new Error(error)
         } else {
@@ -181,8 +180,8 @@ export default class SchemaModel {
     try {
       return _.where(this.fields(), { name: fieldName })[index]
     } catch (e) {
-      return null
     }
+    throw new Error(`No such field name in schema: ${fieldName}`)
   }
 
   /**
@@ -200,7 +199,7 @@ export default class SchemaModel {
    *
    * @param fieldName
    * @param index
-   * @returns {Type}
+   * @returns {Object} new instance of corresponding Type
    */
   getType(fieldName, index = 0) {
     const field = this.getField(fieldName, index)
@@ -214,7 +213,11 @@ export default class SchemaModel {
    * @returns {boolean}
    */
   hasField(fieldName) {
-    return !!this.getField(fieldName)
+    try {
+      return !!this.getField(fieldName)
+    } catch (e) {
+      return false
+    }
   }
 
   headers() {
