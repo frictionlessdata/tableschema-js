@@ -158,7 +158,7 @@ export default (schema) => {
       }
     } else if (_.isArray(primaryKey)) {
       _.each(primaryKey, pk => {
-        if (_.contains(fieldNames, pk)) {
+        if (!_.contains(fieldNames, pk)) {
           valid = false
           addError('primaryKey value must be found in the schema field names')
         }
@@ -176,23 +176,19 @@ export default (schema) => {
     const foreignKeys = schema.foreignKeys
     // `foreignKeys` MUST be an array
     if (_.isArray(foreignKeys)) {
-      // Each `foreignKey` in `foreignKeys` MUST be an object
-      if (!_.every(foreignKeys, fk => isHash(fk))) {
-        valid = false
-        addError('`foreignKey` must be a hash.')
-      }
-
       // Each `foreignKey` in `foreignKeys` MUST have a `fields` key
       if (!_.every(foreignKeys, fk => Boolean(fk.fields))) {
-        valid = false
         addError('foreignKey must have a fields key.')
+        // there are no sense to continue
+        throw errors
       }
 
       // Each `fields` key in a `foreignKey` MUST be a string or array
       if (!_.every(foreignKeys,
                    fk => _.isString(fk.fields) || _.isArray(fk.fields))) {
-        valid = false
         addError('foreignKey.fields type must be a string or an array.')
+        // there are no sense to continue
+        throw errors
       }
 
       // Ensure that `foreignKey.fields` match field names
@@ -200,22 +196,21 @@ export default (schema) => {
         if (_.isString(fk.fields)) {
           if (!_.contains(fieldNames, fk.fields)) {
             valid = false
-            addError(
-              'foreignKey.fields value must correspond with field names.')
+            addError('foreignKey.fields must correspond with field names')
           }
         } else {
           if ((_.intersection(fieldNames, fk.fields) || []).length <
               fk.fields.length) {
             valid = false
-            addError(
-              'foreignKey.fields value must correspond with field names.')
+            addError('foreignKey.fields must correspond with field names')
           }
         }
 
         // Ensure that `foreignKey.reference` is present and is a hash
         if (!isHash(fk.reference)) {
-          valid = false
           addError('foreignKey.reference must be a hash.')
+          // there are no sense to continue
+          throw errors
         }
 
         // Ensure that `foreignKey.reference` has a `resource` key
