@@ -1,9 +1,9 @@
 import * as _ from 'underscore'
 import utilities from './utilities'
+import constraints from './constraints'
 import d3time from 'd3-time-format'
 
 const moment = require('moment')
-// the order is important
   , typeNames = [
   'BooleanType'
   , 'IntegerType'
@@ -24,7 +24,6 @@ class Abstract {
     this.js = typeof null
     this.jstype = undefined
     this.format = 'default'
-    this.required = true
     this.formats = ['default']
 
     // `field` is the field schema.
@@ -32,7 +31,6 @@ class Abstract {
 
     if (field) {
       this.format = field.format
-      this.required = !!_.result(field.constraints, 'required')
     }
   }
 
@@ -40,18 +38,27 @@ class Abstract {
    * Try to cast the value
    *
    * @param value
+   * @param skipConstraints
    * @returns {*} casted value
    * @throws Error if value can't be casted
    */
-  cast(value) {
+  cast(value, skipConstraints = true) {
     let format
+      , castValue
 
-    // We can check on `constraints.required` before we cast
-    if (!this.required &&
-        _.contains(_.flatten([null, utilities.NULL_VALUES]), value)) {
-      return value
-    } else if (this.required && _.contains([null, undefined, ''], value)) {
-      throw new Error('Field is required')
+    if (utilities.isNull(value)) {
+      if (!skipConstraints) {
+        constraints.check_required(this.field.name, value, this.isRequired())
+      }
+      return null
+    }
+
+    // check some constraints before cast
+    if (!skipConstraints) {
+      const pattern = this.getConstraint('pattern')
+      if (pattern) {
+        constraints.check_pattern(this.field.name, value, pattern)
+      }
     }
 
     // Cast with the appropriate handler, falling back to default if none
@@ -70,12 +77,33 @@ class Abstract {
 
     try {
       if (this.hasFormat(format) && this[handler]) {
-        return this[handler](value)
+        castValue = this[handler](value)
+      } else {
+        castValue = this.castDefault(value)
       }
-      return this.castDefault(value)
     } catch (e) {
       throw new Error('Invalid Cast Error')
     }
+
+    if (!skipConstraints) {
+      for (const constraint of Object.keys(this.field.constraints)) {
+        switch (constraint) {
+          case 'unique':
+          case 'pattern':
+          case 'required':
+            continue
+          default:
+            if (this.constraints.indexOf(constraint) === -1) {
+              throw new Error(`Field type '${this.field.type}' does ` +
+                              `not support the '${constraint}' constraint`)
+            }
+            constraints[`check_${constraint}`](this.field.name, castValue,
+                                               this.field.constraints[constraint])
+        }
+      }
+    }
+
+    return castValue
   }
 
   /**
@@ -114,6 +142,14 @@ class Abstract {
     return !!_.contains(this.formats, format)
   }
 
+  getConstraint(value) {
+    return _.result(this.field.constraints, value)
+  }
+
+  isRequired() {
+    return !!this.getConstraint('required')
+  }
+
   /**
    * Type check of value
    *
@@ -140,6 +176,7 @@ class StringType extends Abstract {
   constructor(field) {
     super(field)
 
+    this.constraints = ['required', 'pattern', 'enum', 'minLength', 'maxLength']
     this.jstype = 'string'
     this.formats = ['default', 'email', 'uri', 'binary']
     this.emailPattern = new RegExp('[^@]+@[^@]+\\.[^@]+')
@@ -182,13 +219,10 @@ class IntegerType extends Abstract {
     return 'integer'
   }
 
-  static get constraints() {
-    return ['required', 'pattern', 'enum', 'minimum', 'maximum']
-  }
-
   constructor(field) {
     super(field)
     this.js = Number
+    this.constraints = ['required', 'pattern', 'enum', 'minimum', 'maximum']
   }
 
   castDefault(value) {
@@ -208,16 +242,13 @@ class NumberType extends Abstract {
     return 'number'
   }
 
-  static get constraints() {
-    return ['required', 'pattern', 'enum', 'minimum', 'maximum']
-  }
-
   constructor(field) {
     super(field)
 
     const groupChar = (field || {}).groupChar || ','
       , decimalChar = (field || {}).decimalChar || '.'
 
+    this.constraints = ['required', 'pattern', 'enum', 'minimum', 'maximum']
     this.jstype = 'number'
     this.formats = ['default', 'currency']
     this.regex = {
@@ -263,13 +294,10 @@ class BooleanType extends Abstract {
     return 'boolean'
   }
 
-  static get constraints() {
-    return ['required', 'pattern', 'enum']
-  }
-
   constructor(field) {
     super(field)
 
+    this.constraints = ['required', 'pattern', 'enum']
     this.js = Boolean
     this.jstype = 'boolean'
     this.trueValues = utilities.TRUE_VALUES
@@ -299,13 +327,10 @@ class ArrayType extends Abstract {
     return 'array'
   }
 
-  static get constraints() {
-    return ['required', 'pattern', 'enum', 'minLength', 'maxLength']
-  }
-
   constructor(field) {
     super(field)
     this.js = Array
+    this.constraints = ['required', 'pattern', 'enum', 'minLength', 'maxLength']
   }
 
   castDefault(value) {
@@ -321,13 +346,10 @@ class ObjectType extends Abstract {
     return 'object'
   }
 
-  static get constraints() {
-    return ['required', 'pattern', 'enum', 'minimum', 'maximum']
-  }
-
   constructor(field) {
     super(field)
     this.js = Object
+    this.constraints = ['required', 'pattern', 'enum', 'minimum', 'maximum']
   }
 
   castDefault(value) {
@@ -347,16 +369,13 @@ class DateType extends Abstract {
     return 'date'
   }
 
-  static get constraints() {
-    return ['required', 'pattern', 'enum', 'minimum', 'maximum']
-  }
-
   constructor(field) {
     super(field)
 
     this.js = Object
     this.formats = ['default', 'any', 'fmt']
     this.ISO8601 = 'YYYY-MM-DD'
+    this.constraints = ['required', 'pattern', 'enum', 'minimum', 'maximum']
   }
 
   castAny(value) {
@@ -424,13 +443,10 @@ class GeoPointType extends Abstract {
     return 'geopoint'
   }
 
-  static get constraints() {
-    return ['required', 'pattern', 'enum']
-  }
-
   constructor(field) {
     super(field)
     this.formats = ['default', 'array', 'object']
+    this.constraints = ['required', 'pattern', 'enum']
   }
 
   castDefault(value) {
@@ -558,15 +574,12 @@ class GeoJSONType extends GeoPointType {
     return 'geojson'
   }
 
-  static get constraints() {
-    return ['required', 'pattern', 'enum']
-  }
-
   constructor(field) {
     super(field)
 
     this.js = Object
     this.formats = ['default', 'topojson']
+    this.constraints = ['required', 'pattern', 'enum']
 
     this.spec = {
       types: [
@@ -605,8 +618,9 @@ class AnyType extends Abstract {
     return 'any'
   }
 
-  static get constraints() {
-    return ['required', 'pattern', 'enum']
+  constructor(field) {
+    super(field)
+    this.constraints = ['required', 'pattern', 'enum']
   }
 
   cast(value) {

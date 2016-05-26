@@ -12,7 +12,7 @@ export default {
    */
   check_required(name, value, required) {
     if (required === true) {
-      if (_.isUndefined(value) || utilities.NULL_VALUES.indexOf(value) !== -1) {
+      if (_.isUndefined(value) || utilities.isNull(value) === true) {
         throw new Error(`The field "${name}" requires a value`)
       }
     }

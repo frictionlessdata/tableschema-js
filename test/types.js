@@ -6,7 +6,6 @@ import d3time from 'd3-time-format'
 const moment = require('moment')
 
 let BASE_FIELD
-// FIXME fix test to check return value after casting and not just assert
 describe('Types', () => {
   beforeEach((done) => {
     BASE_FIELD = {
@@ -28,9 +27,64 @@ describe('Types', () => {
     })
 
     it('cast empty string if no constraints', (done) => {
-      BASE_FIELD.constraints.required = false
-      assert.equal(newType(BASE_FIELD).cast(''), '')
+      assert.isNull(newType(BASE_FIELD).cast(''))
       assert.isTrue(newType(BASE_FIELD).test(''))
+      done()
+    })
+
+    it('don\'t cast empty string if constraints', (done) => {
+      assert.throws(() => {
+        newType(BASE_FIELD).cast('', false)
+      }, Error)
+      assert.isTrue(newType(BASE_FIELD).test(''))
+      done()
+    })
+
+    it('cast string if constraints pattern match', (done) => {
+      const value = 'String match tests'
+      BASE_FIELD.constraints.pattern = '/test/gmi'
+      assert.equal(newType(BASE_FIELD).cast(value, false), value)
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('unsupported constraints should throw error', (done) => {
+      const value = 'String'
+      BASE_FIELD.constraints.unknown = 1
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value, false)
+      }, Error)
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('should check constraints successfully', (done) => {
+      const value = 'String'
+      BASE_FIELD.constraints.minLength = 3
+      BASE_FIELD.constraints.maxLength = 6
+      assert.equal(newType(BASE_FIELD).cast(value, false), value)
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('should throw error on constraints', (done) => {
+      const value = 'String'
+      BASE_FIELD.constraints.minLength = 1
+      BASE_FIELD.constraints.maxLength = 3
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value, false)
+      }, Error)
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('don\'t cast string if constraints pattern does not match', (done) => {
+      const value = 'String not match'
+      assert.throws(() => {
+        BASE_FIELD.constraints.pattern = '/test/gmi'
+        newType(BASE_FIELD).cast(value, false)
+      }, Error)
+      assert.isTrue(newType(BASE_FIELD).test(value))
       done()
     })
 
@@ -42,11 +96,9 @@ describe('Types', () => {
       done()
     })
 
-    it('don\'t cast empty string by default', (done) => {
-      assert.throws(() => {
-        newType(BASE_FIELD).cast('')
-      }, Error)
-      assert.isFalse(newType(BASE_FIELD).test(''))
+    it('cast "null" value returns null', (done) => {
+      assert.isNull(newType(BASE_FIELD).cast(''))
+      assert.isTrue(newType(BASE_FIELD).test(''))
       done()
     })
 
@@ -118,6 +170,15 @@ describe('Types', () => {
         newType(BASE_FIELD).cast(1)
       }, Error)
       assert.isFalse(newType(BASE_FIELD).test(1))
+      done()
+    })
+
+    it('cast default if unknown format provided', (done) => {
+      const value = 'httpwww.example.com/'
+      BASE_FIELD.format = 'unknown'
+      assert.equal(newType(BASE_FIELD).cast(value),
+                   value)
+      assert.isTrue(newType(BASE_FIELD).test(value))
       done()
     })
   })
