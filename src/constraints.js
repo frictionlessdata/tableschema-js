@@ -10,7 +10,7 @@ export default {
    * @param required
    * @returns {boolean}
    */
-  _required(name, value, required) {
+  check_required(name, value, required) {
     if (required === true) {
       if (_.isUndefined(value) || utilities.NULL_VALUES.indexOf(value) !== -1) {
         throw new Error(`The field "${name}" requires a value`)
@@ -27,7 +27,7 @@ export default {
    * @returns {boolean}
    * @throws Error
    */
-  , _minLength(name, value, minLength) {
+  , check_minLength(name, value, minLength) {
     if (value.length < minLength) {
       throw new Error(`The field '${name}' must have a minimum length of ${minLength}`)
     }
@@ -41,7 +41,7 @@ export default {
    * @param maxLength
    * @returns {boolean}
    */
-  , _maxLength(name, value, maxLength) {
+  , check_maxLength(name, value, maxLength) {
     if (value.length > maxLength) {
       throw new Error(`The field '${name}' must have a maximum length of ${maxLength}`)
     }
@@ -55,7 +55,7 @@ export default {
    * @param minimum
    * @returns {boolean}
    */
-  , _minimum(name, value, minimum) {
+  , check_minimum(name, value, minimum) {
     let result = false
     if (utilities.isNumeric(value)) {
       result = value < minimum
@@ -78,7 +78,7 @@ export default {
    * @param maximum
    * @returns {boolean}
    */
-  , _maximum(name, value, maximum) {
+  , check_maximum(name, value, maximum) {
     let result = false
     if (utilities.isNumeric(value)) {
       result = value > maximum
@@ -103,19 +103,19 @@ export default {
    * @param pattern
    * @returns {boolean}
    */
-  , _pattern(name, value, pattern) {
+  , check_pattern(name, value, pattern) {
     const v = String(value)
       , match = pattern.match(new RegExp('^/(.*?)/([gimy]*)$'))
       , regex = new RegExp(match[1], match[2])
       , matches = regex.exec(v)
 
-    if (matches.length === 0) {
+    if (!matches || matches.length === 0) {
       throw new Error(`The value '${pattern}' for field '${name}' must match the pattern`)
     }
     return true
   }
 
-  , _enum(name, value, enumerator) {
+  , check_enum(name, value, enumerator) {
     let result
     if (_.isArray(enumerator)) {
       result = enumerator
@@ -123,13 +123,13 @@ export default {
       result = Object.keys(enumerator)
     }
 
-    if (result && result.indexOf(value) === -1) {
-      throw new Error(`The value for field '${name}' must be in the enum array`)
+    if (result && result.indexOf(value) !== -1) {
+      return true
     }
-    return true
+    throw new Error(`The value for field '${name}' must be in the enum array`)
   }
 
-  , _unique() {
+  , check_unique() {
     throw new Error('Unique constraint is not supported')
   }
 }
