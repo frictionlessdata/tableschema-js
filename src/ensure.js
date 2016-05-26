@@ -1,4 +1,5 @@
 import { _ } from 'underscore'
+import utilities from './utilities'
 
 /**
  Validate that `schema` is a valid JSON Table Schema.
@@ -78,13 +79,15 @@ export default (schema) => {
     }
 
     // IF `minLength` key, then it is an integer
-    if (isHas(constraints, 'minLength') && !isInteger(constraints.minLength)) {
+    if (isHas(constraints, 'minLength') &&
+        !utilities.isInteger(constraints.minLength)) {
       valid = false
       addError('minLength constraint must be an integer.')
     }
 
     // IF `maxLength` key, then it is an integer
-    if (isHas(constraints, 'maxLength') && !isInteger(constraints.maxLength)) {
+    if (isHas(constraints, 'maxLength') &&
+        !utilities.isInteger(constraints.maxLength)) {
       valid = false
       addError('maxLength constraint must be an integer')
     }
@@ -99,7 +102,7 @@ export default (schema) => {
     if (isHas(constraints, 'minimum')) {
       // IF `type` is integer
       if ((field.type === 'integer' || field.type === 'number')) {
-        if (!isNumeric(constraints.minimum)) {
+        if (!utilities.isNumeric(constraints.minimum)) {
           valid = false
           addError('minimum constraint which is an integer is only valid if ' +
                    'the encompassing field is also of type integer')
@@ -122,7 +125,7 @@ export default (schema) => {
     if (isHas(constraints, 'maximum')) {
       // IF `type` is integer
       if ((field.type === 'integer' || field.type === 'number')) {
-        if (!isNumeric(constraints.maximum)) {
+        if (!utilities.isNumeric(constraints.maximum)) {
           valid = false
           addError('maximum constraint which is an integer is only valid if' +
                    ' the encompassing field is also of type integer')
@@ -258,17 +261,6 @@ export default (schema) => {
 
   function isHash(value) {
     return _.isObject(value) && !_.isArray(value) && !_.isFunction(value)
-  }
-
-  function isNumeric(value) {
-    return !isNaN(parseInt(value, 10)) && isFinite(value)
-  }
-
-  function isInteger(value) {
-    if (isNumeric(value)) {
-      return Number.isInteger(+value)
-    }
-    return false
   }
 
   function isHas(source, property) {

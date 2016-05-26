@@ -130,10 +130,6 @@ class Abstract {
     }
     throw new Error()
   }
-
-  isNumeric(value) {
-    return !isNaN(parseInt(value, 10)) && isFinite(value)
-  }
 }
 
 class StringType extends Abstract {
@@ -197,7 +193,7 @@ class IntegerType extends Abstract {
     if (String(value).indexOf('.') !== -1) {
       throw new Error()
     }
-    if (this.isNumeric(value) && Number.isInteger(+value)) {
+    if (utilities.isInteger(value)) {
       return Number(value)
     }
     throw new Error()
@@ -229,12 +225,12 @@ class NumberType extends Abstract {
       .replace(this.regex.group, '')
       .replace(this.regex.decimal, '.')
 
-    if (!this.isNumeric(newValue)) {
+    if (!utilities.isNumeric(newValue)) {
       throw new Error()
     }
 
     // need to cover the case then number has .00 format
-    if (newValue.indexOf('.') !== -1 && Number.isInteger(+newValue)) {
+    if (newValue.indexOf('.') !== -1 && utilities.isInteger(newValue)) {
       const toFixed = newValue.split('.')[1].length
       return Number(newValue).toFixed(toFixed)
     }
@@ -359,8 +355,10 @@ class DateType extends Abstract {
 
   castFmt(value) {
     const date = d3time.timeParse(this.format.replace(/^fmt:/, ''))(value)
-    if (date == null)    throw new Error()
-    return date
+    if (date == null) {
+      throw new Error()
+    }
+    return moment(date)
   }
 }
 

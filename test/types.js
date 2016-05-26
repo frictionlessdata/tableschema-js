@@ -3,6 +3,8 @@ import { assert } from 'chai'
 import types from '../src/types'
 import d3time from 'd3-time-format'
 
+const moment = require('moment')
+
 let BASE_FIELD
 // FIXME fix test to check return value after casting and not just assert
 describe('Types', () => {
@@ -296,7 +298,7 @@ describe('Types', () => {
       BASE_FIELD.format = 'fmt:%d/%m/%Y'
 
       const value = '10/06/2014'
-        , result = d3time.timeParse('%d/%m/%Y')(value)
+        , result = moment(d3time.timeParse('%d/%m/%Y')(value))
 
       assert.deepEqual(newType(BASE_FIELD).cast(value), result)
       assert.isTrue(newType(BASE_FIELD).test(value))
