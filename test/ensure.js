@@ -1,10 +1,10 @@
 /* global describe, it, beforeEach */
 import { _ } from 'underscore'
 import { assert } from 'chai'
-import ensure from '../src/ensure'
+import validate from '../src/validate'
 
 let SCHEMA
-describe('Ensure', () => {
+describe('Validate', () => {
   beforeEach((done) => {
     SCHEMA = {
       fields: [
@@ -38,7 +38,7 @@ describe('Ensure', () => {
   it('ensure schema is object', (done) => {
     const schema = ''
     assert.throws(() => {
-      ensure(schema)
+      validate(schema)
     }, Array)
     done()
   })
@@ -46,7 +46,7 @@ describe('Ensure', () => {
   it('ensure schema has fields', (done) => {
     const schema = {}
     assert.throws(() => {
-      ensure(schema)
+      validate(schema)
     }, Array)
     done()
   })
@@ -54,7 +54,7 @@ describe('Ensure', () => {
   it('ensure schema has fields and fields are array', (done) => {
     const schema = { fields: ['1', '2'] }
     assert.throws(() => {
-      ensure(schema)
+      validate(schema)
     }, Array)
     done()
   })
@@ -73,7 +73,7 @@ describe('Ensure', () => {
     }
 
     assert.throws(() => {
-      ensure(schema)
+      validate(schema)
     }, Array)
     done()
   })
@@ -106,7 +106,7 @@ describe('Ensure', () => {
     }
 
     try {
-      ensure(schema)
+      validate(schema)
       assert(false)
     } catch (e) {
       assert.isArray(e)
@@ -142,7 +142,7 @@ describe('Ensure', () => {
         }]
     }
 
-    ensure(schema)
+    validate(schema)
     assert(true)
     done()
   })

@@ -10,7 +10,7 @@ export default {
    * @param required
    * @returns {boolean}
    */
-  required(name, value, required) {
+  _required(name, value, required) {
     if (required === true) {
       if (_.isUndefined(value) || utilities.NULL_VALUES.indexOf(value) !== -1) {
         throw new Error(`The field "${name}" requires a value`)
@@ -27,7 +27,7 @@ export default {
    * @returns {boolean}
    * @throws Error
    */
-  , minLength(name, value, minLength) {
+  , _minLength(name, value, minLength) {
     if (value.length < minLength) {
       throw new Error(`The field '${name}' must have a minimum length of ${minLength}`)
     }
@@ -41,7 +41,7 @@ export default {
    * @param maxLength
    * @returns {boolean}
    */
-  , maxLength(name, value, maxLength) {
+  , _maxLength(name, value, maxLength) {
     if (value.length > maxLength) {
       throw new Error(`The field '${name}' must have a maximum length of ${maxLength}`)
     }
@@ -55,7 +55,7 @@ export default {
    * @param minimum
    * @returns {boolean}
    */
-  , minimum(name, value, minimum) {
+  , _minimum(name, value, minimum) {
     let result = false
     if (utilities.isNumeric(value)) {
       result = value < minimum
@@ -78,7 +78,7 @@ export default {
    * @param maximum
    * @returns {boolean}
    */
-  , maximum(name, value, maximum) {
+  , _maximum(name, value, maximum) {
     let result = false
     if (utilities.isNumeric(value)) {
       result = value > maximum
@@ -103,19 +103,33 @@ export default {
    * @param pattern
    * @returns {boolean}
    */
-  , pattern(name, value, pattern) {
+  , _pattern(name, value, pattern) {
     const v = String(value)
       , match = pattern.match(new RegExp('^/(.*?)/([gimy]*)$'))
       , regex = new RegExp(match[1], match[2])
       , matches = regex.exec(v)
-    
+
     if (matches.length === 0) {
-      throw new Error(`The value '${pattern}' must match the pattern`)
+      throw new Error(`The value '${pattern}' for field '${name}' must match the pattern`)
     }
     return true
   }
 
-  , unique() {
+  , _enum(name, value, enumerator) {
+    let result
+    if (_.isArray(enumerator)) {
+      result = enumerator
+    } else if (_.isObject(enumerator)) {
+      result = Object.keys(enumerator)
+    }
+
+    if (result && result.indexOf(value) === -1) {
+      throw new Error(`The value for field '${name}' must be in the enum array`)
+    }
+    return true
+  }
+
+  , _unique() {
     throw new Error('Unique constraint is not supported')
   }
 }

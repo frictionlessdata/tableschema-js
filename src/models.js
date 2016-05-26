@@ -1,8 +1,7 @@
 import { _ } from 'underscore'
-import { Promise } from 'bluebird'
 import { request } from 'superagent'
 import url from 'url'
-import ensure from './ensure'
+import validate from './validate'
 import utilities from './utilities'
 import types from './types'
 
@@ -26,16 +25,12 @@ const DEFAULTS = {
  * instance. This setting **does not** mutate the actual strings
  * that come from the the input schema source.
  */
-
-export default class SchemaModel {
+export default class Schema {
   constructor(source, caseInsensitiveHeaders = false) {
     this.caseInsensitiveHeaders = caseInsensitiveHeaders
     this.typeGuesser = new types.TypeGuesser()
-    this.loadJSON(source)
 
-    if (this.schemaPromise) {
-      return this.loadSchema()
-    }
+    return this.loadJSON(source)
   }
 
   /**
@@ -231,36 +226,33 @@ export default class SchemaModel {
 
   // Load a JSON source, from string, URL or buffer, into a Python type.
   loadJSON(source) {
+    const that = this
     if (_.isString(source)) {
       const protocol = url.parse(source).protocol
       if (protocol &&
           _.contains(utilities.REMOTE_SCHEMES, protocol.replace(':', ''))) {
-        this.schemaPromise = new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
           request.get(source).end((error, response) => {
             if (error) {
-              reject(`Failed to download registry file: ${error}`)
+              reject(`Failed to download file: ${error}`)
             } else {
               try {
-                resolve(JSON.parse(response))
+                resolve(that.validateAndExpand(JSON.parse(response)))
               } catch (e) {
-                reject('Failed to parse JSON from registry file')
+                reject(e)
               }
             }
           })
         })
-        return
       }
     }
-    this.validateAndExpand(source)
-  }
-
-  /**
-   * Load schema from URL
-   *
-   * @returns {Promise}
-   */
-  loadSchema() {
-    return this.schemaPromise.then(this.validateAndExpand)
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(that.validateAndExpand(source))
+      } catch (e) {
+        reject(e)
+      }
+    })
   }
 
   primaryKey() {
@@ -280,7 +272,7 @@ export default class SchemaModel {
   }
 
   validateAndExpand(value) {
-    ensure(value)
+    validate(value)
     this.schema = this.expand(value)
     return this
   }

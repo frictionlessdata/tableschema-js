@@ -161,7 +161,6 @@ class StringType extends Abstract {
     if (!this.uriPattern.exec(value)) {
       throw new Error()
     }
-
     return value
   }
 
@@ -171,7 +170,7 @@ class StringType extends Abstract {
   }
 
   typeCheck(value) {
-    if (typeof value !== 'string') {
+    if (utilities.isNumeric(value) || typeof value !== 'string') {
       throw new Error()
     }
     return true
@@ -181,6 +180,10 @@ class StringType extends Abstract {
 class IntegerType extends Abstract {
   static get name() {
     return 'integer'
+  }
+
+  static get constraints() {
+    return ['required', 'pattern', 'enum', 'minimum', 'maximum']
   }
 
   constructor(field) {
@@ -203,6 +206,10 @@ class IntegerType extends Abstract {
 class NumberType extends Abstract {
   static get name() {
     return 'number'
+  }
+
+  static get constraints() {
+    return ['required', 'pattern', 'enum', 'minimum', 'maximum']
   }
 
   constructor(field) {
@@ -256,6 +263,10 @@ class BooleanType extends Abstract {
     return 'boolean'
   }
 
+  static get constraints() {
+    return ['required', 'pattern', 'enum']
+  }
+
   constructor(field) {
     super(field)
 
@@ -288,6 +299,10 @@ class ArrayType extends Abstract {
     return 'array'
   }
 
+  static get constraints() {
+    return ['required', 'pattern', 'enum', 'minLength', 'maxLength']
+  }
+
   constructor(field) {
     super(field)
     this.js = Array
@@ -304,6 +319,10 @@ class ArrayType extends Abstract {
 class ObjectType extends Abstract {
   static get name() {
     return 'object'
+  }
+
+  static get constraints() {
+    return ['required', 'pattern', 'enum', 'minimum', 'maximum']
   }
 
   constructor(field) {
@@ -326,6 +345,10 @@ class ObjectType extends Abstract {
 class DateType extends Abstract {
   static get name() {
     return 'date'
+  }
+
+  static get constraints() {
+    return ['required', 'pattern', 'enum', 'minimum', 'maximum']
   }
 
   constructor(field) {
@@ -399,6 +422,10 @@ class DateTimeType extends DateType {
 class GeoPointType extends Abstract {
   static get name() {
     return 'geopoint'
+  }
+
+  static get constraints() {
+    return ['required', 'pattern', 'enum']
   }
 
   constructor(field) {
@@ -531,6 +558,10 @@ class GeoJSONType extends GeoPointType {
     return 'geojson'
   }
 
+  static get constraints() {
+    return ['required', 'pattern', 'enum']
+  }
+
   constructor(field) {
     super(field)
 
@@ -574,6 +605,10 @@ class AnyType extends Abstract {
     return 'any'
   }
 
+  static get constraints() {
+    return ['required', 'pattern', 'enum']
+  }
+
   cast(value) {
     return value
   }
@@ -595,8 +630,8 @@ const Types = {
   , GeoPointType
   , GeoJSONType
   , TypeGuesser
-  , AnyType
   , StringType
+  , AnyType
 }
 
 /**
