@@ -1,6 +1,6 @@
 /* global describe, it, require */
 import fs from 'fs'
-import csv from 'csv'
+import parse from 'csv-parse'
 import _ from 'lodash'
 import { assert } from 'chai'
 import infer from '../src/infer'
@@ -10,7 +10,7 @@ describe('Infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-      csv.parse(data, (error, output) => {
+      parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
         const schema = infer(output[0], _.drop(output))
 
@@ -32,7 +32,7 @@ describe('Infer', () => {
     fs.readFile('data/data_infer_utf8.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer_utf8.csv failed')
 
-      csv.parse(data, (error, output) => {
+      parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
         const schema = infer(output[0], _.drop(output))
 
@@ -54,7 +54,7 @@ describe('Infer', () => {
     fs.readFile('data/data_infer_row_limit.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer_row_limit.csv failed')
 
-      csv.parse(data, (error, output) => {
+      parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
         const schema = infer(output[0], _.drop(output), { rowLimit: 4 })
 
@@ -81,7 +81,7 @@ describe('Infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-      csv.parse(data, (error, output) => {
+      parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
         const schema = infer(output[0], _.drop(output), { primaryKey: 'id' })
 
@@ -96,7 +96,7 @@ describe('Infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-      csv.parse(data, (error, output) => {
+      parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
         const schema = infer(output[0], _.drop(output),
                              { primaryKey: ['id', 'age'] })
@@ -114,7 +114,7 @@ describe('Infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-      csv.parse(data, (error, output) => {
+      parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
         const schema = infer(output[0], _.drop(output), { explicit: false })
 
@@ -130,7 +130,7 @@ describe('Infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-      csv.parse(data, (error, output) => {
+      parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
         const schema = infer(output[0], _.drop(output), { explicit: true })
 
