@@ -5,7 +5,7 @@ import d3time from 'd3-time-format'
 
 const moment = require('moment')
   , typeNames = [
-  'BooleanType'
+    'BooleanType'
   , 'IntegerType'
   , 'DateType'
   , 'TimeType'
@@ -17,7 +17,7 @@ const moment = require('moment')
   , 'NumberType'
   , 'StringType'
   , 'AnyType'
-]
+  ]
 
 class Abstract {
   constructor(field) {

@@ -36,3 +36,5 @@ rules:
   eqeqeq:
     - 1
     - smart
+  no-unused-vars:
+    - 1
