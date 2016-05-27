@@ -1,4 +1,4 @@
-import * as _ from 'underscore'
+import _ from 'lodash'
 import utilities from './utilities'
 
 /**
@@ -12,7 +12,7 @@ import utilities from './utilities'
  */
 export default (schema) => {
   const errors = []
-    , fieldNames = _.map(_.result(schema, 'fields') || [], _.property('name'))
+    , fieldNames = _.map(schema.fields || [], _.property('name'))
   let valid = true
 
   /**
@@ -63,88 +63,94 @@ export default (schema) => {
   /**
    * Constraints may contain certain keys (each has a specific meaning)
    */
-  _.chain(schema.fields).filter(field => !!field.constraints).each(field => {
-    const constraints = field.constraints
+  _.chain(schema.fields)
+    .filter(field => !!field.constraints)
+    .each(field => {
+      const constraints = field.constraints
 
-    // IF `required` key, then it is a boolean
-    if (isHas(constraints, 'required') && !_.isBoolean(constraints.required)) {
-      valid = false
-      addError('required constraint must be a boolean.')
-    }
-
-    // IF `unique` key, then it is a boolean
-    if (isHas(constraints, 'unique') && !_.isBoolean(constraints.unique)) {
-      valid = false
-      addError('unique constraint must be a boolean.')
-    }
-
-    // IF `minLength` key, then it is an integer
-    if (isHas(constraints, 'minLength') &&
-        !utilities.isInteger(constraints.minLength)) {
-      valid = false
-      addError('minLength constraint must be an integer.')
-    }
-
-    // IF `maxLength` key, then it is an integer
-    if (isHas(constraints, 'maxLength') &&
-        !utilities.isInteger(constraints.maxLength)) {
-      valid = false
-      addError('maxLength constraint must be an integer')
-    }
-
-    // IF `pattern` key, then it is a regex
-    if (isHas(constraints, 'pattern') && !_.isString(constraints.pattern)) {
-      valid = false
-      addError('pattern constraint must be a string.')
-    }
-
-    // IF `minimum` key, then it DEPENDS on `field` TYPE
-    if (isHas(constraints, 'minimum')) {
-      // IF `type` is integer
-      if ((field.type === 'integer' || field.type === 'number')) {
-        if (!utilities.isNumeric(constraints.minimum)) {
-          valid = false
-          addError('minimum constraint which is an integer is only valid if ' +
-                   'the encompassing field is also of type integer')
-        }
-      } else if ((field.type === 'date' || field.type === 'datetime')) {
-        if (!_.isDate(constraints.minimum)) {
-          // WARN Probably need to check for moment() type if we decide to go
-          // with moment() for dates IF `type` is date
-          valid = false
-          addError('minimum constraint which is a date is only valid if the ' +
-                   'encompassing field is also of type date')
-        }
-      } else {
+      // IF `required` key, then it is a boolean
+      if (isHas(constraints, 'required') &&
+          !_.isBoolean(constraints.required)) {
         valid = false
-        addError('minimum constraint is present with unclear application' +
-                 ' (field is not an integer or a date)')
+        addError('required constraint must be a boolean.')
       }
-    }
 
-    if (isHas(constraints, 'maximum')) {
-      // IF `type` is integer
-      if ((field.type === 'integer' || field.type === 'number')) {
-        if (!utilities.isNumeric(constraints.maximum)) {
-          valid = false
-          addError('maximum constraint which is an integer is only valid if' +
-                   ' the encompassing field is also of type integer')
-        }
-      } else if ((field.type === 'date' || field.type === 'datetime')) {
-        if (!_.isDate(constraints.maximum)) {
-          // WARN Probably need to check for moment() type if we decide to go
-          // with moment() for dates IF `type` is date
-          valid = false
-          addError('maximum constraint which is a date is only valid if the' +
-                   ' encompassing field is also of type date')
-        }
-      } else {
+      // IF `unique` key, then it is a boolean
+      if (isHas(constraints, 'unique') && !_.isBoolean(constraints.unique)) {
         valid = false
-        addError('maximum constraint is present with unclear application' +
-                 ' (field is not an integer or a date)')
+        addError('unique constraint must be a boolean.')
       }
-    }
-  })
+
+      // IF `minLength` key, then it is an integer
+      if (isHas(constraints, 'minLength') &&
+          !utilities.isInteger(constraints.minLength)) {
+        valid = false
+        addError('minLength constraint must be an integer.')
+      }
+
+      // IF `maxLength` key, then it is an integer
+      if (isHas(constraints, 'maxLength') &&
+          !utilities.isInteger(constraints.maxLength)) {
+        valid = false
+        addError('maxLength constraint must be an integer')
+      }
+
+      // IF `pattern` key, then it is a regex
+      if (isHas(constraints, 'pattern') && !_.isString(constraints.pattern)) {
+        valid = false
+        addError('pattern constraint must be a string.')
+      }
+
+      // IF `minimum` key, then it DEPENDS on `field` TYPE
+      if (isHas(constraints, 'minimum')) {
+        // IF `type` is integer
+        if ((field.type === 'integer' || field.type === 'number')) {
+          if (!utilities.isNumeric(constraints.minimum)) {
+            valid = false
+            addError(
+              'minimum constraint which is an integer is only valid if ' +
+              'the encompassing field is also of type integer')
+          }
+        } else if ((field.type === 'date' || field.type === 'datetime')) {
+          if (!_.isDate(constraints.minimum)) {
+            // WARN Probably need to check for moment() type if we decide to go
+            // with moment() for dates IF `type` is date
+            valid = false
+            addError(
+              'minimum constraint which is a date is only valid if the ' +
+              'encompassing field is also of type date')
+          }
+        } else {
+          valid = false
+          addError('minimum constraint is present with unclear application' +
+                   ' (field is not an integer or a date)')
+        }
+      }
+
+      if (isHas(constraints, 'maximum')) {
+        // IF `type` is integer
+        if ((field.type === 'integer' || field.type === 'number')) {
+          if (!utilities.isNumeric(constraints.maximum)) {
+            valid = false
+            addError('maximum constraint which is an integer is only valid if' +
+                     ' the encompassing field is also of type integer')
+          }
+        } else if ((field.type === 'date' || field.type === 'datetime')) {
+          if (!_.isDate(constraints.maximum)) {
+            // WARN Probably need to check for moment() type if we decide to go
+            // with moment() for dates IF `type` is date
+            valid = false
+            addError('maximum constraint which is a date is only valid if the' +
+                     ' encompassing field is also of type date')
+          }
+        } else {
+          valid = false
+          addError('maximum constraint is present with unclear application' +
+                   ' (field is not an integer or a date)')
+        }
+      }
+    })
+    .value()
 
   // The hash MAY contain a key `primaryKey`
   if (schema.primaryKey) {
@@ -152,13 +158,13 @@ export default (schema) => {
     // `primaryKey` MUST be a string or an array
     // Ensure that the primary key matches field names
     if (_.isString(primaryKey)) {
-      if (!_.contains(fieldNames, primaryKey)) {
+      if (!_.includes(fieldNames, primaryKey)) {
         valid = false
         addError('primaryKey value must be found in the schema field names')
       }
     } else if (_.isArray(primaryKey)) {
       _.each(primaryKey, pk => {
-        if (!_.contains(fieldNames, pk)) {
+        if (!_.includes(fieldNames, pk)) {
           valid = false
           addError('primaryKey value must be found in the schema field names')
         }
@@ -194,7 +200,7 @@ export default (schema) => {
       // Ensure that `foreignKey.fields` match field names
       _.each(foreignKeys, fk => {
         if (_.isString(fk.fields)) {
-          if (!_.contains(fieldNames, fk.fields)) {
+          if (!_.includes(fieldNames, fk.fields)) {
             valid = false
             addError('foreignKey.fields must correspond with field names')
           }
@@ -214,13 +220,13 @@ export default (schema) => {
         }
 
         // Ensure that `foreignKey.reference` has a `resource` key
-        if (!_.contains(_.keys(fk.reference), 'resource')) {
+        if (!_.includes(_.keys(fk.reference), 'resource')) {
           valid = false
           addError('foreignKey.reference must have a resource key.')
         }
 
         // Ensure that `foreignKey.reference` has a `fields` key
-        if (!_.contains(_.keys(fk.reference), 'fields')) {
+        if (!_.includes(_.keys(fk.reference), 'fields')) {
           valid = false
           addError('foreignKey.reference must have a fields key.')
         }
