@@ -1,7 +1,7 @@
 /* global describe, beforeEach, it */
 import { _ } from 'underscore'
 import { assert } from 'chai'
-import Schema from '../src/model'
+import Schema from '../src/schema'
 
 let SCHEMA
 const SCHEMA_MIN = {

@@ -1,5 +1,4 @@
 /* global describe, it, beforeEach */
-import { _ } from 'underscore'
 import { assert } from 'chai'
 import validate from '../src/validate'
 

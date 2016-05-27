@@ -16,14 +16,15 @@ const DEFAULTS = {
  * Providers handy helpers for ingesting, validating and outputting
  * JSON Table Schemas: http://dataprotocols.org/json-table-schema/
  *
- * @param {string|dict} source: A filepath, url or dictionary that represents a
+ * @param {string|JSON} source: A filepath, url or object that represents a
  *   schema
  *
  * @param {boolean} caseInsensitiveHeaders: if True, headers should be
- * considered case insensitive, and `SchemaModel` forces all
- * headers to lowercase when they are represented via a model
- * instance. This setting **does not** mutate the actual strings
- * that come from the the input schema source.
+ *   considered case insensitive, and `Schema` forces all headers to lowercase
+ *   when they are represented via a model instance. This setting **does not**
+ *   mutate the origin that come from the the input schema source.
+ *
+ * @returns Promise
  */
 export default class Schema {
   constructor(source, caseInsensitiveHeaders = false) {
@@ -144,12 +145,22 @@ export default class Schema {
       })
   }
 
+  /**
+   * Get fields of schema
+   *
+   * @returns {Array}
+   */
   fields() {
-    return this.schema.fields
+    return this.descriptor.fields
   }
 
+  /**
+   * Get foregn keys of schema
+   *
+   * @returns {Array}
+   */
   foreignKeys() {
-    return this.schema.foreignKeys
+    return this.descriptor.foreignKeys
   }
 
   /**
@@ -215,8 +226,13 @@ export default class Schema {
     }
   }
 
+  /**
+   * Get names of the headers
+   *
+   * @returns {Array}
+   */
   headers() {
-    const raw = _.chain(this.schema.fields).map(_.property('name')).value()
+    const raw = _.chain(this.descriptor.fields).map(_.property('name')).value()
 
     if (this.caseInsensitiveHeaders) {
       return _.invoke(raw, 'toLowerCase')
@@ -224,13 +240,15 @@ export default class Schema {
     return raw
   }
 
-  // Load a JSON source, from string, URL or buffer, into a Python type.
+  /**
+   * Load a JSON source, from string, URL or buffer
+   * @param source
+   * @returns {Promise}
+   */
   loadJSON(source) {
     const that = this
     if (_.isString(source)) {
-      const protocol = url.parse(source).protocol
-      if (protocol &&
-          _.contains(utilities.REMOTE_SCHEMES, protocol.replace(':', ''))) {
+      if (utilities.isURL(url.parse(source).protocol)) {
         return new Promise((resolve, reject) => {
           request.get(source).end((error, response) => {
             if (error) {
@@ -255,12 +273,20 @@ export default class Schema {
     })
   }
 
+  /**
+   * Get primary key
+   * @returns {string|Array}
+   */
   primaryKey() {
-    return this.schema.primaryKey
+    return this.descriptor.primaryKey
   }
 
+  /**
+   * Get all headers with required constraints set to true
+   * @returns {Array}
+   */
   requiredHeaders() {
-    const raw = _.chain(this.schema.fields)
+    const raw = _.chain(this.descriptor.fields)
       .filter(field => field.constraints.required === true)
       .map(_.property('name'))
       .value()
@@ -273,7 +299,7 @@ export default class Schema {
 
   validateAndExpand(value) {
     validate(value)
-    this.schema = this.expand(value)
+    this.descriptor = this.expand(value)
     return this
   }
 }

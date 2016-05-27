@@ -18,4 +18,9 @@ export default {
   , isNull(value) {
     return value === null || this.NULL_VALUES.indexOf(value) !== -1
   }
+
+  , isURL(protocol) {
+    if (!protocol) return false
+    return this.REMOTE_SCHEMES.indexOf(protocol.replace(':', '')) !== -1
+  }
 }

@@ -1,8 +1,8 @@
 /* global describe, it, require */
 import fs from 'fs'
+import csv from 'csv'
 import { _ } from 'underscore'
 import { assert } from 'chai'
-import csv from 'csv'
 import infer from '../src/infer'
 
 describe('Infer', () => {
