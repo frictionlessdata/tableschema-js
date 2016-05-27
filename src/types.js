@@ -2,9 +2,9 @@ import _ from 'lodash'
 import utilities from './utilities'
 import constraints from './constraints'
 import d3time from 'd3-time-format'
+import moment from 'moment'
 
-const moment = require('moment')
-  , typeNames = [
+const typeNames = [
   'BooleanType'
   , 'IntegerType'
   , 'DateType'
@@ -300,7 +300,6 @@ class BooleanType extends Abstract {
     this.constraints = ['required', 'pattern', 'enum']
     this.js = Boolean
     this.jstype = 'boolean'
-    this.falseValues = utilities.FALSE_VALUES
   }
 
   castDefault(value) {

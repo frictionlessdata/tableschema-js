@@ -34,10 +34,10 @@ export default (headers, values, options = {}) => {
   schema.fields = headers.map(header => {
     const constraints = {}
       , descriptor = {
-      name: header
+        name: header
       , title: ''
       , description: ''
-    }
+      }
 
     if (opts.explicit) {
       constraints.required = true
