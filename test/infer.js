@@ -1,7 +1,7 @@
 /* global describe, it, require */
 import fs from 'fs'
 import csv from 'csv'
-import { _ } from 'underscore'
+import _ from 'lodash'
 import { assert } from 'chai'
 import infer from '../src/infer'
 
@@ -12,7 +12,7 @@ describe('Infer', () => {
 
       csv.parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.rest(output))
+        const schema = infer(output[0], _.drop(output))
 
         assert.property(schema, 'fields')
         assert.isArray(schema.fields)
@@ -34,7 +34,7 @@ describe('Infer', () => {
 
       csv.parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.rest(output))
+        const schema = infer(output[0], _.drop(output))
 
         assert.property(schema, 'fields')
         assert.isArray(schema.fields)
@@ -56,7 +56,7 @@ describe('Infer', () => {
 
       csv.parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.rest(output), { rowLimit: 4 })
+        const schema = infer(output[0], _.drop(output), { rowLimit: 4 })
 
         assert.property(schema, 'fields')
         assert.isArray(schema.fields)
@@ -69,11 +69,9 @@ describe('Infer', () => {
         }
         // here need to check the type of the value, because without row limit
         // parameter the type of value can change
-        assert.equal(_.findWhere(schema.fields, { name: 'id' }).type, 'integer')
-        assert.equal(_.findWhere(schema.fields, { name: 'age' }).type,
-                     'integer')
-        assert.equal(_.findWhere(schema.fields, { name: 'name' }).type,
-                     'string')
+        assert.equal(_.find(schema.fields, { name: 'id' }).type, 'integer')
+        assert.equal(_.find(schema.fields, { name: 'age' }).type, 'integer')
+        assert.equal(_.find(schema.fields, { name: 'name' }).type, 'string')
         done()
       })
     })
@@ -85,7 +83,7 @@ describe('Infer', () => {
 
       csv.parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.rest(output), { primaryKey: 'id' })
+        const schema = infer(output[0], _.drop(output), { primaryKey: 'id' })
 
         assert.property(schema, 'primaryKey')
         assert.equal(schema.primaryKey, 'id')
@@ -100,7 +98,7 @@ describe('Infer', () => {
 
       csv.parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.rest(output),
+        const schema = infer(output[0], _.drop(output),
                              { primaryKey: ['id', 'age'] })
 
         assert.property(schema, 'primaryKey')
@@ -118,7 +116,7 @@ describe('Infer', () => {
 
       csv.parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.rest(output), { explicit: false })
+        const schema = infer(output[0], _.drop(output), { explicit: false })
 
         for (const field of schema.fields) {
           assert.notProperty(field, 'constraints')
@@ -134,7 +132,7 @@ describe('Infer', () => {
 
       csv.parse(data, (error, output) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.rest(output), { explicit: true })
+        const schema = infer(output[0], _.drop(output), { explicit: true })
 
         for (const field of schema.fields) {
           assert.property(field, 'constraints')

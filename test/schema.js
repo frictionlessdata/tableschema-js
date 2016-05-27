@@ -1,5 +1,5 @@
 /* global describe, beforeEach, it */
-import { _ } from 'underscore'
+import _ from 'lodash'
 import { assert } from 'chai'
 import Schema from '../src/schema'
 
@@ -97,18 +97,17 @@ describe('Models', () => {
 
       assert.isArray(stringTypes)
       assert.equal(stringTypes.length, 3)
-      assert.equal(_.findWhere(stringTypes, { name: 'id' }).type, 'string')
-      assert.equal(_.findWhere(stringTypes, { name: 'name' }).type, 'string')
-      assert.equal(_.findWhere(stringTypes, { name: 'occupation' }).type,
-                   'string')
+      assert.equal(_.find(stringTypes, { name: 'id' }).type, 'string')
+      assert.equal(_.find(stringTypes, { name: 'name' }).type, 'string')
+      assert.equal(_.find(stringTypes, { name: 'occupation' }).type, 'string')
 
       assert.isArray(numberTypes)
       assert.equal(numberTypes.length, 1)
-      assert.equal(_.findWhere(numberTypes, { name: 'height' }).type, 'number')
+      assert.equal(_.find(numberTypes, { name: 'height' }).type, 'number')
 
       assert.isArray(integerTypes)
       assert.equal(integerTypes.length, 1)
-      assert.equal(_.findWhere(integerTypes, { name: 'age' }).type, 'integer')
+      assert.equal(_.find(integerTypes, { name: 'age' }).type, 'integer')
 
       done()
     }, error => {
@@ -120,7 +119,7 @@ describe('Models', () => {
     SCHEMA.fields = SCHEMA.fields.map((field) => {
       const copyField = _.extend({}, field)
       copyField.name = copyField.name[0].toUpperCase() +
-                       _.rest(copyField.name).join('').toLowerCase()
+                       _.drop(copyField.name).join('').toLowerCase()
       return copyField
     })
 
@@ -159,8 +158,8 @@ describe('Models', () => {
       const stringTypes = schema.getFieldsByType('string')
       assert.isArray(stringTypes)
       assert.equal(stringTypes.length, 2)
-      assert.equal(_.findWhere(stringTypes, { name: 'id' }).type, 'string')
-      assert.equal(_.findWhere(stringTypes, { name: 'height' }).type, 'string')
+      assert.equal(_.find(stringTypes, { name: 'id' }).type, 'string')
+      assert.equal(_.find(stringTypes, { name: 'height' }).type, 'string')
       done()
     }, (error) => {
       assert.isNull(error)

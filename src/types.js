@@ -1,11 +1,11 @@
-import * as _ from 'underscore'
+import _ from 'lodash'
 import utilities from './utilities'
 import constraints from './constraints'
 import d3time from 'd3-time-format'
 
 const moment = require('moment')
   , typeNames = [
-    'BooleanType'
+  'BooleanType'
   , 'IntegerType'
   , 'DateType'
   , 'TimeType'
@@ -17,7 +17,7 @@ const moment = require('moment')
   , 'NumberType'
   , 'StringType'
   , 'AnyType'
-  ]
+]
 
 class Abstract {
   constructor(field) {
@@ -86,7 +86,7 @@ class Abstract {
     }
 
     if (!skipConstraints) {
-      for (const constraint of Object.keys(this.field.constraints)) {
+      for (const constraint of _.keys(this.field.constraints)) {
         switch (constraint) {
           case 'unique':
           case 'pattern':
@@ -139,11 +139,11 @@ class Abstract {
   }
 
   hasFormat(format) {
-    return !!_.contains(this.formats, format)
+    return !!_.includes(this.formats, format)
   }
 
   getConstraint(value) {
-    return _.result(this.field.constraints, value)
+    return this.field.constraints[value]
   }
 
   isRequired() {
@@ -300,7 +300,6 @@ class BooleanType extends Abstract {
     this.constraints = ['required', 'pattern', 'enum']
     this.js = Boolean
     this.jstype = 'boolean'
-    this.trueValues = utilities.TRUE_VALUES
     this.falseValues = utilities.FALSE_VALUES
   }
 
@@ -313,9 +312,9 @@ class BooleanType extends Abstract {
     }
 
     const v = String(value).trim().toLowerCase()
-    if (_.contains(this.trueValues, v)) {
+    if (utilities.isTrue(v)) {
       return true
-    } else if (_.contains(this.falseValues, v)) {
+    } else if (utilities.isFalse(v)) {
       return false
     }
     throw new Error()
@@ -677,7 +676,7 @@ function TypeGuesser(options) {
   }
 
   this.getType = function getType(name, field) {
-    for (const T of Object.keys(Types)) {
+    for (const T of _.keys(Types)) {
       if (Types[T].name === name) {
         return new Types[T](field)
       }

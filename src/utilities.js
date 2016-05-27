@@ -19,6 +19,14 @@ export default {
     return value === null || this.NULL_VALUES.indexOf(value) !== -1
   }
 
+  , isTrue(value) {
+    return value === true || this.TRUE_VALUES.indexOf(value) !== -1
+  }
+
+  , isFalse(value) {
+    return value === false || this.FALSE_VALUES.indexOf(value) !== -1
+  }
+
   , isURL(protocol) {
     if (!protocol) return false
     return this.REMOTE_SCHEMES.indexOf(protocol.replace(':', '')) !== -1

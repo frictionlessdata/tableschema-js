@@ -1,4 +1,4 @@
-import { _ } from 'underscore'
+import _ from 'lodash'
 import { request } from 'superagent'
 import url from 'url'
 import validate from './validate'
@@ -184,7 +184,8 @@ export default class Schema {
    */
   getField(fieldName, index = 0) {
     try {
-      return _.where(this.fields(), { name: fieldName })[index]
+      return _.filter(this.fields(),
+                      field => _.includes(fieldName, field.name))[index]
     } catch (e) {
     }
     throw new Error(`No such field name in schema: ${fieldName}`)
@@ -197,7 +198,7 @@ export default class Schema {
    * @returns {Array}
    */
   getFieldsByType(typeName) {
-    return _.where(this.fields(), { type: typeName })
+    return _.filter(this.fields(), field => _.includes(typeName, field.type))
   }
 
   /**
@@ -235,7 +236,7 @@ export default class Schema {
     const raw = _.chain(this.descriptor.fields).map(_.property('name')).value()
 
     if (this.caseInsensitiveHeaders) {
-      return _.invoke(raw, 'toLowerCase')
+      return _.invokeMap(raw, 'toLowerCase')
     }
     return raw
   }
@@ -292,7 +293,7 @@ export default class Schema {
       .value()
 
     if (this.caseInsensitiveHeaders) {
-      return _.invoke(raw, 'toLowerCase')
+      return _.invokeMap(raw, 'toLowerCase')
     }
     return raw
   }

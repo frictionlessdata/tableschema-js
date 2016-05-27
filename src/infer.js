@@ -1,4 +1,4 @@
-import * as _ from 'underscore'
+import _ from 'lodash'
 import types from './types'
 
 /**
@@ -34,10 +34,10 @@ export default (headers, values, options = {}) => {
   schema.fields = headers.map(header => {
     const constraints = {}
       , descriptor = {
-        name: header
+      name: header
       , title: ''
       , description: ''
-      }
+    }
 
     if (opts.explicit) {
       constraints.required = true
@@ -55,13 +55,12 @@ export default (headers, values, options = {}) => {
   })
 
   headers.forEach((header, index) => {
-    let columnValues = _.pluck(values, index)
+    let columnValues = _.map(values, (value) => value[index])
     const field = schema.fields[index]
 
     if (opts.rowLimit) {
-      columnValues = _.first(columnValues, opts.rowLimit)
+      columnValues = _.take(columnValues, opts.rowLimit)
     }
-
     field.type = guesser.multiCast(columnValues)
     field.format = 'default'
   })
