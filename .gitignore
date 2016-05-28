@@ -1,11 +1,16 @@
 .Python
 .DS_Store
-.idea
+.idea/
+.publish/
 .projectile
 *.sublime-project
 *.sublime-workspace
-__pycache__/
 *.py[cod]
+__pycache__/
 bower_components/*
 node_modules/*
-.publish/
+coverage/
+# A browser distribution is built in `dist` when pushing to npm.
+dist/
+# Code transpiled to ES5 is built in `lib` when pushing to npm.
+lib/

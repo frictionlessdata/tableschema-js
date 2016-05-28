@@ -1,83 +1,144 @@
-var _ = require('underscore');
-var assert = require('chai').assert;
-var csv = require('csv');
-var CSVData = require('./CSV');
-var infer = require('../').infer;
-var types = require('../').types;
+/* global describe, it, require */
+import fs from 'fs'
+import parse from 'csv-parse'
+import _ from 'lodash'
+import { assert } from 'chai'
+import infer from '../src/infer'
 
+describe('Infer', () => {
+  it('produce schema from a generic .csv', (done) => {
+    fs.readFile('data/data_infer.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-// WARN Use Model in test cases instead of validating schema directly
-describe('Infer', function() {
-  it('produce schema from a generic .csv', function(done, err) {
-    csv.parse(CSVData.dataInfer, function(E, D) {
-      var schema = infer(D[0], _.rest(D));
-      assert.equal(_.findWhere(schema.fields, {name: 'id'}).type, 'integer');
-      assert.equal(_.findWhere(schema.fields, {name: 'age'}).type, 'integer');
-      assert.equal(_.findWhere(schema.fields, {name: 'name'}).type, 'string');
-      done();
-    });
-  });
+      parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.drop(output))
 
-  it('respect rowLimit param', function(done, err) {
-    csv.parse(CSVData.dataInferRowLimit, function(E, D) {
-      var schema = infer(D[0], _.rest(D), {rowLimit: 4});
+        assert.property(schema, 'fields')
+        assert.isArray(schema.fields)
+        for (const field of schema.fields) {
+          assert.property(field, 'name')
+          assert.property(field, 'title')
+          assert.property(field, 'description')
+          assert.property(field, 'type')
+          assert.property(field, 'format')
+        }
+        done()
+      })
+    })
+  })
 
-      assert.equal(_.findWhere(schema.fields, {name: 'id'}).type, 'integer');
-      assert.equal(_.findWhere(schema.fields, {name: 'age'}).type, 'integer');
-      assert.equal(_.findWhere(schema.fields, {name: 'name'}).type, 'string');
-      done();
-    });
-  });
+  it('produce schema from a generic .csv UTF-8 encoded', (done) => {
+    fs.readFile('data/data_infer_utf8.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer_utf8.csv failed')
 
-  it('respect primaryKey param', function(done, err) {
-    csv.parse(CSVData.dataInferRowLimit, function(E, D) {
-      var primaryKey = 'id';
-      var schema = infer(D[0], _.rest(D), {primaryKey: primaryKey});
+      parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.drop(output))
 
+        assert.property(schema, 'fields')
+        assert.isArray(schema.fields)
+        for (const field of schema.fields) {
+          assert.property(field, 'name')
+          assert.property(field, 'title')
+          assert.property(field, 'description')
+          assert.property(field, 'type')
+          assert.property(field, 'format')
+        }
+        done()
+      })
+    })
+  })
 
-      assert.equal(schema.primaryKey, primaryKey);
-      done();
-    });
-  });
+  it('respect row limit parameter', (done) => {
+    fs.readFile('data/data_infer_row_limit.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer_row_limit.csv failed')
 
-  it('respect primaryKey param passed as list of fields', function(done, err) {
-    csv.parse(CSVData.dataInfer, function(E, D) {
-      var primaryKey = ['id', 'age'];
-      var schema = infer(D[0], _.rest(D), {primaryKey: primaryKey});
+      parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.drop(output), { rowLimit: 4 })
 
+        assert.property(schema, 'fields')
+        assert.isArray(schema.fields)
+        for (const field of schema.fields) {
+          assert.property(field, 'name')
+          assert.property(field, 'title')
+          assert.property(field, 'description')
+          assert.property(field, 'type')
+          assert.property(field, 'format')
+        }
+        // here need to check the type of the value, because without row limit
+        // parameter the type of value can change
+        assert.equal(_.find(schema.fields, { name: 'id' }).type, 'integer')
+        assert.equal(_.find(schema.fields, { name: 'age' }).type, 'integer')
+        assert.equal(_.find(schema.fields, { name: 'name' }).type, 'string')
+        done()
+      })
+    })
+  })
 
-      assert.equal(schema.primaryKey, primaryKey);
-      done();
-    });
-  });
+  it('respect primaryKey parameter', (done) => {
+    fs.readFile('data/data_infer.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-  it('do not create constraints if explicit param passed as False', function(done, err) {
-    csv.parse(CSVData.dataInfer, function(E, D) {
-      var schema = infer(D[0], _.rest(D), {explicit: false});
+      parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.drop(output), { primaryKey: 'id' })
 
+        assert.property(schema, 'primaryKey')
+        assert.equal(schema.primaryKey, 'id')
+        done()
+      })
+    })
+  })
 
-      assert.notOk(schema.fields[0].constraints);
-      done();
-    });
-  });
+  it('respect primaryKey parameter as an array', (done) => {
+    fs.readFile('data/data_infer.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-  it('create constraints if explicit param passed as True', function(done, err) {
-    csv.parse(CSVData.dataInfer, function(E, D) {
-      var schema = infer(D[0], _.rest(D), {explicit: true});
+      parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.drop(output),
+                             { primaryKey: ['id', 'age'] })
 
+        assert.property(schema, 'primaryKey')
+        assert.isArray(schema.primaryKey)
+        assert.isTrue(schema.primaryKey.indexOf('id') !== -1)
+        assert.isTrue(schema.primaryKey.indexOf('age') !== -1)
+        done()
+      })
+    })
+  })
 
-      assert.ok(schema.fields[0].constraints);
-      done();
-    });
-  });
+  it('do not create constraints if explicit param passed as FALSE', (done) => {
+    fs.readFile('data/data_infer.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-  it('Should take the best suitable type', function(done, err) {
-    csv.parse(CSVData.dataDates, function(E, D) {
-      var schema = infer(D[0], _.rest(D));
-      assert.equal(schema.fields[0].type, 'integer');
-      assert.equal(schema.fields[1].type, 'datetime');
-      done();
-    });
-  });
+      parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.drop(output), { explicit: false })
 
-});
+        for (const field of schema.fields) {
+          assert.notProperty(field, 'constraints')
+        }
+        done()
+      })
+    })
+  })
+
+  it('create constraints if explicit param passed as TRUE', (done) => {
+    fs.readFile('data/data_infer.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer.csv failed')
+
+      parse(data, (error, output) => {
+        assert.isNull(error, 'CSV parse failed')
+        const schema = infer(output[0], _.drop(output), { explicit: true })
+
+        for (const field of schema.fields) {
+          assert.property(field, 'constraints')
+        }
+        done()
+      })
+    })
+  })
+})

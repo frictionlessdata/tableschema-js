@@ -1,320 +1,629 @@
-var _ = require('underscore');
-var assert = require('chai').assert;
-var should = require('chai').should();
-var types = require('../').types;
+/* global describe, beforeEach, it, require */
+import { assert } from 'chai'
+import types from '../src/types'
+import d3time from 'd3-time-format'
 
-var BASE_FIELD;
+const moment = require('moment')
 
+let BASE_FIELD
+describe('Types', () => {
+  beforeEach((done) => {
+    BASE_FIELD = {
+      constraints: { required: true }
+      , format: 'default'
+      , name: 'Name'
+      , type: 'string'
+    }
+    done()
+  })
 
-beforeEach(function(done) {
-  BASE_FIELD = {
-    'constraints': {'required': true},
-    'format'     : 'default',
-    'name'       : 'Name',
-    'type'       : 'string'
-  };
+  describe('StringType', () => {
+    const newType = base => new types.StringType(base)
 
-  done();
-});
+    it('cast string', (done) => {
+      assert.equal(newType(BASE_FIELD).cast('string'), 'string')
+      assert.isTrue(newType(BASE_FIELD).test('string'))
+      done()
+    })
 
-describe('StringType', function() {
-  it('cast string', function(done, err) {
-    assert((new types.StringType(BASE_FIELD)).cast('string'));
-    done();
-  });
+    it('cast empty string if no constraints', (done) => {
+      assert.isNull(newType(BASE_FIELD).cast(''))
+      assert.isTrue(newType(BASE_FIELD).test(''))
+      done()
+    })
 
-  it('cast empty string if no constraints', function(done, err) {
-    BASE_FIELD.constraints.required = false;
-    assert((new types.StringType(BASE_FIELD)).cast(''));
-    done();
-  });
+    it('don\'t cast empty string if constraints', (done) => {
+      assert.throws(() => {
+        newType(BASE_FIELD).cast('', false)
+      }, Error)
+      assert.isTrue(newType(BASE_FIELD).test(''))
+      done()
+    })
 
-  it('don\'t cast digits', function(done, err) {
-    assert.notOk((new types.StringType(BASE_FIELD)).cast(1));
-    done();
-  });
+    it('cast string if constraints pattern match', (done) => {
+      const value = 'String match tests'
+      BASE_FIELD.constraints.pattern = '/test/gmi'
+      assert.equal(newType(BASE_FIELD).cast(value, false), value)
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
 
-  it('don\'t cast empty string by default', function(done, err) {
-    assert.notOk((new types.StringType(BASE_FIELD)).cast(''));
-    done();
-  });
-});
+    it('unsupported constraints should throw error', (done) => {
+      const value = 'String'
+      BASE_FIELD.constraints.unknown = 1
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value, false)
+      }, Error)
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
 
-describe('IntegerType', function() {
-  beforeEach(function(done) {
-    BASE_FIELD.type = 'integer';
-    done();
-  });
+    it('should check constraints successfully', (done) => {
+      const value = 'String'
+      BASE_FIELD.constraints.minLength = 3
+      BASE_FIELD.constraints.maxLength = 6
+      assert.equal(newType(BASE_FIELD).cast(value, false), value)
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
 
-  it('cast integer', function(done, err) {
-    assert((new types.IntegerType(BASE_FIELD)).cast(1));
-    done();
-  });
+    it('should throw error on constraints', (done) => {
+      const value = 'String'
+      BASE_FIELD.constraints.minLength = 1
+      BASE_FIELD.constraints.maxLength = 3
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value, false)
+      }, Error)
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
 
-  it('cast string "0"', function(done, err) {
-    assert((new types.IntegerType(BASE_FIELD)).cast('0'));
-    done();
-  });
+    it('don\'t cast string if constraints pattern does not match', (done) => {
+      const value = 'String not match'
+      assert.throws(() => {
+        BASE_FIELD.constraints.pattern = '/test/gmi'
+        newType(BASE_FIELD).cast(value, false)
+      }, Error)
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
 
-  it('don\'t cast string', function(done, err) {
-    assert.notOk((new types.IntegerType(BASE_FIELD)).cast('string'));
-    done();
-  });
-});
+    it('don\'t cast digits', (done) => {
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(1)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(1))
+      done()
+    })
 
-describe('NumberType', function() {
-  beforeEach(function(done) {
-    BASE_FIELD.type = 'number';
-    done();
-  });
+    it('cast "null" value returns null', (done) => {
+      assert.isNull(newType(BASE_FIELD).cast(''))
+      assert.isTrue(newType(BASE_FIELD).test(''))
+      done()
+    })
 
-  it('cast float', function(done, err) {
-    assert((new types.NumberType(BASE_FIELD)).cast(1.1));
-    done();
-  });
+    it('cast email', (done) => {
+      BASE_FIELD.format = 'email'
+      assert.equal(newType(BASE_FIELD).cast('example@example.com'),
+                   'example@example.com')
+      assert.isTrue(newType(BASE_FIELD).test('example@example.com'))
+      done()
+    })
 
-  it('cast string "0"', function(done, err) {
-    assert((new types.NumberType(BASE_FIELD)).cast('0'));
-    done();
-  });
+    it('don\'t cast email with wrong email format', (done) => {
+      BASE_FIELD.format = 'email'
+      assert.throws(() => {
+        newType(BASE_FIELD).cast('example.com')
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test('example.com'))
+      done()
+    })
 
-  it('cast localized numbers', function(done, err) {
-    ['10,000.00', '10,000,000.00', '100', '100.23'].forEach(function(V) {
-      assert((new types.NumberType(BASE_FIELD)).cast(V));
-    });
-    BASE_FIELD.decimalChar='#';
-    ['10,000#00', '10,000,000#00', '100', '100#23'].forEach(function(V) {
-      assert((new types.NumberType(BASE_FIELD)).cast(V));
-    });
-    BASE_FIELD.groupChar='Q';
-    ['10Q000#00', '10Q000Q000#00', '100', '100#23'].forEach(function(V) {
-      assert((new types.NumberType(BASE_FIELD)).cast(V));
-    });
-    done();
-  });
+    it('don\'t cast email with non-string value', (done) => {
+      BASE_FIELD.format = 'email'
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(1)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(1))
+      done()
+    })
 
-  it('don\'t cast string', function(done, err) {
-    assert.notOk((new types.NumberType(BASE_FIELD)).cast('string'));
-    done();
-  });
+    it('cast uri', (done) => {
+      BASE_FIELD.format = 'uri'
+      assert.equal(newType(BASE_FIELD).cast('http://www.example.com/'),
+                   'http://www.example.com/')
+      assert.isTrue(newType(BASE_FIELD).test('http://www.example.com/'))
+      done()
+    })
 
-  it('cast currency', function(done, err) {
-    BASE_FIELD.format = 'currency';
+    it('don\'t cast uri with wrong uri format', (done) => {
+      BASE_FIELD.format = 'uri'
+      assert.throws(() => {
+        newType(BASE_FIELD).cast('http//www.example.com/')
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test('http//www.example.com/'))
+      done()
+    })
 
-    ['10,000.00', '10,000.00', '$10000.00'].forEach(function(V) {
-      assert((new types.NumberType(BASE_FIELD)).cast(V));
-    });
+    it('don\'t cast uri with non-string value', (done) => {
+      BASE_FIELD.format = 'uri'
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(1)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(1))
+      done()
+    })
 
-    BASE_FIELD.groupChar = ' ';
-    BASE_FIELD.decimalChar = ',';
+    it('cast binary', (done) => {
+      BASE_FIELD.format = 'binary'
 
-    ['10 000 000,00', '10000,00', '10,000 €'].forEach(function(V) {
-      if (!(new types.NumberType(BASE_FIELD)).cast(V)) {
-        console.log('BBB',BASE_FIELD,V);
-      }
-      assert((new types.NumberType(BASE_FIELD)).cast(V));
-    });
+      const value = Buffer.from('test').toString('base64')
 
-    done();
-  });
+      assert.equal(newType(BASE_FIELD).cast(value), 'test')
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
 
-  it('don\'t cast wrong format currency', function(done, err) {
-    BASE_FIELD.format = 'currency';
+    it('don\'t cast binary with non-string value', (done) => {
+      BASE_FIELD.format = 'binary'
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(1)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(1))
+      done()
+    })
 
-    ['10,000a.00', '10+000.00', '$10:000.00'].forEach(function(V) {
-      assert.notOk((new types.NumberType(BASE_FIELD)).cast(V));
-    });
+    it('cast default if unknown format provided', (done) => {
+      const value = 'httpwww.example.com/'
+      BASE_FIELD.format = 'unknown'
+      assert.equal(newType(BASE_FIELD).cast(value),
+                   value)
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
+  })
 
-    done();
-  });
-});
+  describe('IntegerType', () => {
+    const newType = base => new types.IntegerType(base)
 
-describe('DateType', function() {
-  beforeEach(function(done) {
-    BASE_FIELD.format = 'default';
-    BASE_FIELD.type = 'date';
-    done();
-  });
+    beforeEach((done) => {
+      BASE_FIELD.type = 'integer'
+      done()
+    })
 
-  it('cast simple date', function(done, err) {
-    assert((new types.DateType(BASE_FIELD)).cast('2019-01-01'));
-    done();
-  });
+    it('cast integer', (done) => {
+      assert.equal(newType(BASE_FIELD).cast(1), 1)
+      assert.isTrue(newType(BASE_FIELD).test(1))
+      done()
+    })
 
-  it('cast any date', function(done, err) {
-    BASE_FIELD.format = 'any';
-    assert((new types.DateType(BASE_FIELD)).cast('10 Jan 1969'));
-    done();
-  });
+    it('cast string "0"', (done) => {
+      assert.equal(newType(BASE_FIELD).cast('0'), 0)
+      assert.isTrue(newType(BASE_FIELD).test('0'))
+      done()
+    })
 
-  it('cast date with format specified', function(done, err) {
-    BASE_FIELD.format = 'fmt:%d/%m/%Y';
-    assert((new types.DateType(BASE_FIELD)).cast('10/06/2014'));
-    done();
-  });
+    it('don\'t cast string "1.00"', (done) => {
+      assert.throws(() => {
+        newType(BASE_FIELD).cast('1.00')
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test('1.00'))
+      done()
+    })
 
-  it('don\'t cast wrong simple date', function(done, err) {
-    assert.notOk((new types.DateType(BASE_FIELD)).cast('01-01-2019'));
-    done();
-  });
+    it('don\'t cast float', (done) => {
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(1.01)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(1.01))
+      done()
+    })
 
-  it('don\'t cast wrong date string', function(done, err) {
-    assert.notOk((new types.DateType(BASE_FIELD)).cast('10th Jan nineteen sixty nine'));
-    done();
-  });
+    it('don\'t cast string', (done) => {
+      assert.throws(() => {
+        newType(BASE_FIELD).cast('string')
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test('string'))
+      done()
+    })
+  })
 
-  it('don\'t cast date if it do not correspond specified format', function(done, err) {
-    BASE_FIELD.format = 'fmt:%d/%m/%Y';
-    assert.notOk((new types.DateType(BASE_FIELD)).cast('2014/12/19'));
-    done();
-  });
-});
+  describe('NumberType', () => {
+    const newType = base => new types.NumberType(base)
 
-describe('TimeType', function() {
-  beforeEach(function(done) {
-    BASE_FIELD.format = 'default';
-    BASE_FIELD.type = 'time';
-    done();
-  });
+    beforeEach((done) => {
+      BASE_FIELD.type = 'number'
+      done()
+    })
 
-  it('cast simple time', function(done, err) {
-    assert((new types.TimeType(BASE_FIELD)).cast('06:00:00'));
-    done();
-  });
+    it('cast float', (done) => {
+      assert.equal(newType(BASE_FIELD).cast(1.1), 1.1)
+      assert.equal(newType(BASE_FIELD).cast('1.00'), '1.00')
+      assert.isTrue(newType(BASE_FIELD).test(1.1))
+      assert.isTrue(newType(BASE_FIELD).test('1.00'))
+      // BUT following will make the problem
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(1.00)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(1.00))
+      // Possible solution
+      assert.equal(newType(BASE_FIELD).cast(Number(1.00).toFixed(2)), '1.00')
+      assert.isTrue(newType(BASE_FIELD).test(Number(1.00).toFixed(2)))
+      done()
+    })
 
-  it('don\'t cast wrong simple time', function(done, err) {
-    assert.notOk((new types.TimeType(BASE_FIELD)).cast('3 am'));
-    done();
-  });
-});
+    it('cast localized numbers', (done) => {
+      ['10,000.00', '10,000,000.00', '100.23'].forEach(function (value) {
+        assert.doesNotThrow(() => {
+          newType(BASE_FIELD).cast(value)
+        }, Error)
+        assert.isTrue(newType(BASE_FIELD).test(value))
+      })
+      BASE_FIELD.decimalChar = '#';
+      ['10,000#00', '10,000,000#00', '100#23'].forEach(function (value) {
+        assert.doesNotThrow(() => {
+          newType(BASE_FIELD).cast(value)
+        }, Error)
+        assert.isTrue(newType(BASE_FIELD).test(value))
+      })
+      BASE_FIELD.groupChar = 'Q';
+      ['10Q000#00', '10Q000Q000#00', '100#23'].forEach(function (value) {
+        assert.doesNotThrow(() => {
+          newType(BASE_FIELD).cast(value)
+        }, Error)
+        assert.isTrue(newType(BASE_FIELD).test(value))
+      })
+      done()
+    })
 
-describe('DateTimeType', function() {
-  beforeEach(function(done) {
-    BASE_FIELD.format = 'default';
-    BASE_FIELD.type = 'datetime';
-    done();
-  });
+    it('don\'t cast string "0"', (done) => {
+      assert.throws(() => {
+        newType(BASE_FIELD).cast('0')
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test('0'))
+      done()
+    })
 
-  it('cast simple datetime', function(done, err) {
-    assert((new types.DateTimeType(BASE_FIELD)).cast('2014-01-01T06:00:00Z'));
-    done();
-  });
+    it('don\'t cast string', (done) => {
+      assert.throws(() => {
+        newType(BASE_FIELD).cast('string')
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test('string'))
+      done()
+    })
 
-  it('cast any datetime', function(done, err) {
-    BASE_FIELD.format = 'any';
-    assert((new types.DateTimeType(BASE_FIELD)).cast('10 Jan 1969 9:00'));
-    done();
-  });
+    it('cast currency', (done) => {
+      BASE_FIELD.format = 'currency';
 
-  it('don\'t cast wrong simple date', function(done, err) {
-    assert.notOk((new types.DateTimeType(BASE_FIELD)).cast('10 Jan 1969 9'));
-    done();
-  });
-});
+      ['10,000.00', '$10000.00'].forEach((value) => {
+        assert.doesNotThrow(() => {
+          newType(BASE_FIELD).cast(value)
+        }, Error)
+        assert.isTrue(newType(BASE_FIELD).test(value))
+      })
 
-describe('BooleanType', function() {
-  beforeEach(function(done) {
-    BASE_FIELD.type = 'boolean';
-    done();
-  });
+      BASE_FIELD.groupChar = ' '
+      BASE_FIELD.decimalChar = ',';
+      ['10 000 000,00', '10000,00', '10,000 €'].forEach(function (value) {
+        assert.doesNotThrow(() => {
+          newType(BASE_FIELD).cast(value)
+        }, Error)
+        assert.isTrue(newType(BASE_FIELD).test(value))
+      })
+      done()
+    })
 
-  it('cast boolean', function(done, err) {
-    assert((new types.BooleanType(BASE_FIELD)).cast(true));
-    done();
-  });
+    it('cast currency from Number', (done) => {
+      BASE_FIELD.format = 'currency'
+      assert.ok(newType(BASE_FIELD).cast(Number(10000.01)))
+      done()
+    })
 
-  it('cast simple string as True boolean', function(done, err) {
-    assert((new types.BooleanType(BASE_FIELD)).cast('y'));
-    done();
-  });
+    it('don\'t cast wrong format currency', (done) => {
+      BASE_FIELD.format = 'currency'
 
-  it('cast simple string as False boolean', function(done, err) {
-    assert((new types.BooleanType(BASE_FIELD)).cast('n'));
-    done();
-  });
-});
+      const numbers = ['10,000a.00', '10+000.00', '$10:000.00']
+      numbers.forEach((value) => {
+        assert.throws(() => {
+          newType(BASE_FIELD).cast(value)
+        }, Error)
+        assert.isFalse(newType(BASE_FIELD).test(value))
+      })
+      done()
+    })
+  })
 
-describe('NullType', function() {
-  beforeEach(function(done) {
-    BASE_FIELD.type = 'null';
-    done();
-  });
+  describe('DateType', () => {
+    const newType = base => new types.DateType(base)
 
-  it('cast simple string as Null', function(done, err) {
-    assert((new types.NullType(BASE_FIELD)).cast('null'));
-    done();
-  });
+    beforeEach((done) => {
+      BASE_FIELD.format = 'default'
+      BASE_FIELD.type = 'date'
+      done()
+    })
 
-  it('don\'t cast random string as Null', function(done, err) {
-    assert.notOk((new types.NullType(BASE_FIELD)).cast('isnull'));
-    done();
-  });
-});
+    it('cast simple date', (done) => {
+      assert.isObject(newType(BASE_FIELD).cast('2019-01-01'))
+      assert.isTrue(newType(BASE_FIELD).test('2019-01-01'))
+      done()
+    })
 
-describe('ArrayType', function() {
-  beforeEach(function(done) {
-    BASE_FIELD.type = 'array';
-    done();
-  });
+    it('cast any date', (done) => {
+      BASE_FIELD.format = 'any'
+      assert.isObject(newType(BASE_FIELD).cast('10 Jan 1969'))
+      assert.isTrue(newType(BASE_FIELD).test('10 Jan 1969'))
+      done()
+    })
 
-  it('cast array', function(done, err) {
-    assert((new types.ArrayType(BASE_FIELD)).cast([1, 2]));
-    done();
-  });
+    it('cast date with format specified', (done) => {
+      BASE_FIELD.format = 'fmt:%d/%m/%Y'
 
-  it('don\'t cast random string as array', function(done, err) {
-    assert.notOk((new types.ArrayType(BASE_FIELD)).cast('string, string'));
-    done();
-  });
-});
+      const value = '10/06/2014'
+        , result = moment(d3time.timeParse('%d/%m/%Y')(value))
 
-describe('ObjectType', function() {
-  beforeEach(function(done) {
-    BASE_FIELD.type = 'object';
-    done();
-  });
+      assert.deepEqual(newType(BASE_FIELD).cast(value), result)
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
 
-  it('cast object', function(done, err) {
-    assert((new types.ObjectType(BASE_FIELD)).cast({key: 'value'}));
-    done();
-  });
+    it('don\'t cast wrong simple date', (done) => {
+      assert.throws(() => {
+        newType(BASE_FIELD).cast('01-01-2019')
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test('01-01-2019'))
+      done()
+    })
 
-  it('don\'t cast random array as object', function(done, err) {
-    assert.notOk((new types.ObjectType(BASE_FIELD)).cast(['boo', 'ya']));
-    done();
-  });
-});
+    it('don\'t cast wrong date string', (done) => {
+      const value = '10th Jan nineteen sixty nine'
 
-describe('GeoPointType', function() {
-  beforeEach(function(done) {
-    BASE_FIELD.type = 'geopoint';
-    done();
-  });
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(value))
+      done()
+    })
 
-  it('cast geo point', function(done, err) {
-    assert((new types.GeoPointType(BASE_FIELD)).cast('10.0, 21.00'));
-    done();
-  });
+    it('don\'t cast date if it do not correspond specified format',
+       (done) => {
+         BASE_FIELD.format = 'fmt:%d/%m/%Y'
+         const value = '2014/12/19'
 
-  it('don\'t cast random string as Geopoint', function(done, err) {
-    assert.notOk((new types.GeoPointType(BASE_FIELD)).cast('this is not a geopoint'));
-    done();
-  });
-});
+         assert.throws(() => {
+           newType(BASE_FIELD).cast(value)
+         }, Error)
+         assert.isFalse(newType(BASE_FIELD).test(value))
+         done()
+       })
+  })
 
-describe('GeoJSONType', function() {
-  beforeEach(function(done) {
-    BASE_FIELD.type = 'geojson';
-    done();
-  });
+  describe('TimeType', () => {
+    const newType = base => new types.TimeType(base)
 
-  it('cast geo json', function(done, err) {
-    assert((new types.GeoJSONType(BASE_FIELD)).cast({type: 'Point'}));
-    done();
-  });
+    beforeEach((done) => {
+      BASE_FIELD.format = 'default'
+      BASE_FIELD.type = 'time'
+      done()
+    })
 
-  it('don\'t cast random string as GeoJSON', function(done, err) {
-    assert.notOk((new types.GeoJSONType(BASE_FIELD)).cast(''));
-    done();
-  });
-});
+    it('cast simple time', (done) => {
+      assert.isObject(newType(BASE_FIELD).cast('06:00:00'))
+      assert.isTrue(newType(BASE_FIELD).test('06:00:00'))
+      done()
+    })
+
+    it('don\'t cast wrong simple time', (done) => {
+      assert.throws(() => {
+        newType(BASE_FIELD).cast('3 am')
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test('3 am'))
+      done()
+    })
+  })
+
+  describe('DateTimeType', () => {
+    const newType = base => new types.DateTimeType(base)
+    beforeEach((done) => {
+      BASE_FIELD.format = 'default'
+      BASE_FIELD.type = 'datetime'
+      done()
+    })
+
+    it('cast simple datetime', (done) => {
+      assert.isObject(newType(BASE_FIELD).cast('2014-01-01T06:00:00Z'))
+      assert.isTrue(newType(BASE_FIELD).test('2014-01-01T06:00:00Z'))
+      done()
+    })
+
+    it('cast any datetime', (done) => {
+      BASE_FIELD.format = 'any'
+      assert.isObject(newType(BASE_FIELD).cast('10 Jan 1969 9:00'))
+      assert.isTrue(newType(BASE_FIELD).test('10 Jan 1969 9:00'))
+      done()
+    })
+
+    it('don\'t cast wrong simple date', (done) => {
+      const value = '10 Jan 1969 9'
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(value))
+      done()
+    })
+  })
+
+  describe('BooleanType', () => {
+    const newType = base => new types.BooleanType(base)
+
+    beforeEach((done) => {
+      BASE_FIELD.type = 'boolean'
+      done()
+    })
+
+    it('cast boolean', (done) => {
+      assert.equal(newType(BASE_FIELD).cast(true), true)
+      assert.isTrue(newType(BASE_FIELD).test(true))
+      done()
+    })
+
+    it('cast simple string as True boolean', (done) => {
+      assert.equal(newType(BASE_FIELD).cast('y'), true)
+      assert.isTrue(newType(BASE_FIELD).test('y'))
+      done()
+    })
+
+    it('cast simple string as False boolean', (done) => {
+      assert.equal(newType(BASE_FIELD).cast('n'), false)
+      assert.isTrue(newType(BASE_FIELD).test('n'))
+      done()
+    })
+  })
+
+  describe('ArrayType', () => {
+    const newType = base => new types.ArrayType(base)
+
+    beforeEach((done) => {
+      BASE_FIELD.type = 'array'
+      done()
+    })
+
+    it('cast array', (done) => {
+      assert.deepEqual(newType(BASE_FIELD).cast([1, 2]), [1, 2])
+      assert.isTrue(newType(BASE_FIELD).test([1, 2]))
+      done()
+    })
+
+    it('don\'t cast random string as array', (done) => {
+      assert.throws(() => {
+        newType(BASE_FIELD).cast('string, string')
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test('string, string'))
+      done()
+    })
+  })
+
+  describe('ObjectType', () => {
+    const newType = base => new types.ObjectType(base)
+
+    beforeEach((done) => {
+      BASE_FIELD.type = 'object'
+      done()
+    })
+
+    it('cast object', (done) => {
+      assert.deepEqual(newType(BASE_FIELD).cast({ key: 'value' }),
+                       { key: 'value' })
+      assert.isTrue(newType(BASE_FIELD).test({ key: 'value' }))
+      done()
+    })
+
+    it('don\'t cast random array as object', (done) => {
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(['boo', 'ya'])
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(['boo', 'ya']))
+      done()
+    })
+  })
+
+  // TODO rewrite completely Geo types
+  describe('GeoPointType', () => {
+    const newType = base => new types.GeoPointType(base)
+
+    beforeEach((done) => {
+      BASE_FIELD.type = 'geopoint'
+      done()
+    })
+
+    it('cast geo point from string', (done) => {
+      assert.deepEqual(newType(BASE_FIELD).cast('10.0, 21.00'),
+                       ['10.0', '21.00'])
+      assert.isTrue(newType(BASE_FIELD).test('10.0, 21.00'))
+      done()
+    })
+
+    it('don\'t cast random string as Geopoint', (done) => {
+      const value = 'this is not a geopoint'
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('cast geo point from array', (done) => {
+      const value = ['10.0', '21.00']
+      assert.deepEqual(newType(BASE_FIELD).cast(value), value)
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('cast geo point from array of numbers', (done) => {
+      const value = [10.0, 21.00]
+      assert.deepEqual(newType(BASE_FIELD).cast(value), ['10.0', '21.0'])
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('don\'t cast geo point from strings array', (done) => {
+      const value = ['ddd', 'ddd']
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('don\'t cast array with incorrect length of values', (done) => {
+      const value = ['10.0']
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('cast geo point from object', (done) => {
+      const value = { longitude: 10.0, latitude: 21.0 }
+      assert.deepEqual(newType(BASE_FIELD).cast(value), ['10.0', '21.0'])
+      assert.isTrue(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('don\'t cast geo point from any object', (done) => {
+      const value = { l: 10.0, t: 21.0 }
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(value))
+      done()
+    })
+
+    it('don\'t cast geo point from object with not numbers', (done) => {
+      const value = { longitude: 'asd', latitude: 'asd' }
+      assert.throws(() => {
+        newType(BASE_FIELD).cast(value)
+      }, Error)
+      assert.isFalse(newType(BASE_FIELD).test(value))
+      done()
+    })
+  })
+
+  //describe('GeoJSONType', () => {
+  //  const newType = base => new types.GeoPointType(base)
+  //  beforeEach((done) => {
+  //    BASE_FIELD.type = 'geojson'
+  //    done()
+  //  })
+  //
+  //  it('cast geo json', (done) => {
+  //    assert((new types.GeoJSONType(BASE_FIELD)).cast({ type: 'Point' }))
+  //    done()
+  //  })
+  //
+  //  it('don\'t cast random string as GeoJSON', (done) => {
+  //    assert.notOk((new types.GeoJSONType(BASE_FIELD)).cast(''))
+  //    done()
+  //  })
+  //})
+})
