@@ -5,19 +5,13 @@ import validate from './validate'
 import utilities from './utilities'
 import types from './types'
 
-const DEFAULTS = {
-  constraints: { required: false }
-  , format: 'default'
-  , type: 'string'
-}
 /**
  * Model for a JSON Table Schema.
  *
  * Providers handy helpers for ingesting, validating and outputting
  * JSON Table Schemas: http://dataprotocols.org/json-table-schema/
  *
- * @param {string|JSON} source: A filepath, url or object that represents a
- *   schema
+ * @param {string|JSON} source: An url or object that represents a schema
  *
  * @param {boolean} caseInsensitiveHeaders: if True, headers should be
  *   considered case insensitive, and `Schema` forces all headers to lowercase
@@ -31,7 +25,7 @@ export default class Schema {
     this.caseInsensitiveHeaders = caseInsensitiveHeaders
     this.typeGuesser = new types.TypeGuesser()
 
-    return this.load(source)
+    return load(this, source)
   }
 
   /**
@@ -107,42 +101,6 @@ export default class Schema {
       throw errors
     }
     return result
-  }
-
-  /**
-   * Expand the schema with additional default properties
-   *
-   * @param schema
-   * @returns {*}
-   */
-  expand(schema) {
-    return _.extend(
-      {}
-      , schema
-      , {
-        fields: (schema.fields || []).map(field => {
-          const copyField = _.extend({}, field)
-
-          // Ensure we have a default type if no type was declared
-          if (!copyField.type) {
-            copyField.type = DEFAULTS.type
-          }
-
-          // Ensure we have a default format if no format was
-          // declared
-          if (!copyField.format) {
-            copyField.format = DEFAULTS.format
-          }
-
-          // Ensure we have a minimum constraints declaration
-          if (!copyField.constraints) {
-            copyField.constraints = DEFAULTS.constraints
-          } else if (_.isUndefined(field.constraints.required)) {
-            copyField.constraints.required = DEFAULTS.constraints.required
-          }
-          return copyField
-        })
-      })
   }
 
   /**
@@ -242,36 +200,6 @@ export default class Schema {
   }
 
   /**
-   * Load a JSON source, from string, URL or buffer
-   * @param source
-   * @returns {Promise}
-   */
-  load(source) {
-    const that = this
-    if (_.isString(source)) {
-      if (utilities.isURL(url.parse(source).protocol)) {
-        return new Promise((resolve, reject) => {
-          fetch(source).then((response) => {
-            if (response.status >= 400) {
-              reject('Failed to download file due to bad response')
-            }
-            return response.json()
-          }).then(json => {
-            resolve(that.validateAndExpand(json))
-          })
-        })
-      }
-    }
-    return new Promise((resolve, reject) => {
-      try {
-        resolve(that.validateAndExpand(source))
-      } catch (e) {
-        reject(e)
-      }
-    })
-  }
-
-  /**
    * Get primary key
    * @returns {string|Array}
    */
@@ -294,10 +222,89 @@ export default class Schema {
     }
     return raw
   }
+}
 
-  validateAndExpand(value) {
-    validate(value)
-    this.descriptor = this.expand(value)
-    return this
+/**
+ * Load a JSON source, from string, URL or buffer
+ * @param source
+ * @returns {Promise}
+ */
+function load(instance, source) {
+  if (_.isString(source)) {
+    if (utilities.isURL(url.parse(source).protocol)) {
+      return new Promise((resolve, reject) => {
+        fetch(source).then((response) => {
+          if (response.status >= 400) {
+            reject('Failed to download file due to bad response')
+          }
+          return response.json()
+        }).then(json => {
+          resolve(validateAndExpand(instance, json))
+        })
+      })
+    }
   }
+  return new Promise((resolve, reject) => {
+    try {
+      resolve(validateAndExpand(instance, source))
+    } catch (e) {
+      reject(e)
+    }
+  })
+}
+
+/**
+ * Expand the schema with additional default properties
+ *
+ * @param schema
+ * @returns {*}
+ */
+function expand(schema) {
+  const DEFAULTS = {
+    constraints: { required: false }
+    , format: 'default'
+    , type: 'string'
+  }
+
+  return _.extend(
+    {}
+    , schema
+    , {
+      fields: (schema.fields || []).map(field => {
+        const copyField = _.extend({}, field)
+
+        // Ensure we have a default type if no type was declared
+        if (!copyField.type) {
+          copyField.type = DEFAULTS.type
+        }
+
+        // Ensure we have a default format if no format was
+        // declared
+        if (!copyField.format) {
+          copyField.format = DEFAULTS.format
+        }
+
+        // Ensure we have a minimum constraints declaration
+        if (!copyField.constraints) {
+          copyField.constraints = DEFAULTS.constraints
+        } else if (_.isUndefined(field.constraints.required)) {
+          copyField.constraints.required = DEFAULTS.constraints.required
+        }
+        return copyField
+      })
+    })
+}
+
+/**
+ * Validate JSON and bring fields to standard format
+ *
+ * @param instance
+ * @param value
+ * @returns {instance}
+ * @throws Array of errors id schema is not valid
+ */
+function validateAndExpand(instance, value) {
+  validate(value)
+  instance.descriptor = expand(value)
+  return instance
 }

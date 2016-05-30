@@ -60,25 +60,22 @@ model.then(schema => {
 Some methods available to Schema instances:
 
 * `cast(fieldName, value, index)` - returns a value cast against a named `fieldName`
-* `convertRow(...args)` - convert the arguments given to the types of the current schema [^note1]
-* `convert(items, failFast = false)` - convert an iterable rows using the current schema of the Schema instance [^note2]
+* `convertRow(...args)` - convert the arguments given to the types of the current schema <sup>1</sup>
+* `convert(items, failFast = false)` - convert an iterable rows using the current schema of the Schema instance <sup>2</sup>
 * `fields` - returns an array of the schema's fields
 * `foreignKeys` - returns the foreign key property for the schema
-* `getConstraints(fieldName, index = 0)` - return the constraints object for a given `fieldName`
-* `getField(fieldName, index = 0)` - return the field object for `fieldName`
+* `getConstraints(fieldName, index = 0)` - return the constraints object for a given `fieldName` <sup>3</sup>
+* `getField(fieldName, index = 0)` - return the field object for `fieldName` <sup>3</sup>
 * `getFieldsByType(typeName)` - return all fields that match the given type
-* `getType(fieldName, index = 0)` - return the type for a given `fieldName`
+* `getType(fieldName, index = 0)` - return the type for a given `fieldName` <sup>3</sup>
 * `hasField(fieldName)` - checks if the field exists in the schema. Returns a boolean
 * `headers` - returns an array of the schema headers
 * `primaryKey` - returns the primary key field for the schema
 * `requiredHeaders` - returns headers with the `required` constraint as an array
-  
-  load(source)
-  expand(schema)
-  validateAndExpand(value)
 
-[^note1]: Last argument could be `{ failFast: true|false }` (see [^note2] for more)
-[^note2]: Where the option `failFast` is given, it will raise the first error it encouters, otherwise an array of errors thrown (if there are any errors occur).
+<sup>1</sup>: Last argument could be `{ failFast: true|false }` (see <sup>2</sup> for more)
+<sup>2</sup>: Where the option `failFast` is given, it will raise the first error it encouters, otherwise an array of errors thrown (if there are any errors occur).
+<sup>3</sup>: Where the optional index argument is available, it can be used as a positional argument if the schema has multiple fields with the same name.
 
 ### Types
 
