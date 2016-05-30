@@ -2,7 +2,7 @@ import _ from 'lodash'
 import types from './types'
 
 /**
- * Return a schema from the passed headers and values.
+ * Return a descriptor from the passed headers and values.
  *
  * @param headers {Array} - a list of header names
  * @param values {Array} - a reader over data, yielding each row as a list of
@@ -13,7 +13,7 @@ import types from './types'
  *  - {string} primaryKey - pass in a primary key or iterable of keys
  *  - {object} cast - TODO add description
  *
- * @returns {object} a JSON Table Schema as a Python dict
+ * @returns {object} a JSON Table Schema as a JSON
  */
 export default (headers, values, options = {}) => {
   // Set up default options
@@ -25,15 +25,15 @@ export default (headers, values, options = {}) => {
       , cast: {}
     }, options)
     , guesser = new types.TypeGuesser(opts.cast)
-    , schema = { fields: [] }
+    , descriptor = { fields: [] }
 
   if (opts.primaryKey) {
-    schema.primaryKey = opts.primaryKey
+    descriptor.primaryKey = opts.primaryKey
   }
 
-  schema.fields = headers.map(header => {
+  descriptor.fields = headers.map(header => {
     const constraints = {}
-      , descriptor = {
+      , field = {
         name: header
       , title: ''
       , description: ''
@@ -48,15 +48,15 @@ export default (headers, values, options = {}) => {
     }
 
     if (!_.isEmpty(constraints)) {
-      descriptor.constraints = constraints
+      field.constraints = constraints
     }
 
-    return descriptor
+    return field
   })
 
   headers.forEach((header, index) => {
     let columnValues = _.map(values, (value) => value[index])
-    const field = schema.fields[index]
+    const field = descriptor.fields[index]
 
     if (opts.rowLimit) {
       columnValues = _.take(columnValues, opts.rowLimit)
@@ -65,5 +65,5 @@ export default (headers, values, options = {}) => {
     field.format = 'default'
   })
 
-  return schema
+  return descriptor
 }
