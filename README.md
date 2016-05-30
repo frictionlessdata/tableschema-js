@@ -61,7 +61,7 @@ Some methods available to Schema instances:
 
 * `cast(fieldName, value, index)` - returns a value cast against a named `fieldName`
 * `convertRow(...args)` - convert the arguments given to the types of the current schema <sup>1</sup>
-* `convert(items, failFast = false)` - convert an iterable rows using the current schema of the Schema instance <sup>2</sup>
+* `convert(items, failFast = false)` - convert an array of rows using the current schema of the Schema instance <sup>2</sup>
 * `fields` - returns an array of the schema's fields
 * `foreignKeys` - returns the foreign key property for the schema
 * `getConstraints(fieldName, index = 0)` - return the constraints object for a given `fieldName` <sup>3</sup>
@@ -73,9 +73,9 @@ Some methods available to Schema instances:
 * `primaryKey` - returns the primary key field for the schema
 * `requiredHeaders` - returns headers with the `required` constraint as an array
 
-<sup>1</sup>: Last argument could be `{ failFast: true|false }` (see <sup>2</sup> for more)
-<sup>2</sup>: Where the option `failFast` is given, it will raise the first error it encouters, otherwise an array of errors thrown (if there are any errors occur).
-<sup>3</sup>: Where the optional index argument is available, it can be used as a positional argument if the schema has multiple fields with the same name.
+<sup>1</sup>: Last argument could be `{ failFast: true|false }` (see <sup>2</sup> for more)  
+<sup>2</sup>: Where the option `failFast` is given, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur)  
+<sup>3</sup>: Where the optional index argument is available, it can be used as a positional argument if the schema has multiple fields with the same name
 
 ### Types
 

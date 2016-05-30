@@ -29,18 +29,27 @@ export default class Schema {
   }
 
   /**
-   * Check if value can be cast to fieldName's type
+   * Cast value to fieldName's type
    *
    * @param fieldName
    * @param value
    * @param index
    *
-   * @returns {Boolean}
+   * @returns {Type}
    */
   cast(fieldName, value, index) {
     return this.getType(fieldName, index || 0).cast(value)
   }
 
+  /**
+   * Convert the arguments given to the types of the current schema. Last
+   * argument could be { failFast: true|false }.  If the option `failFast` is
+   * given, it will raise the first error it encounters, otherwise an array of
+   * errors thrown (if there are any errors occur)
+   *
+   * @param args
+   * @returns {Array}
+   */
   convertRow(...args) {
     let items = args
       , failFast = false
@@ -82,6 +91,15 @@ export default class Schema {
     return result
   }
 
+  /**
+   * Convert an array of rows to the types of the current schema. If the option
+   * `failFast` is given, it will raise the first error it encounters,
+   * otherwise an array of errors thrown (if there are any errors occur)
+   *
+   * @param items
+   * @param failFast
+   * @returns {Array}
+   */
   convert(items, failFast = false) {
     const result = []
     let errors = []
