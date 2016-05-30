@@ -12,9 +12,9 @@
   "main": "lib/index.js",
   "dependencies": {
     "d3-time-format": "^0.3.2",
+    "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.13.1",
-    "moment": "^2.13.0",
-    "superagent": "^1.2.0"
+    "moment": "^2.13.0"
   },
   "devDependencies": {
     "babel": "^6.5.2",
@@ -33,6 +33,7 @@
     "chai": "^2.3.0",
     "chai-spies": "^0.6.0",
     "csv-parse": "^1.1.0",
+    "fetch-mock": "^4.5.0",
     "mocha": "^2.4.5",
     "superagent-mock": "^1.1.0",
     "webpack": "^1.12.11",

@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { request } from 'superagent'
+import 'isomorphic-fetch'
 import url from 'url'
 import validate from './validate'
 import utilities from './utilities'
@@ -251,16 +251,13 @@ export default class Schema {
     if (_.isString(source)) {
       if (utilities.isURL(url.parse(source).protocol)) {
         return new Promise((resolve, reject) => {
-          request.get(source).end((error, response) => {
-            if (error) {
-              reject(`Failed to download file: ${error}`)
-            } else {
-              try {
-                resolve(that.validateAndExpand(JSON.parse(response)))
-              } catch (e) {
-                reject(e)
-              }
+          fetch(source).then((response) => {
+            if (response.status >= 400) {
+              reject('Failed to download file due to bad response')
             }
+            return response.json()
+          }).then(json => {
+            resolve(that.validateAndExpand(json))
           })
         })
       }
