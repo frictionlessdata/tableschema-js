@@ -36,16 +36,49 @@ Let's look at each of the components in more detail.
 
 ### Schema
 
-A model of a schema with helpful methods for working with the schema and supported data. Schema instances can be initialized with a schema source as a filepath or url to a JSON file, or a JSON object. 
+A model of a schema with helpful methods for working with the schema and supported data. Schema instances can be initialized with a schema source as a url to a JSON file or a JSON object. 
 The schema is initially validated (see [validate](#validate) below), and will raise an exception if not a valid JSON Table Schema.
 
+Model requires Promise to work properly, and need to be sure that Promise available globally. You are free to choose any Promise polyfill  
+
 ```javascript
-usage examples
+const model = new Schema('http://someurl.com/remote.json')
+```
+or
+```javascript
+const model = new Schema({JSON OBJECT})
+```
+instance always returns promise
+```javascript
+model.then(schema => {
+    // working code to use schema model
+}).catch(error => {
+    // something went wrong and error variable has explanations
+})
 ```
 
 Some methods available to Schema instances:
 
-// description of public methods
+* `cast(fieldName, value, index)` - returns a value cast against a named `fieldName`
+* `convertRow(...args)` - convert the arguments given to the types of the current schema [^note1]
+* `convert(items, failFast = false)` - convert an iterable rows using the current schema of the Schema instance [^note2]
+* `fields` - returns an array of the schema's fields
+* `foreignKeys` - returns the foreign key property for the schema
+* `getConstraints(fieldName, index = 0)` - return the constraints object for a given `fieldName`
+* `getField(fieldName, index = 0)` - return the field object for `fieldName`
+* `getFieldsByType(typeName)` - return all fields that match the given type
+* `getType(fieldName, index = 0)` - return the type for a given `fieldName`
+* `hasField(fieldName)` - checks if the field exists in the schema. Returns a boolean
+* `headers` - returns an array of the schema headers
+* `primaryKey` - returns the primary key field for the schema
+* `requiredHeaders` - returns headers with the `required` constraint as an array
+  
+  load(source)
+  expand(schema)
+  validateAndExpand(value)
+
+[^note1]: Last argument could be `{ failFast: true|false }` (see [^note2] for more)
+[^note2]: Where the option `failFast` is given, it will raise the first error it encouters, otherwise an array of errors thrown (if there are any errors occur).
 
 ### Types
 

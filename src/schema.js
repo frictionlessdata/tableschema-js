@@ -31,7 +31,7 @@ export default class Schema {
     this.caseInsensitiveHeaders = caseInsensitiveHeaders
     this.typeGuesser = new types.TypeGuesser()
 
-    return this.loadJSON(source)
+    return this.load(source)
   }
 
   /**
@@ -246,7 +246,7 @@ export default class Schema {
    * @param source
    * @returns {Promise}
    */
-  loadJSON(source) {
+  load(source) {
     const that = this
     if (_.isString(source)) {
       if (utilities.isURL(url.parse(source).protocol)) {
