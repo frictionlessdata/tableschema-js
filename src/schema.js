@@ -34,12 +34,14 @@ export default class Schema {
    * @param fieldName
    * @param value
    * @param index
+   * @param skipConstraints
    *
    * @returns {Type}
+   * @throws Error if value can't be casted
    */
-  cast(fieldName, value, index) {
+  cast(fieldName, value, index, skipConstraints = true) {
     const field = this.getField(fieldName, index)
-    return this.type.cast(field, value)
+    return this.type.cast(field, value, skipConstraints)
   }
 
   /**
@@ -160,12 +162,12 @@ export default class Schema {
    * @returns {Object|Null}
    */
   getField(fieldName, index = 0) {
-    try {
-      return _.filter(this.fields(),
-                      field => _.includes(fieldName, field.name))[index]
-    } catch (e) {
+    const field = _.filter(this.fields(),
+                           F => _.includes(fieldName, F.name))[index]
+    if (!field) {
+      throw new Error(`No such field name in schema: ${fieldName}`)
     }
-    throw new Error(`No such field name in schema: ${fieldName}`)
+    return field
   }
 
   /**
@@ -228,6 +230,21 @@ export default class Schema {
       return _.invokeMap(raw, 'toLowerCase')
     }
     return raw
+  }
+
+  /**
+   * Check if value to fieldName's type can be casted
+   *
+   * @param fieldName
+   * @param value
+   * @param index
+   * @param skipConstraints
+   *
+   * @returns {Boolean}
+   */
+  test(fieldName, value, index, skipConstraints = true) {
+    const field = this.getField(fieldName, index)
+    return this.type.test(field, value, skipConstraints)
   }
 }
 

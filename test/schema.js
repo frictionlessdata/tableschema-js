@@ -201,6 +201,30 @@ describe('Models', () => {
     })
   })
 
+  it('should return true on test', (done) => {
+    const model = new Schema(SCHEMA)
+    model.then(schema => {
+      assert.isTrue(schema.test('age', 1))
+      done()
+    }, (error) => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
+  it('should throw exception if field name does not exists', (done) => {
+    const model = new Schema(SCHEMA)
+    model.then(schema => {
+      assert.throws(() => {
+        schema.getField('unknown')
+      }, Error)
+      done()
+    }, (error) => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
   it('convert row', (done) => {
     (new Schema(SCHEMA)).then(schema => {
       const convertedRow = schema.convertRow('string', '10.0', '1', 'string',
