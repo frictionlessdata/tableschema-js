@@ -126,21 +126,22 @@ Available types, formats and resultant value of the cast:
 
 | Type | Formats | Casting result |
 | ---- | ------- | -------------- |
-| string | default, uri, email, binary | String |
+| string | default<sup>1</sup>, uri, email, binary | String |
 | integer | default | Number |
-| number | default, currency | Number<sup>1</sup> |
+| number | default, currency | Number<sup>2</sup> |
 | boolean | default | Boolean |
 | array | default | Array |
 | object | default | Object |
 | date | default, any, fmt | Moment object |
 | time | default, any, fmt | Moment object |
 | datetime | default, any, fmt | Moment object |
-| geopoint | default, array, object | Accordingly to format<sup>2</sup> |
-| geojson | default<sup>2</sup>, topojson<sup>3</sup> | Accordingly to format |
+| geopoint | default, array, object | Accordingly to format<sup>3</sup> |
+| geojson | default, topojson | Accordingly to format<sup>3,4</sup> |
 
-<sup>1</sup>: in case value has 00 after point (1.00), it will return Number(1).toFixed(2), which is actually String '1.00'
-<sup>2</sup>: default format returns String 
-<sup>3</sup>: topojson is not implemented
+<sup>1</sup>: `default` format can be not specified in the field descriptor  
+<sup>2</sup>: in case value has 00 after point (1.00), it will return Number(1).toFixed(2), which is actually String '1.00'  
+<sup>3</sup>: default format returns String  
+<sup>4</sup>: topojson is not implemented
 
 ### Infer
 

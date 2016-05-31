@@ -4,21 +4,6 @@ import constraints from './constraints'
 import d3time from 'd3-time-format'
 import moment from 'moment'
 
-const typeNames = [
-  'BooleanType'
-  , 'IntegerType'
-  , 'DateType'
-  , 'TimeType'
-  , 'DateTimeType'
-  , 'ArrayType'
-  , 'ObjectType'
-  , 'GeoPointType'
-  , 'GeoJSONType'
-  , 'NumberType'
-  , 'StringType'
-  , 'AnyType'
-]
-
 class Abstract {
   constructor(field) {
     this.js = typeof null
@@ -668,6 +653,7 @@ export default class Type {
    */
   multiCast(values) {
     const types = suitableTypes(values, this.typeOptions)
+      , typeNames = _.keys(Types)
       , suitableType = _.find(typeNames, type => _.indexOf(types, type) !== -1)
     return Types[suitableType].name
   }
@@ -704,6 +690,7 @@ export default class Type {
  */
 function suitableTypes(values, options) {
   const filtered = values.filter(v => !_.isUndefined(v) || _.isEmpty(v))
+    , typeNames = _.keys(Types)
 
   if (filtered.length === 0) {
     return ['AnyType']
