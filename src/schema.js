@@ -3,7 +3,7 @@ import 'isomorphic-fetch'
 import url from 'url'
 import validate from './validate'
 import utilities from './utilities'
-import types from './types'
+import Type from './types'
 
 /**
  * Model for a JSON Table Schema.
@@ -23,7 +23,7 @@ import types from './types'
 export default class Schema {
   constructor(source, caseInsensitiveHeaders = false) {
     this.caseInsensitiveHeaders = caseInsensitiveHeaders
-    this.typeGuesser = new types.TypeGuesser()
+    this.type = new Type()
 
     return load(this, source)
   }
@@ -38,7 +38,8 @@ export default class Schema {
    * @returns {Type}
    */
   cast(fieldName, value, index) {
-    return this.getType(fieldName, index || 0).cast(value)
+    const field = this.getField(fieldName, index)
+    return this.type.cast(field, value)
   }
 
   /**
@@ -175,18 +176,6 @@ export default class Schema {
    */
   getFieldsByType(typeName) {
     return _.filter(this.fields(), field => _.includes(typeName, field.type))
-  }
-
-  /**
-   * Return the `type` for `fieldName`.
-   *
-   * @param fieldName
-   * @param index
-   * @returns {Object} new instance of corresponding Type
-   */
-  getType(fieldName, index = 0) {
-    const field = this.getField(fieldName, index)
-    return this.typeGuesser.getType(field.type, field)
   }
 
   /**

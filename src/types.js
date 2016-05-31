@@ -110,11 +110,12 @@ class Abstract {
    * Test if it possible to cast the value
    *
    * @param value
+   * @param skipConstraints
    * @returns {boolean}
    */
-  test(value) {
+  test(value, skipConstraints = true) {
     try {
-      this.cast(value)
+      this.cast(value, skipConstraints)
       return true
     } catch (e) {
       return false
@@ -335,7 +336,11 @@ class ArrayType extends Abstract {
     if (this.typeCheck(value)) {
       return value
     }
-    return this.typeCheck(JSON.parse(value))
+    const val = JSON.parse(value)
+    if (this.typeCheck(val)) {
+      return val
+    }
+    throw new Error()
   }
 }
 
@@ -641,7 +646,6 @@ const Types = {
   , DateTimeType
   , GeoPointType
   , GeoJSONType
-  , TypeGuesser
   , StringType
   , AnyType
 }
@@ -651,64 +655,70 @@ const Types = {
  *
  * @param options - TODO add description
  */
-function TypeGuesser(options) {
-  const typeOptions = options || {}
+export default class Type {
+  constructor(options) {
+    this.typeOptions = options || {}
+  }
 
-  this.multiCast = function multiCast(values) {
-    const types = suitableTypes(values)
+  /**
+   * Try to find the best suited Type for provided values
+   *
+   * @param values
+   * @returns String - name of the type
+   */
+  multiCast(values) {
+    const types = suitableTypes(values, this.typeOptions)
       , suitableType = _.find(typeNames, type => _.indexOf(types, type) !== -1)
     return Types[suitableType].name
   }
 
-  this.cast = function cast(value) {
-    try {
-      return [
-        (new (_.find(availableTypes(), (T =>
-            new Types[T](typeOptions[Types[T].name] || {})
-              .test(value)
-        )))()).name
-        , 'default'
-      ]
-    } catch (e) {
-      return null
-    }
-  }
-
-  this.getType = function getType(name, field) {
-    for (const T of _.keys(Types)) {
-      if (Types[T].name === name) {
-        return new Types[T](field)
-      }
-    }
-    throw new Error('Unsupported field type')
+  /**
+   * Cast the value of the field accordingly to the field type
+   * @param field
+   * @param value
+   * @param skipConstraints
+   * @returns {result of cast}
+   * @throws Error if cast failed
+   */
+  cast(field, value, skipConstraints = true) {
+    return getType(field).cast(value, skipConstraints)
   }
 
   /**
-   * Return available types objects
-   *
-   * @returns {Array}
+   * Test the value if it can be casted for this field type
+   * @param field
+   * @param value
+   * @param skipConstraints
+   * @returns boolean
    */
-  function availableTypes() {
-    return typeNames.map(type => Types[type])
-  }
-
-  /**
-   * Return types suitable to the provided multiple values
-   *
-   * @param values
-   * @returns {Array}
-   */
-  function suitableTypes(values) {
-    const filtered = values.filter(v => !_.isUndefined(v) || _.isEmpty(v))
-
-    if (filtered.length === 0) {
-      return ['AnyType']
-    }
-
-    const typeList = filtered.map(value => typeNames.filter(
-      T => (new Types[T](typeOptions[Types[T].name] || {})).test(value)))
-    return _.reduce(typeList, (memo, types) => _.intersection(memo, types))
+  test(field, value, skipConstraints = true) {
+    return getType(field).test(value, skipConstraints)
   }
 }
 
-export default Types
+/**
+ * Return types suitable to the provided multiple values
+ *
+ * @param values
+ * @returns {Array}
+ */
+function suitableTypes(values, options) {
+  const filtered = values.filter(v => !_.isUndefined(v) || _.isEmpty(v))
+
+  if (filtered.length === 0) {
+    return ['AnyType']
+  }
+
+  const typeList = filtered.map(value => typeNames.filter(
+    T => (new Types[T](options[Types[T].name] || {})).test(value)))
+  return _.reduce(typeList, (memo, types) => _.intersection(memo, types))
+}
+
+function getType(field) {
+  for (const T of _.keys(Types)) {
+    if (Types[T].name === field.type) {
+      return new Types[T](field)
+    }
+  }
+  throw new Error('Unsupported field type')
+}

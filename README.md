@@ -81,36 +81,66 @@ Some methods available to Schema instances:
 
 Data values can be cast to native Javascript types with a type instance from `jsontableschema.types`.
 
-Types can either be instantiated directly, or returned from `Schema` instances instantiated with a JSON Table Schema.
+Type instances can be initialized with [field descriptors](http://dataprotocols.org/json-table-schema/#field-descriptors). This allows formats and constraints to be defined:
 
 Casting a value will check the value is of the expected type, is in the correct format, and complies with any constraints imposed by a schema.
 
+On Type class there are three methods available:
+* `cast(field, value, skipConstraints)` - Cast the value of the field accordingly to the field type. Skip constraints default value is `true`<sup>1</sup>. May raise an exception if cast is failed
+* `test(field, value, skipConstraints)` - check if given value can be casted by field type. Skip constraints default value is `true`<sup>1</sup>. Returns boolean
+* `multiCast(values)` - Try to find the best suited Type for provided array of values. Returns String
+
+<sup>1</sup>: Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value
+
 ```javascript
-usage examples
-```
+import Type from 'jsontableschema.types'
 
-Values that can't be cast will raise an `Error` exception.
-
-Type instances can be initialized with [field descriptors](http://dataprotocols.org/json-table-schema/#field-descriptors). This allows formats and constraints to be defined:
-
-```javascript
-
-fieldDescriptor = {
+const fieldDescriptor = {
     'name': 'Field Name',
     'type': 'date',
     'format': 'default',
     'constraints': {
         'required': True,
-        'minimum': '1978-05-30'
+        'minimum': '2015-05-30'
     }
 }
-
-dateType = typeGuesser.cast(fieldDescriptor)
+const type = new Type()
 ```
+Following code will not raise the exception, despite the fact our date is less than minimum constraints in the field, because we do not check constraints of the field descriptor
+```javascript
+let dateType = type.cast(fieldDescriptor, '2014-05-29')
+```
+And following example will raise exception, because we set flag 'skip constraints' to `false`, and our date is less than allowed by `minimum` constraints of the field. Exception will be raised as well as in situation of trying to cast non-date format values, or empty values
+```javascript
+try {
+    let dateType = type.cast(fieldDescriptor, '2014-05-29', false)
+} catch(e) {
+    // uh oh, something went wrong
+}
+```
+Values that can't be cast will raise an `Error` exception.  
+Casting a value that doesn't meet the constraints will raise an `Error` exception.  
+**Note**: the `unique` constraint is not currently supported.
 
-Casting a value that doesn't meet the constraints will raise a `Error` exception.
+Available types, formats and resultant value of the cast:
 
-Note: the `unique` constraint is not currently supported.
+| Type | Formats | Casting result |
+| ---- | ------- | -------------- |
+| string | default, uri, email, binary | String |
+| integer | default | Number |
+| number | default, currency | Number<sup>1</sup> |
+| boolean | default | Boolean |
+| array | default | Array |
+| object | default | Object |
+| date | default, any, fmt | Moment object |
+| time | default, any, fmt | Moment object |
+| datetime | default, any, fmt | Moment object |
+| geopoint | default, array, object | Accordingly to format<sup>2</sup> |
+| geojson | default<sup>2</sup>, topojson<sup>3</sup> | Accordingly to format |
+
+<sup>1</sup>: in case value has 00 after point (1.00), it will return Number(1).toFixed(2), which is actually String '1.00'
+<sup>2</sup>: default format returns String 
+<sup>3</sup>: topojson is not implemented
 
 ### Infer
 
@@ -172,38 +202,15 @@ The number of rows used by `infer` can be limited with the `row_limit` argument.
 
 ### Validate
 
-Given a schema as JSON file, url to JSON file, or a Python dict, `validate` returns `True` for a valid JSON Table Schema, or raises an exception, `SchemaValidationError`.
+Given a schema as JSON object, `validate` returns `true` for a valid JSON Table Schema, or raises an exception with array of errors.
 
-```python
-import io
-import json
-
-from jsontableschema import validate
-
-filepath = 'schema_to_validate.json'
-
-with io.open(filepath) as stream:
-    schema = json.load(stream)
-
-try:
-    jsontableschema.validate(schema)
-except jsontableschema.exceptions.SchemaValidationError as e:
-   # handle errors
-
+```javascript
+try {
+    validate(schema)
+} catch(errors) {
+    // handle errors
+}
 ```
-
-It may be useful to report multiple errors when validating a schema. This can be done with `validator.iter_errors()`.
-
-```python
-
-from jsontableschema import validator
-
-filepath = 'schema_with_multiple_errors.json'
-with io.open(filepath) as stream:
-    schema = json.load(stream)
-    errors = [i for i in validator.iter_errors(schema)]
-```
-
 Note: `validate()` validates whether a **schema** is a validate JSON Table Schema. It does **not** validate data against a schema.
 
 ## Contributing

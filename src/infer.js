@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import types from './types'
+import Type from './types'
 
 /**
  * Return a descriptor from the passed headers and values.
@@ -24,7 +24,7 @@ export default (headers, values, options = {}) => {
       , primaryKey: null
       , cast: {}
     }, options)
-    , guesser = new types.TypeGuesser(opts.cast)
+    , guesser = new Type(opts.cast)
     , descriptor = { fields: [] }
 
   if (opts.primaryKey) {
