@@ -127,6 +127,12 @@ describe('NumberType', function() {
 
     done();
   });
+
+  it('cast percent signs', function(done, err) {
+    assert((new types.NumberType(BASE_FIELD)).cast('100%'));
+    assert((new types.NumberType(BASE_FIELD)).cast('1000‰'));
+    done();
+  });
 });
 
 describe('DateType', function() {

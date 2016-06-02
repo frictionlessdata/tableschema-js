@@ -172,6 +172,7 @@ module.exports.NumberType = function(field, options) {
   this.formats = ['default', 'currency'];
   this.groupChar = (field || {}).groupChar || ',';
   this.decimalChar = (field || {}).decimalChar || '.';
+  this.percentChar = '%‰‱％﹪٪';
   this.currencies = '$£€';
   return this;
 }
@@ -182,6 +183,7 @@ module.exports.NumberType.prototype = _.extend(module.exports.NumberType.prototy
       return true;
 
     value = value.replace(new RegExp('['+this.groupChar+']','g'),'')
+                 .replace(new RegExp('['+this.percentChar+']','g'),'')
                  .replace(new RegExp('['+this.decimalChar+']','g'),'.')
 
     try {
