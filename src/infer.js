@@ -11,7 +11,12 @@ import Type from './types'
  *  - {integer} rowLimit - limit amount of rows to be proceed
  *  - {boolean} explicit - be explicit
  *  - {string} primaryKey - pass in a primary key or iterable of keys
- *  - {object} cast - TODO add description
+ *  - {object} cast - object with cast instructions for types in the schema:
+ *  {
+ *  string : { format : 'email' },
+ *  number : { format : 'currency' },
+ *  date: { format : 'any'}
+ *  }
  *
  * @returns {object} a JSON Table Schema as a JSON
  */
@@ -24,7 +29,7 @@ export default (headers, values, options = {}) => {
       , primaryKey: null
       , cast: {}
     }, options)
-    , guesser = new Type(opts.cast)
+    , type = new Type(opts.cast)
     , descriptor = { fields: [] }
 
   if (opts.primaryKey) {
@@ -61,7 +66,7 @@ export default (headers, values, options = {}) => {
     if (opts.rowLimit) {
       columnValues = _.take(columnValues, opts.rowLimit)
     }
-    field.type = guesser.multiCast(columnValues)
+    field.type = type.multiCast(columnValues)
     field.format = 'default'
   })
 

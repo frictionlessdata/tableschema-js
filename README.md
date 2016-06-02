@@ -204,6 +204,17 @@ It possible to provide additional options to build the JSON schema. 3-rd argumen
 * `rowLimit` (**integer**) - limit number of rows used by `infer`
 * `explicit` (**boolean**) - add required constraints for fields
 * `primaryKey` (**string, array**) - add primary key constraints
+* `cast` (**object**) - object with cast instructions for types in the schema. For example:
+
+```javascript
+{
+  string : { format : 'email' },
+  number : { format : 'currency' },
+  date: { format : 'any'}
+}
+```
+
+In this example every `string` value will be casted using `email` format, number will be tried as a `currency` format, and date - `any` format 
 
 ### Validate
 

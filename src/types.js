@@ -12,7 +12,7 @@ class Abstract {
     this.formats = ['default']
 
     // `field` is the field schema.
-    this.field = field
+    this.field = field || {}
 
     if (field) {
       this.format = field.format
@@ -696,7 +696,7 @@ function suitableTypes(values, options) {
   }
 
   const typeList = filtered.map(value => typeNames.filter(
-    T => (new Types[T](options[Types[T].name] || {})).test(value)))
+    T => (new Types[T](options[Types[T].name])).test(value)))
   return _.reduce(typeList, (memo, types) => _.intersection(memo, types))
 }
 
