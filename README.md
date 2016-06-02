@@ -145,7 +145,7 @@ Available types, formats and resultant value of the cast:
 
 ### Infer
 
-Given headers and data, `infer` will return a JSON Table Schema as a JSON object based on the data values. Given the data file, data_to_infer.csv:
+Given headers and data, `infer` will return a JSON Table Schema as a JSON object based on the data values. Given the data file, example.csv:
 
 ```csv
 id,age,name
@@ -200,7 +200,7 @@ fs.readFile('example.csv', (err, data) => {
 }
 ```
 
-It possible to provide additional options to build the JSON schema. 3-rd arguemnt of `infer` is an object with following possible values:
+It possible to provide additional options to build the JSON schema. 3-rd argument of `infer` is an object with following possible values:
 * `rowLimit` (**integer**) - limit number of rows used by `infer`
 * `explicit` (**boolean**) - add required constraints for fields
 * `primaryKey` (**string, array**) - add primary key constraints

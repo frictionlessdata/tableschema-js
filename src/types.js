@@ -163,7 +163,6 @@ class StringType extends Abstract {
     super(field)
 
     this.constraints = ['required', 'pattern', 'enum', 'minLength', 'maxLength']
-    this.jstype = 'string'
     this.formats = ['default', 'email', 'uri', 'binary']
     this.emailPattern = new RegExp('[^@]+@[^@]+\\.[^@]+')
     this.uriPattern = new RegExp('^http[s]?://')
@@ -207,47 +206,52 @@ class IntegerType extends Abstract {
 
   constructor(field) {
     super(field)
-    this.js = Number
+
+    const groupChar = (field || {}).groupChar || ','
+      , decimalChar = (field || {}).decimalChar || '.'
+
     this.constraints = ['required', 'pattern', 'enum', 'minimum', 'maximum']
+    this.regex = {
+      group: new RegExp(`[${groupChar}]`, 'g')
+      , decimal: new RegExp(`[${decimalChar}]`, 'g')
+      , percent: new RegExp('[%‰‱％﹪٪]', 'g')
+      , currency: new RegExp('[$£€]', 'g')
+    }
   }
 
   castDefault(value) {
+    const newValue = this.beforeCast(value)
     // probably it is float number
-    if (String(value).indexOf('.') !== -1) {
+    if (newValue.indexOf('.') !== -1) {
       throw new Error()
     }
-    if (utilities.isInteger(value)) {
-      return Number(value)
+    if (utilities.isInteger(newValue)) {
+      return Number(newValue)
     }
     throw new Error()
   }
+
+  beforeCast(value) {
+    return String(value)
+      .replace(this.regex.group, '')
+      .replace(this.regex.percent, '')
+      .replace(this.regex.currency, '')
+      .replace(this.regex.decimal, '.')
+  }
 }
 
-class NumberType extends Abstract {
+class NumberType extends IntegerType {
   static get name() {
     return 'number'
   }
 
   constructor(field) {
     super(field)
-
-    const groupChar = (field || {}).groupChar || ','
-      , decimalChar = (field || {}).decimalChar || '.'
-
-    this.constraints = ['required', 'pattern', 'enum', 'minimum', 'maximum']
-    this.jstype = 'number'
     this.formats = ['default', 'currency']
-    this.regex = {
-      group: new RegExp(`[${groupChar}]`, 'g')
-      , decimal: new RegExp(`[${decimalChar}]`, 'g')
-      , currency: new RegExp('[$£€]', 'g')
-    }
   }
 
   castDefault(value) {
-    const newValue = String(value)
-      .replace(this.regex.group, '')
-      .replace(this.regex.decimal, '.')
+    const newValue = this.beforeCast(value)
 
     if (!utilities.isNumeric(newValue)) {
       throw new Error()
@@ -259,19 +263,14 @@ class NumberType extends Abstract {
       return Number(newValue).toFixed(toFixed)
     }
     // here probably normal float number
-    if (Number(newValue) == newValue && +newValue % 1 !== 0) {
+    if (Number(newValue) == newValue) {
       return Number(newValue)
     }
     throw new Error()
   }
 
   castCurrency(value) {
-    const v = String(value)
-      .replace(this.regex.group, '')
-      .replace(this.regex.decimal, '.')
-      .replace(this.regex.currency, '')
-
-    return this.castDefault(v)
+    return this.castDefault(this.beforeCast(value))
   }
 }
 

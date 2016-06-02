@@ -227,6 +227,12 @@ describe('Types', () => {
       assert.isFalse(type.test(BASE_FIELD, 'string'))
       done()
     })
+
+    it('cast percent signs', function (done) {
+      assert.ok(type.cast(BASE_FIELD, '100%'))
+      assert.ok(type.cast(BASE_FIELD, '1000‰'))
+      done()
+    })
   })
 
   describe('NumberType', () => {
@@ -238,14 +244,10 @@ describe('Types', () => {
     it('cast float', (done) => {
       assert.equal(type.cast(BASE_FIELD, 1.1), 1.1)
       assert.equal(type.cast(BASE_FIELD, '1.00'), '1.00')
+      assert.equal(type.cast(BASE_FIELD, 1.00), 1)
       assert.isTrue(type.test(BASE_FIELD, 1.1))
       assert.isTrue(type.test(BASE_FIELD, '1.00'))
-      // BUT following will make the problem
-      assert.throws(() => {
-        type.cast(BASE_FIELD, 1.00)
-      }, Error)
-      assert.isFalse(type.test(BASE_FIELD, 1.00))
-      // Possible solution
+      assert.isTrue(type.test(BASE_FIELD, 1.00))
       assert.equal(type.cast(BASE_FIELD, Number(1.00).toFixed(2)), '1.00')
       assert.isTrue(type.test(BASE_FIELD, Number(1.00).toFixed(2)))
       done()
@@ -276,10 +278,10 @@ describe('Types', () => {
     })
 
     it('don\'t cast string "0"', (done) => {
-      assert.throws(() => {
+      assert.doesNotThrow(() => {
         type.cast(BASE_FIELD, '0')
       }, Error)
-      assert.isFalse(type.test(BASE_FIELD, '0'))
+      assert.isTrue(type.test(BASE_FIELD, '0'))
       done()
     })
 
@@ -328,6 +330,12 @@ describe('Types', () => {
         }, Error)
         assert.isFalse(type.test(BASE_FIELD, value))
       })
+      done()
+    })
+
+    it('cast percent signs', function (done) {
+      assert.ok(type.cast(BASE_FIELD, '95.23%'))
+      assert.ok(type.cast(BASE_FIELD, '995.56‰'))
       done()
     })
   })
