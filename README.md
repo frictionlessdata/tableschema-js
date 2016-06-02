@@ -73,9 +73,9 @@ Some methods available to Schema instances:
 * `requiredHeaders` - returns headers with the `required` constraint as an array
 * `test(fieldName, value, index, skipConstraints)` - returns boolean after a check if value can be casted against a named `fieldName`
 
-<sup>1</sup>: Last argument could be `{ failFast: true|false }` (see <sup>2</sup> for more)  
-<sup>2</sup>: Where the option `failFast` is given, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur)  
-<sup>3</sup>: Where the optional index argument is available, it can be used as a positional argument if the schema has multiple fields with the same name
+<sup>1</sup> Last argument could be `{ failFast: true|false }` (see <sup>2</sup> for more)  
+<sup>2</sup> Where the option `failFast` is given, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur)  
+<sup>3</sup> Where the optional index argument is available, it can be used as a positional argument if the schema has multiple fields with the same name
 
 ### Types
 
@@ -90,7 +90,7 @@ On Type class there are three methods available:
 * `test(field, value, skipConstraints)` - check if given value can be casted by field type. Skip constraints default value is `true`<sup>1</sup>. Returns boolean
 * `multiCast(values)` - Try to find the best suited Type for provided array of values. Returns String
 
-<sup>1</sup>: Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value
+<sup>1</sup> Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value
 
 ```javascript
 import Type from 'jsontableschema.types'
@@ -110,7 +110,7 @@ Following code will not raise the exception, despite the fact our date is less t
 ```javascript
 let dateType = type.cast(fieldDescriptor, '2014-05-29')
 ```
-And following example will raise exception, because we set flag 'skip constraints' to `false`, and our date is less than allowed by `minimum` constraints of the field. Exception will be raised as well as in situation of trying to cast non-date format values, or empty values
+And following example will raise exception, because we set flag 'skip constraints' to `false`, and our date is less than allowed by `minimum` constraints of the field. Exception will be raised as well in situation of trying to cast non-date format values, or empty values
 ```javascript
 try {
     let dateType = type.cast(fieldDescriptor, '2014-05-29', false)
@@ -138,10 +138,10 @@ Available types, formats and resultant value of the cast:
 | geopoint | default, array, object | Accordingly to format<sup>3</sup> |
 | geojson | default, topojson | Accordingly to format<sup>3,4</sup> |
 
-<sup>1</sup>: `default` format can be not specified in the field descriptor  
-<sup>2</sup>: in case value has 00 after point (1.00), it will return Number(1).toFixed(2), which is actually String '1.00'  
-<sup>3</sup>: default format returns String  
-<sup>4</sup>: topojson is not implemented
+<sup>1</sup> `default` format can be not specified in the field descriptor  
+<sup>2</sup> in case value has 00 after point (1.00), it will return Number(1).toFixed(2), which is actually String '1.00'  
+<sup>3</sup> default format returns String  
+<sup>4</sup> topojson is not implemented
 
 ### Infer
 
@@ -158,48 +158,52 @@ id,age,name
 Call `infer` with headers and values from the datafile:
 
 ```javascript
-import io
-import csv
+import parse from 'csv-parse'
+import fs from 'fs'
+import { infer } from 'jsontableschema'
 
-from jsontableschema import infer
-
-filepath = 'data_to_infer.csv'
-with io.open(filepath) as stream:
-    headers = stream.readline().rstrip('\n').split(',')
-    values = csv.reader(stream)
-
-schema = infer(headers, values)
+fs.readFile('example.csv', (err, data) => {
+  parse(data, (error, values) => {
+    const headers = values.shift()
+        , schema = infer(headers, values)
+  })
+})
 ```
 
-`schema` is now a schema dict:
+`schema` is now a JSON object:
 
-```python
-{u'fields': [
+```javascript
+{
+  fields: [
     {
-        u'description': u'',
-        u'format': u'default',
-        u'name': u'id',
-        u'title': u'',
-        u'type': u'integer'
+      name: 'id',
+      title: '',
+      description: '',
+      type: 'integer',
+      format: 'default'
     },
     {
-        u'description': u'',
-        u'format': u'default',
-        u'name': u'age',
-        u'title': u'',
-        u'type': u'integer'
+      name: 'age',
+      title: '',
+      description: '',
+      type: 'integer',
+      format: 'default'
     },
     {
-        u'description': u'',
-        u'format': u'default',
-        u'name': u'name',
-        u'title': u'',
-        u'type': u'string'
-    }]
+      name: 'name',
+      title: '',
+      description: '',
+      type: 'string',
+      format: 'default'
+    }
+  ]
 }
 ```
 
-The number of rows used by `infer` can be limited with the `row_limit` argument.
+It possible to provide additional options to build the JSON schema. 3-rd arguemnt of `infer` is an object with following possible values:
+* `rowLimit` (**integer**) - limit number of rows used by `infer`
+* `explicit` (**boolean**) - add required constraints for fields
+* `primaryKey` (**string, array**) - add primary key constraints
 
 ### Validate
 
