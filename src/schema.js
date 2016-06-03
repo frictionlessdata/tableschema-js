@@ -1,23 +1,17 @@
 import _ from 'lodash'
-import { request } from 'superagent'
+import 'isomorphic-fetch'
 import url from 'url'
 import validate from './validate'
 import utilities from './utilities'
-import types from './types'
+import Type from './types'
 
-const DEFAULTS = {
-  constraints: { required: false }
-  , format: 'default'
-  , type: 'string'
-}
 /**
  * Model for a JSON Table Schema.
  *
  * Providers handy helpers for ingesting, validating and outputting
  * JSON Table Schemas: http://dataprotocols.org/json-table-schema/
  *
- * @param {string|JSON} source: A filepath, url or object that represents a
- *   schema
+ * @param {string|JSON} source: An url or object that represents a schema
  *
  * @param {boolean} caseInsensitiveHeaders: if True, headers should be
  *   considered case insensitive, and `Schema` forces all headers to lowercase
@@ -29,24 +23,36 @@ const DEFAULTS = {
 export default class Schema {
   constructor(source, caseInsensitiveHeaders = false) {
     this.caseInsensitiveHeaders = caseInsensitiveHeaders
-    this.typeGuesser = new types.TypeGuesser()
+    this.type = new Type()
 
-    return this.loadJSON(source)
+    return load(this, source)
   }
 
   /**
-   * Check if value can be cast to fieldName's type
+   * Cast value to fieldName's type
    *
    * @param fieldName
    * @param value
    * @param index
+   * @param skipConstraints
    *
-   * @returns {Boolean}
+   * @returns {Type}
+   * @throws Error if value can't be casted
    */
-  cast(fieldName, value, index) {
-    return this.getType(fieldName, index || 0).cast(value)
+  cast(fieldName, value, index, skipConstraints = true) {
+    const field = this.getField(fieldName, index)
+    return this.type.cast(field, value, skipConstraints)
   }
 
+  /**
+   * Convert the arguments given to the types of the current schema. Last
+   * argument could be { failFast: true|false }.  If the option `failFast` is
+   * given, it will raise the first error it encounters, otherwise an array of
+   * errors thrown (if there are any errors occur)
+   *
+   * @param args
+   * @returns {Array}
+   */
   convertRow(...args) {
     let items = args
       , failFast = false
@@ -88,6 +94,15 @@ export default class Schema {
     return result
   }
 
+  /**
+   * Convert an array of rows to the types of the current schema. If the option
+   * `failFast` is given, it will raise the first error it encounters,
+   * otherwise an array of errors thrown (if there are any errors occur)
+   *
+   * @param items
+   * @param failFast
+   * @returns {Array}
+   */
   convert(items, failFast = false) {
     const result = []
     let errors = []
@@ -107,42 +122,6 @@ export default class Schema {
       throw errors
     }
     return result
-  }
-
-  /**
-   * Expand the schema with additional default properties
-   *
-   * @param schema
-   * @returns {*}
-   */
-  expand(schema) {
-    return _.extend(
-      {}
-      , schema
-      , {
-        fields: (schema.fields || []).map(field => {
-          const copyField = _.extend({}, field)
-
-          // Ensure we have a default type if no type was declared
-          if (!copyField.type) {
-            copyField.type = DEFAULTS.type
-          }
-
-          // Ensure we have a default format if no format was
-          // declared
-          if (!copyField.format) {
-            copyField.format = DEFAULTS.format
-          }
-
-          // Ensure we have a minimum constraints declaration
-          if (!copyField.constraints) {
-            copyField.constraints = DEFAULTS.constraints
-          } else if (_.isUndefined(field.constraints.required)) {
-            copyField.constraints.required = DEFAULTS.constraints.required
-          }
-          return copyField
-        })
-      })
   }
 
   /**
@@ -183,12 +162,12 @@ export default class Schema {
    * @returns {Object|Null}
    */
   getField(fieldName, index = 0) {
-    try {
-      return _.filter(this.fields(),
-                      field => _.includes(fieldName, field.name))[index]
-    } catch (e) {
+    const field = _.filter(this.fields(),
+                           F => _.includes(fieldName, F.name))[index]
+    if (!field) {
+      throw new Error(`No such field name in schema: ${fieldName}`)
     }
-    throw new Error(`No such field name in schema: ${fieldName}`)
+    return field
   }
 
   /**
@@ -199,18 +178,6 @@ export default class Schema {
    */
   getFieldsByType(typeName) {
     return _.filter(this.fields(), field => _.includes(typeName, field.type))
-  }
-
-  /**
-   * Return the `type` for `fieldName`.
-   *
-   * @param fieldName
-   * @param index
-   * @returns {Object} new instance of corresponding Type
-   */
-  getType(fieldName, index = 0) {
-    const field = this.getField(fieldName, index)
-    return this.typeGuesser.getType(field.type, field)
   }
 
   /**
@@ -242,39 +209,6 @@ export default class Schema {
   }
 
   /**
-   * Load a JSON source, from string, URL or buffer
-   * @param source
-   * @returns {Promise}
-   */
-  loadJSON(source) {
-    const that = this
-    if (_.isString(source)) {
-      if (utilities.isURL(url.parse(source).protocol)) {
-        return new Promise((resolve, reject) => {
-          request.get(source).end((error, response) => {
-            if (error) {
-              reject(`Failed to download file: ${error}`)
-            } else {
-              try {
-                resolve(that.validateAndExpand(JSON.parse(response)))
-              } catch (e) {
-                reject(e)
-              }
-            }
-          })
-        })
-      }
-    }
-    return new Promise((resolve, reject) => {
-      try {
-        resolve(that.validateAndExpand(source))
-      } catch (e) {
-        reject(e)
-      }
-    })
-  }
-
-  /**
    * Get primary key
    * @returns {string|Array}
    */
@@ -298,9 +232,103 @@ export default class Schema {
     return raw
   }
 
-  validateAndExpand(value) {
-    validate(value)
-    this.descriptor = this.expand(value)
-    return this
+  /**
+   * Check if value to fieldName's type can be casted
+   *
+   * @param fieldName
+   * @param value
+   * @param index
+   * @param skipConstraints
+   *
+   * @returns {Boolean}
+   */
+  test(fieldName, value, index, skipConstraints = true) {
+    const field = this.getField(fieldName, index)
+    return this.type.test(field, value, skipConstraints)
   }
+}
+
+/**
+ * Load a JSON source, from string, URL or buffer
+ * @param source
+ * @returns {Promise}
+ */
+function load(instance, source) {
+  if (_.isString(source)) {
+    if (utilities.isURL(url.parse(source).protocol)) {
+      return new Promise((resolve, reject) => {
+        fetch(source).then((response) => {
+          if (response.status >= 400) {
+            reject('Failed to download file due to bad response')
+          }
+          return response.json()
+        }).then(json => {
+          resolve(validateAndExpand(instance, json))
+        })
+      })
+    }
+  }
+  return new Promise((resolve, reject) => {
+    try {
+      resolve(validateAndExpand(instance, source))
+    } catch (e) {
+      reject(e)
+    }
+  })
+}
+
+/**
+ * Expand the schema with additional default properties
+ *
+ * @param schema
+ * @returns {*}
+ */
+function expand(schema) {
+  const DEFAULTS = {
+    constraints: { required: false }
+    , format: 'default'
+    , type: 'string'
+  }
+
+  return _.extend(
+    {}
+    , schema
+    , {
+      fields: (schema.fields || []).map(field => {
+        const copyField = _.extend({}, field)
+
+        // Ensure we have a default type if no type was declared
+        if (!copyField.type) {
+          copyField.type = DEFAULTS.type
+        }
+
+        // Ensure we have a default format if no format was
+        // declared
+        if (!copyField.format) {
+          copyField.format = DEFAULTS.format
+        }
+
+        // Ensure we have a minimum constraints declaration
+        if (!copyField.constraints) {
+          copyField.constraints = DEFAULTS.constraints
+        } else if (_.isUndefined(field.constraints.required)) {
+          copyField.constraints.required = DEFAULTS.constraints.required
+        }
+        return copyField
+      })
+    })
+}
+
+/**
+ * Validate JSON and bring fields to standard format
+ *
+ * @param instance
+ * @param value
+ * @returns {instance}
+ * @throws Array of errors id schema is not valid
+ */
+function validateAndExpand(instance, value) {
+  validate(value)
+  instance.descriptor = expand(value)
+  return instance
 }

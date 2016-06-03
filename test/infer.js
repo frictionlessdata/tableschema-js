@@ -10,9 +10,10 @@ describe('Infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-      parse(data, (error, output) => {
+      parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.drop(output))
+        const headers = values.shift()
+          , schema = infer(headers, values)
 
         assert.property(schema, 'fields')
         assert.isArray(schema.fields)
@@ -32,9 +33,10 @@ describe('Infer', () => {
     fs.readFile('data/data_infer_utf8.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer_utf8.csv failed')
 
-      parse(data, (error, output) => {
+      parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.drop(output))
+        const headers = values.shift()
+          , schema = infer(headers, values)
 
         assert.property(schema, 'fields')
         assert.isArray(schema.fields)
@@ -54,9 +56,10 @@ describe('Infer', () => {
     fs.readFile('data/data_infer_row_limit.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer_row_limit.csv failed')
 
-      parse(data, (error, output) => {
+      parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.drop(output), { rowLimit: 4 })
+        const headers = values.shift()
+          , schema = infer(headers, values, { rowLimit: 4 })
 
         assert.property(schema, 'fields')
         assert.isArray(schema.fields)
@@ -81,9 +84,10 @@ describe('Infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-      parse(data, (error, output) => {
+      parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.drop(output), { primaryKey: 'id' })
+        const headers = values.shift()
+          , schema = infer(headers, values, { primaryKey: 'id' })
 
         assert.property(schema, 'primaryKey')
         assert.equal(schema.primaryKey, 'id')
@@ -96,10 +100,10 @@ describe('Infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-      parse(data, (error, output) => {
+      parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.drop(output),
-                             { primaryKey: ['id', 'age'] })
+        const headers = values.shift()
+          , schema = infer(headers, values, { primaryKey: ['id', 'age'] })
 
         assert.property(schema, 'primaryKey')
         assert.isArray(schema.primaryKey)
@@ -114,9 +118,10 @@ describe('Infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-      parse(data, (error, output) => {
+      parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.drop(output), { explicit: false })
+        const headers = values.shift()
+          , schema = infer(headers, values, { explicit: false })
 
         for (const field of schema.fields) {
           assert.notProperty(field, 'constraints')
@@ -130,9 +135,10 @@ describe('Infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
-      parse(data, (error, output) => {
+      parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
-        const schema = infer(output[0], _.drop(output), { explicit: true })
+        const headers = values.shift()
+          , schema = infer(headers, values, { explicit: true })
 
         for (const field of schema.fields) {
           assert.property(field, 'constraints')

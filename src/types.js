@@ -4,21 +4,6 @@ import constraints from './constraints'
 import d3time from 'd3-time-format'
 import moment from 'moment'
 
-const typeNames = [
-  'BooleanType'
-  , 'IntegerType'
-  , 'DateType'
-  , 'TimeType'
-  , 'DateTimeType'
-  , 'ArrayType'
-  , 'ObjectType'
-  , 'GeoPointType'
-  , 'GeoJSONType'
-  , 'NumberType'
-  , 'StringType'
-  , 'AnyType'
-]
-
 class Abstract {
   constructor(field) {
     this.js = typeof null
@@ -27,7 +12,7 @@ class Abstract {
     this.formats = ['default']
 
     // `field` is the field schema.
-    this.field = field
+    this.field = field || {}
 
     if (field) {
       this.format = field.format
@@ -110,11 +95,12 @@ class Abstract {
    * Test if it possible to cast the value
    *
    * @param value
+   * @param skipConstraints
    * @returns {boolean}
    */
-  test(value) {
+  test(value, skipConstraints = true) {
     try {
-      this.cast(value)
+      this.cast(value, skipConstraints)
       return true
     } catch (e) {
       return false
@@ -177,7 +163,6 @@ class StringType extends Abstract {
     super(field)
 
     this.constraints = ['required', 'pattern', 'enum', 'minLength', 'maxLength']
-    this.jstype = 'string'
     this.formats = ['default', 'email', 'uri', 'binary']
     this.emailPattern = new RegExp('[^@]+@[^@]+\\.[^@]+')
     this.uriPattern = new RegExp('^http[s]?://')
@@ -221,47 +206,52 @@ class IntegerType extends Abstract {
 
   constructor(field) {
     super(field)
-    this.js = Number
+
+    const groupChar = (field || {}).groupChar || ','
+      , decimalChar = (field || {}).decimalChar || '.'
+
     this.constraints = ['required', 'pattern', 'enum', 'minimum', 'maximum']
+    this.regex = {
+      group: new RegExp(`[${groupChar}]`, 'g')
+      , decimal: new RegExp(`[${decimalChar}]`, 'g')
+      , percent: new RegExp('[%‰‱％﹪٪]', 'g')
+      , currency: new RegExp('[$£€]', 'g')
+    }
   }
 
   castDefault(value) {
+    const newValue = this.beforeCast(value)
     // probably it is float number
-    if (String(value).indexOf('.') !== -1) {
+    if (newValue.indexOf('.') !== -1) {
       throw new Error()
     }
-    if (utilities.isInteger(value)) {
-      return Number(value)
+    if (utilities.isInteger(newValue)) {
+      return Number(newValue)
     }
     throw new Error()
   }
+
+  beforeCast(value) {
+    return String(value)
+      .replace(this.regex.group, '')
+      .replace(this.regex.percent, '')
+      .replace(this.regex.currency, '')
+      .replace(this.regex.decimal, '.')
+  }
 }
 
-class NumberType extends Abstract {
+class NumberType extends IntegerType {
   static get name() {
     return 'number'
   }
 
   constructor(field) {
     super(field)
-
-    const groupChar = (field || {}).groupChar || ','
-      , decimalChar = (field || {}).decimalChar || '.'
-
-    this.constraints = ['required', 'pattern', 'enum', 'minimum', 'maximum']
-    this.jstype = 'number'
     this.formats = ['default', 'currency']
-    this.regex = {
-      group: new RegExp(`[${groupChar}]`, 'g')
-      , decimal: new RegExp(`[${decimalChar}]`, 'g')
-      , currency: new RegExp('[$£€]', 'g')
-    }
   }
 
   castDefault(value) {
-    const newValue = String(value)
-      .replace(this.regex.group, '')
-      .replace(this.regex.decimal, '.')
+    const newValue = this.beforeCast(value)
 
     if (!utilities.isNumeric(newValue)) {
       throw new Error()
@@ -273,19 +263,14 @@ class NumberType extends Abstract {
       return Number(newValue).toFixed(toFixed)
     }
     // here probably normal float number
-    if (Number(newValue) == newValue && +newValue % 1 !== 0) {
+    if (Number(newValue) == newValue) {
       return Number(newValue)
     }
     throw new Error()
   }
 
   castCurrency(value) {
-    const v = String(value)
-      .replace(this.regex.group, '')
-      .replace(this.regex.decimal, '.')
-      .replace(this.regex.currency, '')
-
-    return this.castDefault(v)
+    return this.castDefault(this.beforeCast(value))
   }
 }
 
@@ -335,7 +320,11 @@ class ArrayType extends Abstract {
     if (this.typeCheck(value)) {
       return value
     }
-    return this.typeCheck(JSON.parse(value))
+    const val = JSON.parse(value)
+    if (this.typeCheck(val)) {
+      return val
+    }
+    throw new Error()
   }
 }
 
@@ -641,7 +630,6 @@ const Types = {
   , DateTimeType
   , GeoPointType
   , GeoJSONType
-  , TypeGuesser
   , StringType
   , AnyType
 }
@@ -651,64 +639,72 @@ const Types = {
  *
  * @param options - TODO add description
  */
-function TypeGuesser(options) {
-  const typeOptions = options || {}
+export default class Type {
+  constructor(options) {
+    this.typeOptions = options || {}
+  }
 
-  this.multiCast = function multiCast(values) {
-    const types = suitableTypes(values)
+  /**
+   * Try to find the best suited Type for provided values
+   *
+   * @param values
+   * @returns String - name of the type
+   */
+  multiCast(values) {
+    const types = suitableTypes(values, this.typeOptions)
+      , typeNames = _.keys(Types)
       , suitableType = _.find(typeNames, type => _.indexOf(types, type) !== -1)
     return Types[suitableType].name
   }
 
-  this.cast = function cast(value) {
-    try {
-      return [
-        (new (_.find(availableTypes(), (T =>
-            new Types[T](typeOptions[Types[T].name] || {})
-              .test(value)
-        )))()).name
-        , 'default'
-      ]
-    } catch (e) {
-      return null
-    }
-  }
-
-  this.getType = function getType(name, field) {
-    for (const T of _.keys(Types)) {
-      if (Types[T].name === name) {
-        return new Types[T](field)
-      }
-    }
-    throw new Error('Unsupported field type')
+  /**
+   * Cast the value of the field accordingly to the field type
+   * @param field
+   * @param value
+   * @param skipConstraints
+   * @returns {result of cast}
+   * @throws Error if cast failed
+   */
+  cast(field, value, skipConstraints = true) {
+    return getType(field).cast(value, skipConstraints)
   }
 
   /**
-   * Return available types objects
-   *
-   * @returns {Array}
+   * Test the value if it can be casted for this field type
+   * @param field
+   * @param value
+   * @param skipConstraints
+   * @returns boolean
    */
-  function availableTypes() {
-    return typeNames.map(type => Types[type])
-  }
-
-  /**
-   * Return types suitable to the provided multiple values
-   *
-   * @param values
-   * @returns {Array}
-   */
-  function suitableTypes(values) {
-    const filtered = values.filter(v => !_.isUndefined(v) || _.isEmpty(v))
-
-    if (filtered.length === 0) {
-      return ['AnyType']
-    }
-
-    const typeList = filtered.map(value => typeNames.filter(
-      T => (new Types[T](typeOptions[Types[T].name] || {})).test(value)))
-    return _.reduce(typeList, (memo, types) => _.intersection(memo, types))
+  test(field, value, skipConstraints = true) {
+    return getType(field).test(value, skipConstraints)
   }
 }
 
-export default Types
+/**
+ * Return types suitable to the provided multiple values
+ *
+ * @param values
+ * @returns {Array}
+ */
+function suitableTypes(values, options) {
+  const filtered = values.filter(v => !_.isUndefined(v) || _.isEmpty(v))
+    , typeNames = _.keys(Types)
+
+  if (filtered.length === 0) {
+    return ['AnyType']
+  }
+
+  const typeList = filtered.map(value => typeNames.filter(
+    T => (new Types[T](options[Types[T].name])).test(value)))
+  return _.reduce(typeList, (memo, types) => _.intersection(memo, types))
+}
+
+function getType(field) {
+  for (const T of _.keys(Types)) {
+    if (Types[T].name === field.type) {
+      return new Types[T](field)
+    }
+  }
+  throw new Error('Unsupported field type')
+}

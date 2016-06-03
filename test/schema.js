@@ -1,5 +1,6 @@
 /* global describe, beforeEach, it */
 import _ from 'lodash'
+import fetchMock from 'fetch-mock'
 import { assert } from 'chai'
 import Schema from '../src/schema'
 
@@ -200,6 +201,30 @@ describe('Models', () => {
     })
   })
 
+  it('should return true on test', (done) => {
+    const model = new Schema(SCHEMA)
+    model.then(schema => {
+      assert.isTrue(schema.test('age', 1))
+      done()
+    }, (error) => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
+  it('should throw exception if field name does not exists', (done) => {
+    const model = new Schema(SCHEMA)
+    model.then(schema => {
+      assert.throws(() => {
+        schema.getField('unknown')
+      }, Error)
+      done()
+    }, (error) => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
   it('convert row', (done) => {
     (new Schema(SCHEMA)).then(schema => {
       const convertedRow = schema.convertRow('string', '10.0', '1', 'string',
@@ -363,4 +388,40 @@ describe('Models', () => {
          done()
        })
      })
+
+  it('should load json file', (done) => {
+    const url = 'http://localhost/remote.json'
+    fetchMock.restore()
+    fetchMock.mock(url, SCHEMA)
+
+    const model = new Schema(url)
+    model.then((schema) => {
+      assert.equal(schema.headers().length, 5)
+      assert.equal(schema.requiredHeaders().length, 2)
+      assert.isTrue(schema.hasField('id'))
+      assert.isTrue(schema.hasField('height'))
+      assert.isTrue(schema.hasField('age'))
+      assert.isTrue(schema.hasField('name'))
+      assert.isTrue(schema.hasField('occupation'))
+      done()
+    }, (error) => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
+  it('should fail on load of json file', (done) => {
+    const url = 'http://localhost/remote.json'
+    fetchMock.restore()
+    fetchMock.mock(url, 400)
+
+    const model = new Schema(url)
+    model.then(schema => {
+      assert.isTrue(false, 'Shouldn\'t enter here')
+      done()
+    }).catch(error => {
+      assert.isNotNull(error)
+      done()
+    })
+  })
 })
