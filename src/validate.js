@@ -75,18 +75,21 @@ export default schema => {
     const errs = []
     let valid = true
 
-    // The hash MAY contain a key `primaryKey`
+    /**
+     * Schema may contain a `primary key`
+     */
     if (schema.primaryKey) {
       const primaryKey = schema.primaryKey
       // Ensure that the primary key matches field names
       if (_.isString(primaryKey)) {
-        if (fieldNames.indexOf(primaryKey) === -1) {
+        if (!_.includes(fieldNames, primaryKey)) {
           valid = false
-          errs.push('primaryKey value must be found in the schema field names')
+          errs.push(
+            `primary key ${primaryKey} must be found in the schema field names`)
         }
       } else if (_.isArray(primaryKey)) {
         _.each(primaryKey, pk => {
-          if (fieldNames.indexOf(pk) === -1) {
+          if (!_.includes(fieldNames, pk)) {
             valid = false
             errs.push(
               `primary key ${pk} must be found in the schema field names`)
@@ -95,7 +98,29 @@ export default schema => {
       }
     }
 
-
+    /**
+     * Schema may contain a `foreign keys`
+     */
+    if (schema.foreignKeys) {
+      const foreignKeys = schema.foreignKeys
+      _.each(foreignKeys, fk => {
+        if (_.isString(fk.fields)) {
+          if (!_.includes(fieldNames, fk.fields)) {
+            valid = false
+            errs.push(
+              `foreign key ${fk.fields} must be found in the schema field names`)
+          }
+        } else if (_.isArray(fk.fields)) {
+          _.each(fk.fields, field => {
+            if (!_.includes(fieldNames, field)) {
+              valid = false
+              errs.push(
+                `foreign key ${field} must be found in the schema field names`)
+            }
+          })
+        }
+      })
+    }
 
     return {
       valid
@@ -125,20 +150,8 @@ export default schema => {
         throw errors
       }
 
-      // Ensure that `foreignKey.fields` match field names
       _.each(foreignKeys, fk => {
-        if (_.isString(fk.fields)) {
-          if (!_.includes(fieldNames, fk.fields)) {
-            valid = false
-            addError('foreignKey.fields must correspond with field names')
-          }
-        } else {
-          if ((_.intersection(fieldNames, fk.fields) || []).length <
-              fk.fields.length) {
-            valid = false
-            addError('foreignKey.fields must correspond with field names')
-          }
-        }
+
 
         // Ensure that `foreignKey.reference` is present and is a hash
         if (!isHash(fk.reference)) {
@@ -172,17 +185,10 @@ export default schema => {
           }
         }
       })
-    } else {
-      valid = false
-      addError('foreignKeys must be an array.')
     }
   }
 
   function isHash(value) {
     return _.isObject(value) && !_.isArray(value) && !_.isFunction(value)
-  }
-
-  function isHas(source, property) {
-    return source.hasOwnProperty(property)
   }
 }

@@ -5,7 +5,7 @@ import fetchMock from 'fetch-mock'
 
 let SCHEMA
 describe('Validate', () => {
-  beforeEach((done) => {
+  beforeEach(done => {
     fetchMock.restore()
     SCHEMA = {
       fields: [
@@ -37,7 +37,7 @@ describe('Validate', () => {
     done()
   })
 
-  it('ensure schema is object', (done) => {
+  it('ensure schema is object', done => {
     SCHEMA = ''
     validate(SCHEMA).then(valid => {
       assert.isFalse(valid)
@@ -49,7 +49,7 @@ describe('Validate', () => {
     })
   })
 
-  it('ensure schema has fields', (done) => {
+  it('ensure schema has fields', done => {
     SCHEMA = {}
     validate(SCHEMA).then(valid => {
       assert.isFalse(valid)
@@ -61,7 +61,7 @@ describe('Validate', () => {
     })
   })
 
-  it('ensure schema has fields and fields are array', (done) => {
+  it('ensure schema has fields and fields are array', done => {
     SCHEMA = { fields: ['1', '2'] }
     validate(SCHEMA).then(valid => {
       assert.isFalse(valid)
@@ -73,7 +73,7 @@ describe('Validate', () => {
     })
   })
 
-  it('ensure schema fields has required properties', (done) => {
+  it('ensure schema fields has required properties', done => {
     SCHEMA = {
       fields: [{
         name: 'id'
@@ -94,7 +94,7 @@ describe('Validate', () => {
     })
   })
 
-  it('ensure schema fields constraints must be an object', (done) => {
+  it('ensure schema fields constraints must be an object', done => {
     SCHEMA = {
       fields: [{
         name: 'id'
@@ -117,7 +117,7 @@ describe('Validate', () => {
     })
   })
 
-  it('ensure constraints properties have correct type', (done) => {
+  it('ensure constraints properties have correct type', done => {
     SCHEMA = {
       fields: [{
         name: 'id'
@@ -154,7 +154,7 @@ describe('Validate', () => {
     })
   })
 
-  it('ensure constraints properties with correct type is valid', (done) => {
+  it('ensure constraints properties with correct type is valid', done => {
     SCHEMA = {
       fields: [{
         name: 'id'
@@ -190,7 +190,7 @@ describe('Validate', () => {
     })
   })
 
-  it('primary key should be by type one of the allowed by schema', (done) => {
+  it('primary key should be by type one of the allowed by schema', done => {
     SCHEMA.primaryKey = { some: 'thing' }
     validate(SCHEMA).then(valid => {
       assert.isFalse(valid)
@@ -202,7 +202,7 @@ describe('Validate', () => {
     })
   })
 
-  it('primary key should match field names', (done) => {
+  it('primary key should match field names', done => {
     SCHEMA.primaryKey = 'unknown'
     validate(SCHEMA).then(valid => {
       assert.isFalse(valid)
@@ -226,40 +226,60 @@ describe('Validate', () => {
     })
   })
 
-  //it('ensure foreign keys is an array', (done) => {
-  //  SCHEMA.foreignKeys = 'keys'
-  //  assert.throws(() => {
-  //    validate(SCHEMA)
-  //  }, Array)
-  //  done()
-  //})
-  //
-  //it('ensure every foreign key has fields', (done) => {
-  //  SCHEMA.foreignKeys = ['key1', 'key2']
-  //  assert.throws(() => {
-  //    validate(SCHEMA)
-  //  }, Array)
-  //  done()
-  //})
-  //
-  //it('ensure fields in keys a string or an array', (done) => {
-  //  SCHEMA.foreignKeys = [{ fields: { name: 'id' } }]
-  //  assert.throws(() => {
-  //    validate(SCHEMA)
-  //  }, Array)
-  //
-  //  SCHEMA.foreignKeys = [
-  //    {
-  //      fields: 'id'
-  //      , reference: { fields: 'id', resource: 'resource' }
-  //    }
-  //    , {
-  //      fields: ['id', 'name']
-  //      , reference: { fields: ['id', 'name'], resource: 'resource' }
-  //    }
-  //  ]
-  //  validate(SCHEMA)
-  //  assert.isTrue(true)
-  //  done()
-  //})
+  it('ensure foreign keys is an array', done => {
+    SCHEMA.foreignKeys = 'keys'
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 1)
+      done()
+    })
+  })
+
+  it('ensure every foreign key has fields', done => {
+    SCHEMA.foreignKeys = ['key1', 'key2']
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 2)
+      done()
+    })
+  })
+
+  it('ensure fields in keys a string or an array', done => {
+    SCHEMA.foreignKeys = [{ fields: { name: 'id' } }]
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 2)
+      done()
+    })
+  })
+
+  // TODO get example of foreign keys with reference to another schema
+  it('ensure fields in keys a string or an array and resource key is present', done => {
+    SCHEMA.foreignKeys = [
+      {
+        fields: 'id'
+        , reference: { fields: 'id', resource: 'resource' }
+      }
+      , {
+        fields: ['id', 'name']
+        , reference: { fields: ['id', 'name'], resource: 'resource' }
+      }
+    ]
+    validate(SCHEMA).then(valid => {
+      assert.isTrue(valid)
+      done()
+    }).catch(errors => {
+      assert.isNull(errors)
+      done()
+    })
+  })
 })

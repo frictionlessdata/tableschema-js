@@ -6,7 +6,7 @@ import { assert } from 'chai'
 import infer from '../src/infer'
 
 describe('Infer', () => {
-  it('produce schema from a generic .csv', (done) => {
+  it('produce schema from a generic .csv', done => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
@@ -29,7 +29,7 @@ describe('Infer', () => {
     })
   })
 
-  it('produce schema from a generic .csv UTF-8 encoded', (done) => {
+  it('produce schema from a generic .csv UTF-8 encoded', done => {
     fs.readFile('data/data_infer_utf8.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer_utf8.csv failed')
 
@@ -52,7 +52,7 @@ describe('Infer', () => {
     })
   })
 
-  it('respect row limit parameter', (done) => {
+  it('respect row limit parameter', done => {
     fs.readFile('data/data_infer_row_limit.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer_row_limit.csv failed')
 
@@ -80,7 +80,7 @@ describe('Infer', () => {
     })
   })
 
-  it('respect primaryKey parameter', (done) => {
+  it('respect primaryKey parameter', done => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
@@ -96,7 +96,7 @@ describe('Infer', () => {
     })
   })
 
-  it('respect primaryKey parameter as an array', (done) => {
+  it('respect primaryKey parameter as an array', done => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
@@ -114,7 +114,7 @@ describe('Infer', () => {
     })
   })
 
-  it('do not create constraints if explicit param passed as FALSE', (done) => {
+  it('do not create constraints if explicit param passed as FALSE', done => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
@@ -131,7 +131,7 @@ describe('Infer', () => {
     })
   })
 
-  it('create constraints if explicit param passed as TRUE', (done) => {
+  it('create constraints if explicit param passed as TRUE', done => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
 
