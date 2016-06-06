@@ -1,5 +1,6 @@
+import fetch from 'isomorphic-fetch'
 import _ from 'lodash'
-import utilities from './utilities'
+import tv4 from 'tv4'
 
 /**
  Validate that `schema` is a valid JSON Table Schema.
@@ -10,168 +11,95 @@ import utilities from './utilities'
  Returns:
  * A tuple of `valid`, `errors`
  */
-export default (schema) => {
-  const errors = []
-    , fieldNames = _.map(schema.fields || [], _.property('name'))
-  let valid = true
+export default schema => {
+  const fieldNames = _.map(schema.fields || [], _.property('name'))
 
-  /**
-   * Check if schema is an object
-   */
-  if (!isHash(schema)) {
-    valid = false
-    addError('should be an object')
-    throw errors
-  }
-
-  /**
-   * Check if schema contains fields
-   */
-  if (!schema.fields || !_.isArray(schema.fields) ||
-      schema.fields.length === 0) {
-    valid = false
-    addError('must have an array of fields')
-    throw errors
-  }
-
-  /**
-   * Each entry in the `fields` array MUST be an object
-   */
-  if (!_.every(schema.fields, (field) => isHash(field))) {
-    valid = false
-    addError('Each field in JSON Table Schema must be an object.', false)
-  }
-
-  /**
-   * Each entry in the `fields` array MUST have a `name` key
-   */
-  if (!_.every(schema.fields, field => Boolean(field.name))) {
-    valid = false
-    addError('field must have a name key.')
-  }
-
-  /**
-   * Each entry in the `fields` array MAY have a `constraints` key if
-   * `constraints` is present, then `constraints` MUST be an object
-   */
-  if (!_.every(schema.fields,
-               field => !field.constraints || isHash(field.constraints))) {
-    valid = false
-    addError('field constraint must be an object')
-  }
-
-  /**
-   * Constraints may contain certain keys (each has a specific meaning)
-   */
-  _.chain(schema.fields)
-    .filter(field => !!field.constraints)
-    .each(field => {
-      const constraints = field.constraints
-
-      // IF `required` key, then it is a boolean
-      if (isHas(constraints, 'required') &&
-          !_.isBoolean(constraints.required)) {
-        valid = false
-        addError('required constraint must be a boolean.')
-      }
-
-      // IF `unique` key, then it is a boolean
-      if (isHas(constraints, 'unique') && !_.isBoolean(constraints.unique)) {
-        valid = false
-        addError('unique constraint must be a boolean.')
-      }
-
-      // IF `minLength` key, then it is an integer
-      if (isHas(constraints, 'minLength') &&
-          !utilities.isInteger(constraints.minLength)) {
-        valid = false
-        addError('minLength constraint must be an integer.')
-      }
-
-      // IF `maxLength` key, then it is an integer
-      if (isHas(constraints, 'maxLength') &&
-          !utilities.isInteger(constraints.maxLength)) {
-        valid = false
-        addError('maxLength constraint must be an integer')
-      }
-
-      // IF `pattern` key, then it is a regex
-      if (isHas(constraints, 'pattern') && !_.isString(constraints.pattern)) {
-        valid = false
-        addError('pattern constraint must be a string.')
-      }
-
-      // IF `minimum` key, then it DEPENDS on `field` TYPE
-      if (isHas(constraints, 'minimum')) {
-        // IF `type` is integer
-        if ((field.type === 'integer' || field.type === 'number')) {
-          if (!utilities.isNumeric(constraints.minimum)) {
-            valid = false
-            addError(
-              'minimum constraint which is an integer is only valid if ' +
-              'the encompassing field is also of type integer')
-          }
-        } else if ((field.type === 'date' || field.type === 'datetime')) {
-          if (!_.isDate(constraints.minimum)) {
-            // WARN Probably need to check for moment() type if we decide to go
-            // with moment() for dates IF `type` is date
-            valid = false
-            addError(
-              'minimum constraint which is a date is only valid if the ' +
-              'encompassing field is also of type date')
+  return new Promise((resolve, reject) => {
+    fetch('http://schemas.datapackages.org/json-table-schema.json')
+      .then(response => {
+        if (response.status >= 400) {
+          return reject(['Failed to download JSON schema'])
+        }
+        return response.json()
+      })
+      .then(standard => {
+        const result = tv4.validateMultiple(schema, standard)
+        if (result.valid) {
+          const validation = extra()
+          if (validation.valid) {
+            resolve(true)
+          } else {
+            reject(validation.errors)
           }
         } else {
-          valid = false
-          addError('minimum constraint is present with unclear application' +
-                   ' (field is not an integer or a date)')
-        }
-      }
-
-      if (isHas(constraints, 'maximum')) {
-        // IF `type` is integer
-        if ((field.type === 'integer' || field.type === 'number')) {
-          if (!utilities.isNumeric(constraints.maximum)) {
-            valid = false
-            addError('maximum constraint which is an integer is only valid if' +
-                     ' the encompassing field is also of type integer')
-          }
-        } else if ((field.type === 'date' || field.type === 'datetime')) {
-          if (!_.isDate(constraints.maximum)) {
-            // WARN Probably need to check for moment() type if we decide to go
-            // with moment() for dates IF `type` is date
-            valid = false
-            addError('maximum constraint which is a date is only valid if the' +
-                     ' encompassing field is also of type date')
-          }
-        } else {
-          valid = false
-          addError('maximum constraint is present with unclear application' +
-                   ' (field is not an integer or a date)')
-        }
-      }
-    })
-    .value()
-
-  // The hash MAY contain a key `primaryKey`
-  if (schema.primaryKey) {
-    const primaryKey = schema.primaryKey
-    // `primaryKey` MUST be a string or an array
-    // Ensure that the primary key matches field names
-    if (_.isString(primaryKey)) {
-      if (!_.includes(fieldNames, primaryKey)) {
-        valid = false
-        addError('primaryKey value must be found in the schema field names')
-      }
-    } else if (_.isArray(primaryKey)) {
-      _.each(primaryKey, pk => {
-        if (!_.includes(fieldNames, pk)) {
-          valid = false
-          addError('primaryKey value must be found in the schema field names')
+          reject(errors(result.errors))
         }
       })
-    } else {
-      valid = false
-      addError('primaryKey must be either a string or an array.')
+  })
+
+  /**
+   * Extract useful information from the tv4 errors object
+   * @param values
+   * @returns {Array}
+   */
+  function errors(values) {
+    const result = []
+    for (const error of values) {
+      result.push(message(error))
+    }
+    return result
+  }
+
+  /**
+   * Create useful message from the each error occur
+   * @param error
+   * @returns {*}
+   */
+  function message(error) {
+    let result = error.message
+    if (error.dataPath) {
+      result += ` in "${error.dataPath}"`
+    }
+    if (error.schemaPath) {
+      result += ` schema path: "${error.schemaPath}"`
+    }
+    return result
+  }
+
+  /**
+   * Extra validation for schema which can't be covered by tv4 validator
+   * - primary key
+   * @returns {{valid: boolean, errors: Array}}
+   */
+  function extra() {
+    const errs = []
+    let valid = true
+
+    // The hash MAY contain a key `primaryKey`
+    if (schema.primaryKey) {
+      const primaryKey = schema.primaryKey
+      // Ensure that the primary key matches field names
+      if (_.isString(primaryKey)) {
+        if (fieldNames.indexOf(primaryKey) === -1) {
+          valid = false
+          errs.push('primaryKey value must be found in the schema field names')
+        }
+      } else if (_.isArray(primaryKey)) {
+        _.each(primaryKey, pk => {
+          if (fieldNames.indexOf(pk) === -1) {
+            valid = false
+            errs.push(
+              `primary key ${pk} must be found in the schema field names`)
+          }
+        })
+      }
+    }
+
+
+
+    return {
+      valid
+      , errors: errs
     }
   }
 
@@ -247,16 +175,6 @@ export default (schema) => {
     } else {
       valid = false
       addError('foreignKeys must be an array.')
-    }
-  }
-
-  if (!valid) throw errors
-
-  function addError(error, isSuffix = true) {
-    if (isSuffix) {
-      errors.push(`A JSON Table Schema ${error}`)
-    } else {
-      errors.push(error)
     }
   }
 
