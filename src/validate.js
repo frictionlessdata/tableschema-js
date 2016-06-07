@@ -136,6 +136,24 @@ export default schema => {
             }
           }
         }
+
+        if (fk.reference.resource === 'self') {
+          if (_.isString(fk.reference.fields)) {
+            if (!_.includes(fieldNames, fk.reference.fields)) {
+              valid = false
+              errs.push(
+                `foreign key ${fk.fields} must be found in the schema field names`)
+            }
+          } else if (_.isArray(fk.reference.fields)) {
+            _.each(fk.reference.fields, field => {
+              if (!_.includes(fieldNames, field)) {
+                valid = false
+                errs.push(
+                  `foreign key ${field} must be found in the schema field names`)
+              }
+            })
+          }
+        }
       })
     }
 

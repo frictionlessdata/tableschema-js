@@ -394,4 +394,34 @@ describe('Validate', () => {
          done()
        })
      })
+
+  it('resource "self" should reference to the self fields',
+     done => {
+       SCHEMA.foreignKeys = [
+         {
+           fields: 'id'
+           , reference: {
+           datapackage: 'http://data.okfn.org/data/mydatapackage/'
+           , fields: 'fk_id'
+           , resource: 'self'
+         }
+         }
+         , {
+           fields: ['id', 'name']
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , fields: ['fk_id', 'fk_name']
+             , resource: 'self'
+           }
+         }
+       ]
+       validate(SCHEMA).then(valid => {
+         assert.isFalse(valid)
+         done()
+       }).catch(errors => {
+         assert.isArray(errors)
+         assert.equal(errors.length, 1)
+         done()
+       })
+     })
 })
