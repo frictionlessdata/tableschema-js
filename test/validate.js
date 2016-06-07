@@ -420,7 +420,7 @@ describe('Validate', () => {
          done()
        }).catch(errors => {
          assert.isArray(errors)
-         assert.equal(errors.length, 1)
+         assert.equal(errors.length, 3)
          done()
        })
      })
