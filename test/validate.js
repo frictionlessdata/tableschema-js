@@ -262,24 +262,136 @@ describe('Validate', () => {
     })
   })
 
-  // TODO get example of foreign keys with reference to another schema
-  it('ensure fields in keys a string or an array and resource key is present', done => {
-    SCHEMA.foreignKeys = [
-      {
-        fields: 'id'
-        , reference: { fields: 'id', resource: 'resource' }
-      }
-      , {
-        fields: ['id', 'name']
-        , reference: { fields: ['id', 'name'], resource: 'resource' }
-      }
-    ]
-    validate(SCHEMA).then(valid => {
-      assert.isTrue(valid)
-      done()
-    }).catch(errors => {
-      assert.isNull(errors)
-      done()
-    })
-  })
+  it('ensure fields exists in schema',
+     done => {
+       SCHEMA.foreignKeys = [
+         {
+           fields: 'unknown'
+           , reference: {
+           datapackage: 'http://data.okfn.org/data/mydatapackage/'
+           , fields: 'fk_id'
+           , resource: 'resource'
+         }
+         }
+         , {
+           fields: ['id', 'unknown']
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , resource: 'the-resource'
+             , fields: ['fk_id', 'fk_name']
+           }
+         }
+       ]
+       validate(SCHEMA).then(valid => {
+         assert.isFalse(valid)
+         done()
+       }).catch(errors => {
+         assert.isArray(errors)
+         assert.equal(errors.length, 2)
+         done()
+       })
+     })
+
+  it('fields in keys a string or an array and resource key should present',
+     done => {
+       SCHEMA.foreignKeys = [
+         {
+           fields: 'id'
+           , reference: {
+           datapackage: 'http://data.okfn.org/data/mydatapackage/'
+           , fields: { name: 'id' }
+           , resource: 'resource'
+         }
+         }
+         , {
+           fields: 'id'
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , resource: 'resource'
+           }
+         }
+         , {
+           fields: ['id', 'name']
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , fields: ['fk_id', 'fk_name']
+           }
+         }
+       ]
+       validate(SCHEMA).then(valid => {
+         assert.isFalse(valid)
+         done()
+       }).catch(errors => {
+         assert.isArray(errors)
+         assert.equal(errors.length, 3)
+         done()
+       })
+     })
+
+  it('reference.fields should be same type as key.fields',
+     done => {
+       SCHEMA.foreignKeys = [
+         {
+           fields: 'id'
+           , reference: {
+           datapackage: 'http://data.okfn.org/data/mydatapackage/'
+           , fields: ['id', 'name']
+           , resource: 'resource'
+         }
+         }
+         , {
+           fields: ['id', 'name']
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , resource: 'resource'
+             , fields: 'id'
+           }
+         }
+         , {
+           fields: ['id', 'name']
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , resource: 'resource'
+             , fields: ['id']
+           }
+         }
+       ]
+       validate(SCHEMA).then(valid => {
+         assert.isFalse(valid)
+         done()
+       }).catch(errors => {
+         assert.isArray(errors)
+         assert.equal(errors.length, 3)
+         done()
+       })
+     })
+
+  it('ensure fields in keys a string or an array and resource key is present',
+     done => {
+       SCHEMA.foreignKeys = [
+         {
+           fields: 'id'
+           , reference: {
+           datapackage: 'http://data.okfn.org/data/mydatapackage/'
+           , fields: 'fk_id'
+           , resource: 'resource'
+         }
+         }
+         , {
+           fields: ['id', 'name']
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , resource: 'the-resource'
+             , fields: ['fk_id', 'fk_name']
+           }
+         }
+       ]
+       validate(SCHEMA).then(valid => {
+         assert.isTrue(valid)
+         done()
+       }).catch(errors => {
+         assert.isNull(errors)
+         done()
+       })
+     })
 })

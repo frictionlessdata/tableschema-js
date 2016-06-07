@@ -110,6 +110,12 @@ export default schema => {
             errs.push(
               `foreign key ${fk.fields} must be found in the schema field names`)
           }
+
+          if (!_.isString(fk.reference.fields)) {
+            valid = false
+            errs.push(
+              `foreign key ${fk.reference.fields} must be same type as ${fk.fields}`)
+          }
         } else if (_.isArray(fk.fields)) {
           _.each(fk.fields, field => {
             if (!_.includes(fieldNames, field)) {
@@ -118,6 +124,17 @@ export default schema => {
                 `foreign key ${field} must be found in the schema field names`)
             }
           })
+          if (!_.isArray(fk.reference.fields)) {
+            valid = false
+            errs.push(
+              `foreign key ${fk.reference.fields} must be same type as ${fk.fields}`)
+          } else {
+            if (fk.reference.fields.length !== fk.fields.length) {
+              valid = false
+              errs.push('foreign key fields must contain the same number ' +
+                        'entries as reference.fields')
+            }
+          }
         }
       })
     }
@@ -126,69 +143,5 @@ export default schema => {
       valid
       , errors: errs
     }
-  }
-
-  /**
-   * The hash may contain a key `foreignKeys`
-   */
-  if (schema.foreignKeys) {
-    const foreignKeys = schema.foreignKeys
-    // `foreignKeys` MUST be an array
-    if (_.isArray(foreignKeys)) {
-      // Each `foreignKey` in `foreignKeys` MUST have a `fields` key
-      if (!_.every(foreignKeys, fk => Boolean(fk.fields))) {
-        addError('foreignKey must have a fields key.')
-        // there are no sense to continue
-        throw errors
-      }
-
-      // Each `fields` key in a `foreignKey` MUST be a string or array
-      if (!_.every(foreignKeys,
-                   fk => _.isString(fk.fields) || _.isArray(fk.fields))) {
-        addError('foreignKey.fields type must be a string or an array.')
-        // there are no sense to continue
-        throw errors
-      }
-
-      _.each(foreignKeys, fk => {
-
-
-        // Ensure that `foreignKey.reference` is present and is a hash
-        if (!isHash(fk.reference)) {
-          addError('foreignKey.reference must be a hash.')
-          // there are no sense to continue
-          throw errors
-        }
-
-        // Ensure that `foreignKey.reference` has a `resource` key
-        if (!_.includes(_.keys(fk.reference), 'resource')) {
-          valid = false
-          addError('foreignKey.reference must have a resource key.')
-        }
-
-        // Ensure that `foreignKey.reference` has a `fields` key
-        if (!_.includes(_.keys(fk.reference), 'fields')) {
-          valid = false
-          addError('foreignKey.reference must have a fields key.')
-        }
-
-        // Ensure that `foreignKey.reference.fields` matches outer `fields`
-        if (_.isString(fk.fields)) {
-          if (!_.isString(fk.reference.fields)) {
-            valid = false
-            addError('foreignKey.reference.fields must match field names.')
-          }
-        } else {
-          if (fk.fields.length !== fk.reference.fields.length) {
-            valid = false
-            addError('must have a fields key.')
-          }
-        }
-      })
-    }
-  }
-
-  function isHash(value) {
-    return _.isObject(value) && !_.isArray(value) && !_.isFunction(value)
   }
 }
