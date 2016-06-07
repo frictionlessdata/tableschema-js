@@ -224,7 +224,7 @@ Given a schema as JSON object, `validate` returns `Promise` which resolve to suc
 validate(schema).then(valid => {
   // do something with valid schema here
 }).catch(errors => {
-  
+  // uh oh, some validation errors in the errors array
 })
 ```
 Note: `validate()` validates whether a **schema** is a validate JSON Table Schema. It does **not** validate data against a schema.
