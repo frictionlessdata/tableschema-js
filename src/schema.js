@@ -263,17 +263,23 @@ function load(instance, source) {
           }
           return response.json()
         }).then(json => {
-          resolve(validateAndExpand(instance, json))
+          validate(json).then(() => {
+            instance.descriptor = expand(json)
+            resolve(instance)
+          }).catch(errors => {
+            reject(errors)
+          })
         })
       })
     }
   }
   return new Promise((resolve, reject) => {
-    try {
-      resolve(validateAndExpand(instance, source))
-    } catch (e) {
-      reject(e)
-    }
+    validate(source).then(() => {
+      instance.descriptor = expand(source)
+      resolve(instance)
+    }).catch(errors => {
+      reject(errors)
+    })
   })
 }
 
@@ -317,18 +323,4 @@ function expand(schema) {
         return copyField
       })
     })
-}
-
-/**
- * Validate JSON and bring fields to standard format
- *
- * @param instance
- * @param value
- * @returns {instance}
- * @throws Array of errors id schema is not valid
- */
-function validateAndExpand(instance, value) {
-  validate(value)
-  instance.descriptor = expand(value)
-  return instance
 }

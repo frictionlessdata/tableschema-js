@@ -1,10 +1,12 @@
 /* global describe, it, beforeEach */
 import { assert } from 'chai'
 import validate from '../src/validate'
+import fetchMock from 'fetch-mock'
 
 let SCHEMA
 describe('Validate', () => {
-  beforeEach((done) => {
+  beforeEach(done => {
+    fetchMock.restore()
     SCHEMA = {
       fields: [
         {
@@ -35,31 +37,64 @@ describe('Validate', () => {
     done()
   })
 
-  it('ensure schema is object', (done) => {
+  it('ensure schema is object', done => {
     SCHEMA = ''
-    assert.throws(() => {
-      validate(SCHEMA)
-    }, Array)
-    done()
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 1)
+      done()
+    })
   })
 
-  it('ensure schema has fields', (done) => {
+  it('ensure schema has fields', done => {
     SCHEMA = {}
-    assert.throws(() => {
-      validate(SCHEMA)
-    }, Array)
-    done()
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 1)
+      done()
+    })
   })
 
-  it('ensure schema has fields and fields are array', (done) => {
+  it('ensure schema has fields and fields are array', done => {
     SCHEMA = { fields: ['1', '2'] }
-    assert.throws(() => {
-      validate(SCHEMA)
-    }, Array)
-    done()
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 2)
+      done()
+    })
   })
 
-  it('ensure schema fields constraints must be an object', (done) => {
+  it('ensure schema fields has required properties', done => {
+    SCHEMA = {
+      fields: [{
+        name: 'id'
+        , type: 'number'
+      }
+        , {
+          type: 'number'
+        }]
+    }
+
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 1)
+      done()
+    })
+  })
+
+  it('ensure schema fields constraints must be an object', done => {
     SCHEMA = {
       fields: [{
         name: 'id'
@@ -72,13 +107,17 @@ describe('Validate', () => {
         }]
     }
 
-    assert.throws(() => {
-      validate(SCHEMA)
-    }, Array)
-    done()
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 1)
+      done()
+    })
   })
 
-  it('ensure constraints properties have correct type', (done) => {
+  it('ensure constraints properties have correct type', done => {
     SCHEMA = {
       fields: [{
         name: 'id'
@@ -105,17 +144,17 @@ describe('Validate', () => {
         }]
     }
 
-    try {
-      validate(SCHEMA)
-      assert(false)
-    } catch (e) {
-      assert.isArray(e)
-      assert.equal(e.length, 11)
-    }
-    done()
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 7)
+      done()
+    })
   })
 
-  it('ensure constraints properties with correct type is valid', (done) => {
+  it('ensure constraints properties with correct type is valid', done => {
     SCHEMA = {
       fields: [{
         name: 'id'
@@ -142,84 +181,247 @@ describe('Validate', () => {
         }]
     }
 
-    validate(SCHEMA)
-    assert(true)
-    done()
+    validate(SCHEMA).then(valid => {
+      assert.isTrue(valid)
+      done()
+    }).catch(errors => {
+      assert.isNull(errors)
+      done()
+    })
   })
 
-  it('ensure primary key match field names', (done) => {
-    SCHEMA.primaryKey = 'id'
-    validate(SCHEMA)
-    assert(true)
-    done()
+  it('primary key should be by type one of the allowed by schema', done => {
+    SCHEMA.primaryKey = { some: 'thing' }
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 1)
+      done()
+    })
   })
 
-  it('throw exception if primary key not match field names', (done) => {
+  it('primary key should match field names', done => {
     SCHEMA.primaryKey = 'unknown'
-    assert.throws(() => {
-      validate(SCHEMA)
-    }, Array)
-    done()
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 1)
+      done()
+    })
   })
 
-  it('ensure primary key as array match field names', (done) => {
-    SCHEMA.primaryKey = ['id', 'name']
-    validate(SCHEMA)
-    assert(true)
-    done()
+  it('ensure primary key as array match field names', done => {
+    SCHEMA.primaryKey = ['id', 'unknown']
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 1)
+      done()
+    })
   })
 
-  it('throw exception if primary key as array not match field names',
-     (done) => {
-       SCHEMA.primaryKey = ['id', 'unknown']
-       assert.throws(() => {
-         validate(SCHEMA)
-       }, Array)
-       done()
+  it('ensure foreign keys is an array', done => {
+    SCHEMA.foreignKeys = 'keys'
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 1)
+      done()
+    })
+  })
+
+  it('ensure every foreign key has fields', done => {
+    SCHEMA.foreignKeys = ['key1', 'key2']
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 2)
+      done()
+    })
+  })
+
+  it('ensure fields in keys a string or an array', done => {
+    SCHEMA.foreignKeys = [{ fields: { name: 'id' } }]
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 2)
+      done()
+    })
+  })
+
+  it('ensure fields exists in schema',
+     done => {
+       SCHEMA.foreignKeys = [
+         {
+           fields: 'unknown'
+           , reference: {
+           datapackage: 'http://data.okfn.org/data/mydatapackage/'
+           , fields: 'fk_id'
+           , resource: 'resource'
+         }
+         }
+         , {
+           fields: ['id', 'unknown']
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , resource: 'the-resource'
+             , fields: ['fk_id', 'fk_name']
+           }
+         }
+       ]
+       validate(SCHEMA).then(valid => {
+         assert.isFalse(valid)
+         done()
+       }).catch(errors => {
+         assert.isArray(errors)
+         assert.equal(errors.length, 2)
+         done()
+       })
      })
 
-  it('throw exception if primary key has not correct type', (done) => {
-    SCHEMA.primaryKey = { name: 'id' }
-    assert.throws(() => {
-      validate(SCHEMA)
-    }, Array)
-    done()
-  })
+  it('fields in keys a string or an array and resource key should present',
+     done => {
+       SCHEMA.foreignKeys = [
+         {
+           fields: 'id'
+           , reference: {
+           datapackage: 'http://data.okfn.org/data/mydatapackage/'
+           , fields: { name: 'id' }
+           , resource: 'resource'
+         }
+         }
+         , {
+           fields: 'id'
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , resource: 'resource'
+           }
+         }
+         , {
+           fields: ['id', 'name']
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , fields: ['fk_id', 'fk_name']
+           }
+         }
+       ]
+       validate(SCHEMA).then(valid => {
+         assert.isFalse(valid)
+         done()
+       }).catch(errors => {
+         assert.isArray(errors)
+         assert.equal(errors.length, 3)
+         done()
+       })
+     })
 
-  it('ensure foreign keys is an array', (done) => {
-    SCHEMA.foreignKeys = 'keys'
-    assert.throws(() => {
-      validate(SCHEMA)
-    }, Array)
-    done()
-  })
+  it('reference.fields should be same type as key.fields',
+     done => {
+       SCHEMA.foreignKeys = [
+         {
+           fields: 'id'
+           , reference: {
+           datapackage: 'http://data.okfn.org/data/mydatapackage/'
+           , fields: ['id', 'name']
+           , resource: 'resource'
+         }
+         }
+         , {
+           fields: ['id', 'name']
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , resource: 'resource'
+             , fields: 'id'
+           }
+         }
+         , {
+           fields: ['id', 'name']
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , resource: 'resource'
+             , fields: ['id']
+           }
+         }
+       ]
+       validate(SCHEMA).then(valid => {
+         assert.isFalse(valid)
+         done()
+       }).catch(errors => {
+         assert.isArray(errors)
+         assert.equal(errors.length, 3)
+         done()
+       })
+     })
 
-  it('ensure every foreign key has fields', (done) => {
-    SCHEMA.foreignKeys = ['key1', 'key2']
-    assert.throws(() => {
-      validate(SCHEMA)
-    }, Array)
-    done()
-  })
+  it('ensure fields in keys a string or an array and resource key is present',
+     done => {
+       SCHEMA.foreignKeys = [
+         {
+           fields: 'id'
+           , reference: {
+           datapackage: 'http://data.okfn.org/data/mydatapackage/'
+           , fields: 'fk_id'
+           , resource: 'resource'
+         }
+         }
+         , {
+           fields: ['id', 'name']
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , resource: 'the-resource'
+             , fields: ['fk_id', 'fk_name']
+           }
+         }
+       ]
+       validate(SCHEMA).then(valid => {
+         assert.isTrue(valid)
+         done()
+       }).catch(errors => {
+         assert.isNull(errors)
+         done()
+       })
+     })
 
-  it('ensure fields in keys a string or an array', (done) => {
-    SCHEMA.foreignKeys = [{ fields: { name: 'id' } }]
-    assert.throws(() => {
-      validate(SCHEMA)
-    }, Array)
-
-    SCHEMA.foreignKeys = [
-      {
-        fields: 'id'
-        , reference: { fields: 'id', resource: 'resource' }
-      }
-      , {
-        fields: ['id', 'name']
-        , reference: { fields: ['id', 'name'], resource: 'resource' }
-      }
-    ]
-    validate(SCHEMA)
-    assert.isTrue(true)
-    done()
-  })
+  it('resource "self" should reference to the self fields',
+     done => {
+       SCHEMA.foreignKeys = [
+         {
+           fields: 'id'
+           , reference: {
+           datapackage: 'http://data.okfn.org/data/mydatapackage/'
+           , fields: 'fk_id'
+           , resource: 'self'
+         }
+         }
+         , {
+           fields: ['id', 'name']
+           , reference: {
+             datapackage: 'http://data.okfn.org/data/mydatapackage/'
+             , fields: ['fk_id', 'fk_name']
+             , resource: 'self'
+           }
+         }
+       ]
+       validate(SCHEMA).then(valid => {
+         assert.isFalse(valid)
+         done()
+       }).catch(errors => {
+         assert.isArray(errors)
+         assert.equal(errors.length, 3)
+         done()
+       })
+     })
 })

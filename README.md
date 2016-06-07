@@ -218,14 +218,14 @@ In this example every `string` value will be casted using `email` format, number
 
 ### Validate
 
-Given a schema as JSON object, `validate` returns `true` for a valid JSON Table Schema, or raises an exception with array of errors.
+Given a schema as JSON object, `validate` returns `Promise` which resolve to success for a valid JSON Table Schema, or reject with array of errors.
 
 ```javascript
-try {
-    validate(schema)
-} catch(errors) {
-    // handle errors
-}
+validate(schema).then(valid => {
+  // do something with valid schema here
+}).catch(errors => {
+  // uh oh, some validation errors in the errors array
+})
 ```
 Note: `validate()` validates whether a **schema** is a validate JSON Table Schema. It does **not** validate data against a schema.
 
