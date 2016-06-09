@@ -6,7 +6,6 @@
 
 A utility library for working with [JSON Table Schema](http://dataprotocols.org/json-table-schema/) in Javascript.
 
-
 ## Table of Contents
 
 [Installation](#installation)
@@ -14,7 +13,7 @@ A utility library for working with [JSON Table Schema](http://dataprotocols.org/
   - [Schema](#schema) - a javascript model of a JSON Table Schema with useful methods for interaction
   - [Infer](#infer) - a utility that creates a JSON Table Schema based on a data sample
   - [Validate](#validate) - a utility to validate a **schema** as valid according to the current spec
-  - [Types](#types) - a collection of classes to validate type/format and constraints of data described by a JSON Table Schema
+  - [Types](#types) - class to validate type/format and constraints of data described by a JSON Table Schema
 [Goals](#goals)
 [Contributing](#contributing)
 
