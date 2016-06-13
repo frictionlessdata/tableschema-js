@@ -31,12 +31,12 @@ describe('Models', () => {
           , constraints: { required: false }
         }
         , {
-          name: 'age'
+          name: 'Age'
           , type: 'integer'
           , constraints: { required: false }
         }
         , {
-          name: 'name'
+          name: 'Name'
           , type: 'string'
           , constraints: { required: true }
         }
@@ -60,8 +60,11 @@ describe('Models', () => {
   })
 
   it('have a correct number of header required columns', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      assert.equal(schema.requiredHeaders().length, 2)
+    (new Schema(SCHEMA, true)).then(schema => {
+      const headers = schema.requiredHeaders()
+      assert.equal(headers.length, 2)
+      assert.equal(headers[0], 'id')
+      assert.equal(headers[1], 'name')
       done()
     }, (error) => {
       assert(error)
@@ -69,7 +72,7 @@ describe('Models', () => {
   })
 
   it('have one of a field from passed schema', done => {
-    (new Schema(SCHEMA)).then(schema => {
+    (new Schema(SCHEMA, true)).then(schema => {
       assert.isTrue(schema.hasField('id'))
       assert.isTrue(schema.hasField('height'))
       assert.isTrue(schema.hasField('age'))
@@ -99,7 +102,7 @@ describe('Models', () => {
       assert.isArray(stringTypes)
       assert.equal(stringTypes.length, 3)
       assert.equal(_.find(stringTypes, { name: 'id' }).type, 'string')
-      assert.equal(_.find(stringTypes, { name: 'name' }).type, 'string')
+      assert.equal(_.find(stringTypes, { name: 'Name' }).type, 'string')
       assert.equal(_.find(stringTypes, { name: 'occupation' }).type, 'string')
 
       assert.isArray(numberTypes)
@@ -108,7 +111,7 @@ describe('Models', () => {
 
       assert.isArray(integerTypes)
       assert.equal(integerTypes.length, 1)
-      assert.equal(_.find(integerTypes, { name: 'age' }).type, 'integer')
+      assert.equal(_.find(integerTypes, { name: 'Age' }).type, 'integer')
 
       done()
     }, error => {
@@ -124,7 +127,7 @@ describe('Models', () => {
       return copyField
     })
 
-    const model = (new Schema(SCHEMA, { caseInsensitiveHeaders: true }))
+    const model = (new Schema(SCHEMA, true))
     model.then(schema => {
       assert.deepEqual(schema.headers().sort(),
                        ['id', 'height', 'name', 'age', 'occupation'].sort())
@@ -201,17 +204,6 @@ describe('Models', () => {
     })
   })
 
-  it('should return true on test', done => {
-    const model = new Schema(SCHEMA)
-    model.then(schema => {
-      assert.isTrue(schema.test('age', 1))
-      done()
-    }, (error) => {
-      assert.isNull(error)
-      done()
-    })
-  })
-
   it('should throw exception if field name does not exists', done => {
     const model = new Schema(SCHEMA)
     model.then(schema => {
@@ -230,7 +222,7 @@ describe('Models', () => {
     fetchMock.restore()
     fetchMock.mock(url, SCHEMA)
 
-    const model = new Schema(url)
+    const model = new Schema(url, true)
     model.then((schema) => {
       assert.equal(schema.headers().length, 5)
       assert.equal(schema.requiredHeaders().length, 2)

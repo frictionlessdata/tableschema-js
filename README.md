@@ -14,6 +14,7 @@ A utility library for working with [JSON Table Schema](http://dataprotocols.org/
   - [Infer](#infer) - a utility that creates a JSON Table Schema based on a data sample
   - [Validate](#validate) - a utility to validate a **schema** as valid according to the current spec
   - [Types](#types) - class to validate type/format and constraints of data described by a JSON Table Schema  
+  - [Resource](#resource)
 [Goals](#goals)  
 [Contributing](#contributing)
 
@@ -57,23 +58,18 @@ model.then(function(schema) {
 
 Following methods are available on `Schema` instances:
 
-* `cast(fieldName, value, index, skipConstraints)` - returns a value cast against a named `fieldName`
-* `convertRow(...args)` - convert the arguments given to the types of the current schema <sup>1</sup>
-* `convert(items, failFast = false)` - convert an array of rows using the current schema of the Schema instance <sup>2</sup>
 * `fields` - returns an array of the schema's fields
 * `foreignKeys` - returns the foreign key property for the schema
-* `getConstraints(fieldName, index = 0)` - return the constraints object for a given `fieldName` <sup>3</sup>
-* `getField(fieldName, index = 0)` - return the field object for `fieldName` <sup>3</sup>
+* `getConstraints(fieldName, index = 0)` - return the constraints object for a given `fieldName` <sup>1</sup>
+* `getField(fieldName, index = 0)` - return the field object for `fieldName` <sup>1</sup>
 * `getFieldsByType(typeName)` - return all fields that match the given type
 * `hasField(fieldName)` - checks if the field exists in the schema. Returns a boolean
 * `headers` - returns an array of the schema headers
 * `primaryKey` - returns the primary key field for the schema
 * `requiredHeaders` - returns headers with the `required` constraint as an array
-* `test(fieldName, value, index, skipConstraints)` - returns boolean after a check if value can be casted against a named `fieldName`
-
-<sup>1</sup> Last argument could be `{ failFast: true|false }` (see <sup>2</sup> for more)  
-<sup>2</sup> Where the option `failFast` is given, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur)  
-<sup>3</sup> Where the optional index argument is available, it can be used as a positional argument if the schema has multiple fields with the same name
+* `uniqueHeaders` - returns headers with the `unique` constraint as an array
+  
+<sup>1</sup> Where the optional index argument is available, it can be used as a positional argument if the schema has multiple fields with the same name
 
 ### Infer
 
@@ -312,6 +308,47 @@ Available types, formats and resultant value of the cast:
 <sup>2</sup> in case value has 00 after point (1.00), it will return Number(1).toFixed(2), which is actually String '1.00'  
 <sup>3</sup> default format returns String  
 <sup>4</sup> topojson is not implemented
+
+### Resource
+```javascript
+var parse = require('csv-parse');
+var fs = require('fs');
+var infer = require('jsontableschema').infer;
+var Schema = require('jsontableschema').schema;
+var Resource = require('jsontableschema').resource;
+
+fs.readFile('/path/to/example.csv', function(err, data) {
+  parse(data, function(error, values) {
+    var headers = values.shift()
+        , schema = infer(headers, values)
+        , model = new Schema(schema)
+        
+    model.then(function(schema) {
+        // working code to use schema model
+        var resource = new Resource(schema, values)
+        
+        try {
+            var converted = resource.convert(values)
+            // do something with converted rows
+        } catch(e) {
+          // conversion failed
+        }
+       
+    }).catch(function(error) {
+        // something went wrong and error variable has explanations
+    })
+  });
+});
+```
+
+Following methods are available on `Schema` instances:
+
+* `cast(fieldName, value, index, skipConstraints)` - returns a value cast against a named `fieldName`
+* `test(fieldName, value, index, skipConstraints)` - returns boolean after a check if value can be casted against a named `fieldName`
+* `convertRow(items, failFast = false, skipConstraints = false)` - convert the arguments given to the types of the current schema <sup>1</sup>
+* `convert(items, failFast = false, skipConstraints = false)` - convert an array of rows using the current schema of the Schema instance <sup>1</sup>
+
+<sup>1</sup> Where the option `failFast` is given, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur)
 
 ## Goals
 

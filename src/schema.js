@@ -62,16 +62,31 @@ export default class Schema {
    * field names.
    *
    * @param fieldName
-   * @param index
-   * @returns {Object|Null}
+   * @param index - index of the field inside the fields array
+   * @returns {Object}
+   * @throws Error in case fieldName does not exists in the given schema
    */
   getField(fieldName, index = 0) {
-    const field = _.filter(this.fields(),
-                           F => _.includes(fieldName, F.name))[index]
-    if (!field) {
+    const self = this
+      , fields = _.filter(
+      this.fields(),
+      F => {
+        let name1 = fieldName
+          , name2 = F.name
+        if (self.caseInsensitiveHeaders) {
+          name1 = name1.toLowerCase()
+          name2 = name1.toLowerCase()
+        }
+        return name1 === name2
+      })
+    if (!fields.length) {
       throw new Error(`No such field name in schema: ${fieldName}`)
     }
-    return field
+
+    if (!index) {
+      return fields[0]
+    }
+    return this.fields()[index]
   }
 
   /**
@@ -137,18 +152,19 @@ export default class Schema {
   }
 
   /**
-   * Check if value to fieldName's type can be casted
-   *
-   * @param fieldName
-   * @param value
-   * @param index
-   * @param skipConstraints
-   *
-   * @returns {Boolean}
+   * Get all headers with unique constraints set to true
+   * @returns {Array}
    */
-  test(fieldName, value, index, skipConstraints = true) {
-    const field = this.getField(fieldName, index)
-    return this.type.test(field, value, skipConstraints)
+  uniqueHeaders() {
+    const raw = _.chain(this.descriptor.fields)
+      .filter(field => field.constraints.unique === true)
+      .map(_.property('name'))
+      .value()
+
+    if (this.caseInsensitiveHeaders) {
+      return _.invokeMap(raw, 'toLowerCase')
+    }
+    return raw
   }
 }
 

@@ -39,11 +39,22 @@ describe('Resource', () => {
     done()
   })
 
+  it('should return true on test', done => {
+    (new Schema(SCHEMA)).then(schema => {
+      const resource = new Resource(schema)
+      assert.isTrue(resource.test('age', 1))
+      done()
+    }, (error) => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
   it('convert row', done => {
     (new Schema(SCHEMA)).then(schema => {
       const resource = new Resource(schema)
-        , convertedRow = resource.convertRow('string', '10.0', '1', 'string',
-                                             'string')
+        , value = ['string', '10.0', '1', 'string', 'string']
+        , convertedRow = resource.convertRow(value)
       assert.deepEqual(['string', '10.0', 1, 'string', 'string'], convertedRow)
       done()
     }, error => {
@@ -56,7 +67,7 @@ describe('Resource', () => {
     (new Schema(SCHEMA)).then(schema => {
       const resource = new Resource(schema)
       assert.throws(() => {
-        resource.convertRow('string', '10.0', '1', 'string')
+        resource.convertRow(['string', '10.0', '1', 'string'])
       }, Error)
       done()
     }, error => {
@@ -69,7 +80,8 @@ describe('Resource', () => {
     (new Schema(SCHEMA)).then(schema => {
       const resource = new Resource(schema)
       assert.throws(() => {
-        resource.convertRow('string', '10.0', '1', 'string', 'string', 'string')
+        resource.convertRow(
+          ['string', '10.0', '1', 'string', 'string', 'string'])
       }, Error)
       done()
     }, error => {
@@ -82,8 +94,8 @@ describe('Resource', () => {
     (new Schema(SCHEMA)).then(schema => {
       const resource = new Resource(schema)
       assert.throws(() => {
-        resource.convertRow('string', 'notdecimal', '10.6', 'string', 'string',
-                            { failFast: true })
+        resource.convertRow(['string', 'notdecimal', '10.6', 'string', 'string']
+          , true)
       }, Error)
       done()
     }, error => {
@@ -96,8 +108,7 @@ describe('Resource', () => {
     (new Schema(SCHEMA)).then(schema => {
       const resource = new Resource(schema)
       try {
-        resource.convertRow('string', 'notdecimal', '10.6', 'string',
-                            true)
+        resource.convertRow(['string', 'notdecimal', '10.6', 'string', true])
       } catch (e) {
         assert.isArray(e)
         assert.equal(e.length, 3)
@@ -211,4 +222,27 @@ describe('Resource', () => {
          done()
        })
      })
+
+  it('unique constraints violation', done => {
+    SCHEMA.fields[0].constraints.unique = true
+
+    const model = new Schema(SCHEMA)
+    model.then(schema => {
+      const resource = new Resource(schema)
+      assert.throws(() => {
+        resource.convert(
+          [
+            ['string', '10.0', '1', 'string', 'string']
+            , ['string2', '10.0', '1', 'string', 'string']
+            , ['string3', '10.0', '1', 'string', 'string']
+            , ['string4', '10.0', '1', 'string', 'string']
+            , ['string', '10.0', '1', 'string', 'string']
+          ])
+      }, Array)
+      done()
+    }, error => {
+      assert.isNull(error)
+      done()
+    })
+  })
 })

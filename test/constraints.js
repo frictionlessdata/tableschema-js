@@ -6,9 +6,17 @@ import utilities from '../src/utilities'
 const moment = require('moment')
 
 describe('Constraints', () => {
-  it('unique constraint is not supported', done => {
+  it('unique constraints', done => {
+    const unique = {}
+      , headers = ['id']
+      , fieldName = 'id'
+      , items = ['string', 'string']
     assert.throws(() => {
-      constraints.check_unique()
+      for (let i = 0, length = items.length; i < length; i++) {
+        constraints.check_unique(fieldName, headers, unique,
+                                 items[i])
+      }
+      constraints.check_unique('id')
     }, Error)
     done()
   })

@@ -2,6 +2,14 @@ import _ from 'lodash'
 import utilities from './utilities'
 import moment from 'moment'
 
+class UniqueConstraintsError extends Error {
+  constructor(message) {
+    super(message)
+    this.message = message
+    this.name = 'UniqueConstraintsError'
+  }
+}
+
 export default {
   /**
    * Required value constraint. Supported types: all.
@@ -129,7 +137,19 @@ export default {
     throw new Error(`The value for field '${name}' must be in the enum array`)
   }
 
-  , check_unique() {
-    throw new Error('Unique constraint is not supported')
+  , check_unique(fieldName, headers, unique, value) {
+    if (!_.includes(headers, fieldName)) {
+      return
+    }
+
+    if (!unique.hasOwnProperty(fieldName)) {
+      unique[fieldName] = [value]
+    } else {
+      if (_.includes(unique[fieldName], value)) {
+        throw new UniqueConstraintsError(
+          `Unique constraint violation for field name '${fieldName}'`)
+      }
+      unique[fieldName].push(value)
+    }
   }
 }
