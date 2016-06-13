@@ -161,7 +161,7 @@ describe('Types', () => {
     })
 
     it('cast binary', done => {
-      const value = Buffer.from('test').toString('base64')
+      const value = Buffer.from('test')
       BASE_FIELD.format = 'binary'
       assert.equal(type.cast(BASE_FIELD, value), 'test')
       assert.isTrue(type.test(BASE_FIELD, value))

@@ -8,13 +8,13 @@ A utility library for working with [JSON Table Schema](http://dataprotocols.org/
 
 ## Table of Contents
 
-[Installation](#installation)
+[Installation](#installation)  
 [Components](#components)
   - [Schema](#schema) - a javascript model of a JSON Table Schema with useful methods for interaction
   - [Infer](#infer) - a utility that creates a JSON Table Schema based on a data sample
   - [Validate](#validate) - a utility to validate a **schema** as valid according to the current spec
-  - [Types](#types) - class to validate type/format and constraints of data described by a JSON Table Schema
-[Goals](#goals)
+  - [Types](#types) - class to validate type/format and constraints of data described by a JSON Table Schema  
+[Goals](#goals)  
 [Contributing](#contributing)
 
 ## Installation
@@ -22,7 +22,7 @@ A utility library for working with [JSON Table Schema](http://dataprotocols.org/
 ```
 npm install jsontableschema
 ```
-**Make sure that `Promise` available in working environment.** If not, you can install any promise-shim you like.
+Library requires `Promise` to work properly, and need to be sure that `Promise` available globally. You are free to choose any Promise polyfill.
 
 ## Components
 
@@ -31,9 +31,7 @@ Let's look at each of the components in more detail.
 ### Schema
 
 A model of a schema with helpful methods for working with the schema and supported data. Schema instances can be initialized with a schema source as a url to a JSON file or a JSON object. 
-The schema is initially validated (see [validate](#validate) below), and will raise an exception if not a valid JSON Table Schema.
-
-Model requires Promise to work properly, and need to be sure that Promise available globally. You are free to choose any Promise polyfill  
+The schema is initially validated (see [validate](#validate) below), and will raise an exception if not a valid JSON Table Schema.  
 
 ```javascript
 var Schema = require('jsontableschema').schema;

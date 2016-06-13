@@ -187,8 +187,14 @@ class StringType extends Abstract {
   }
 
   castBinary(value) {
-    this.typeCheck(value)
-    return (new Buffer(value, 'base64')).toString()
+    try {
+      this.typeCheck(value)
+    } catch (e) {
+      if (!Buffer.isBuffer(value)) {
+        throw new Error()
+      }
+    }
+    return (new Buffer(value)).toString()
   }
 
   typeCheck(value) {
