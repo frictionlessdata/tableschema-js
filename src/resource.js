@@ -9,7 +9,7 @@ export default class Resource {
     this.schema = schema
     this.type = new Type()
     this.data = data
-    this.uniqueHeaders = this.schema.uniqueHeaders()
+    this.uniqueHeaders = schema.uniqueHeaders()
     this.unique = {}
   }
 
@@ -24,7 +24,7 @@ export default class Resource {
    * @returns {Type}
    * @throws Error if value can't be casted
    */
-  cast(fieldName, value, index, skipConstraints = true) {
+  cast(fieldName, value, index = 0, skipConstraints = true) {
     const field = this.schema.getField(fieldName, index)
     return this.type.cast(field, value, skipConstraints)
   }
@@ -39,7 +39,7 @@ export default class Resource {
    *
    * @returns {Boolean}
    */
-  test(fieldName, value, index, skipConstraints = true) {
+  test(fieldName, value, index = 0, skipConstraints = true) {
     const field = this.schema.getField(fieldName, index)
     return this.type.test(field, value, skipConstraints)
   }
@@ -124,8 +124,6 @@ export default class Resource {
         }
       }
     }
-
-    this.unique = {}
 
     if (errors.length > 0) {
       throw errors

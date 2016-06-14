@@ -39,10 +39,10 @@ export default (headers, values, options = {}) => {
   descriptor.fields = headers.map(header => {
     const constraints = {}
       , field = {
-        name: header
+      name: header
       , title: ''
       , description: ''
-      }
+    }
 
     if (opts.explicit) {
       constraints.required = true
@@ -60,14 +60,22 @@ export default (headers, values, options = {}) => {
   })
 
   headers.forEach((header, index) => {
-    let columnValues = _.map(values, (value) => value[index])
+    let columnValues = _.map(values, value => value[index])
     const field = descriptor.fields[index]
 
     if (opts.rowLimit) {
       columnValues = _.take(columnValues, opts.rowLimit)
     }
+
     field.type = type.multiCast(columnValues)
-    field.format = 'default'
+
+    if (opts.cast && opts.cast.hasOwnProperty(field.type)) {
+      field.format = opts.cast[field.type].format
+    }
+
+    if (!field.format) {
+      field.format = 'default'
+    }
   })
 
   return descriptor

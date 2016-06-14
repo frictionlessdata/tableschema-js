@@ -80,6 +80,49 @@ describe('Infer', () => {
     })
   })
 
+  it('respect cast parameter', done => {
+    fs.readFile('data/data_infer_formats.csv', (err, data) => {
+      assert.isNull(err, 'loading file data/data_infer_formats.csv failed')
+
+      parse(data, (error, values) => {
+        assert.isNull(error, 'CSV parse failed')
+        const headers = values.shift()
+          , schema = infer(
+          headers
+          , values
+          , {
+            cast: {
+              number: {
+                format: 'currency'
+              }
+              , string: {
+                format: 'uri'
+              }
+            }
+          })
+
+        assert.property(schema, 'fields')
+        assert.isArray(schema.fields)
+        for (const field of schema.fields) {
+          assert.property(field, 'name')
+          assert.property(field, 'title')
+          assert.property(field, 'description')
+          assert.property(field, 'type')
+          assert.property(field, 'format')
+        }
+        // here need to check the type of the value, because without row limit
+        // parameter the type of value can change
+        assert.equal(_.find(schema.fields, { name: 'id' }).type, 'integer')
+        assert.equal(_.find(schema.fields, { name: 'capital' }).type, 'number')
+        assert.equal(_.find(schema.fields, { name: 'url' }).type, 'string')
+        assert.equal(_.find(schema.fields, { name: 'capital' }).format,
+                     'currency')
+        assert.equal(_.find(schema.fields, { name: 'url' }).format, 'uri')
+        done()
+      })
+    })
+  })
+
   it('respect primaryKey parameter', done => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err, 'loading file data/data_infer.csv failed')
