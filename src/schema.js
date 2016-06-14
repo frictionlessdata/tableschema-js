@@ -67,18 +67,12 @@ export default class Schema {
    * @throws Error in case fieldName does not exists in the given schema
    */
   getField(fieldName, index = 0) {
-    const self = this
-      , fields = _.filter(
-      this.fields(),
-      F => {
-        let name1 = fieldName
-          , name2 = F.name
-        if (self.caseInsensitiveHeaders) {
-          name1 = name1.toLowerCase()
-          name2 = name1.toLowerCase()
-        }
-        return name1 === name2
-      })
+    let name = fieldName
+    if (this.caseInsensitiveHeaders) {
+      name = fieldName.toLowerCase()
+    }
+    const fields = _.filter(this.fields(), F => F.name === name)
+
     if (!fields.length) {
       throw new Error(`No such field name in schema: ${fieldName}`)
     }
@@ -96,7 +90,7 @@ export default class Schema {
    * @returns {Array}
    */
   getFieldsByType(typeName) {
-    return _.filter(this.fields(), field => _.includes(typeName, field.type))
+    return _.filter(this.fields(), field => field.type === typeName)
   }
 
   /**
@@ -119,12 +113,7 @@ export default class Schema {
    * @returns {Array}
    */
   headers() {
-    const raw = _.chain(this.descriptor.fields).map(_.property('name')).value()
-
-    if (this.caseInsensitiveHeaders) {
-      return _.invokeMap(raw, 'toLowerCase')
-    }
-    return raw
+    return _.map(this.descriptor.fields, field => field.name)
   }
 
   /**
@@ -140,15 +129,10 @@ export default class Schema {
    * @returns {Array}
    */
   requiredHeaders() {
-    const raw = _.chain(this.descriptor.fields)
+    return _.chain(this.descriptor.fields)
       .filter(field => field.constraints.required === true)
-      .map(_.property('name'))
+      .map(field => field.name)
       .value()
-
-    if (this.caseInsensitiveHeaders) {
-      return _.invokeMap(raw, 'toLowerCase')
-    }
-    return raw
   }
 
   /**
@@ -156,20 +140,16 @@ export default class Schema {
    * @returns {Array}
    */
   uniqueHeaders() {
-    const raw = _.chain(this.descriptor.fields)
+    return _.chain(this.descriptor.fields)
       .filter(field => field.constraints.unique === true)
-      .map(_.property('name'))
+      .map(field => field.name)
       .value()
-
-    if (this.caseInsensitiveHeaders) {
-      return _.invokeMap(raw, 'toLowerCase')
-    }
-    return raw
   }
 }
 
 /**
  * Load a JSON source, from string, URL or buffer
+ * @param instance
  * @param source
  * @returns {Promise}
  */
@@ -177,14 +157,14 @@ function load(instance, source) {
   if (_.isString(source)) {
     if (utilities.isURL(url.parse(source).protocol)) {
       return new Promise((resolve, reject) => {
-        fetch(source).then((response) => {
+        fetch(source).then(response => {
           if (response.status >= 400) {
             reject('Failed to download file due to bad response')
           }
           return response.json()
         }).then(json => {
           validate(json).then(() => {
-            instance.descriptor = expand(json)
+            expand(instance, json)
             resolve(instance)
           }).catch(errors => {
             reject(errors)
@@ -195,7 +175,7 @@ function load(instance, source) {
   }
   return new Promise((resolve, reject) => {
     validate(source).then(() => {
-      instance.descriptor = expand(source)
+      expand(instance, source)
       resolve(instance)
     }).catch(errors => {
       reject(errors)
@@ -206,36 +186,41 @@ function load(instance, source) {
 /**
  * Expand the schema with additional default properties
  *
+ * @param instance
  * @param schema
  * @returns {*}
  */
-function expand(schema) {
+function expand(instance, schema) {
   const DEFAULTS = {
     constraints: { required: false }
     , format: 'default'
     , type: 'string'
   }
 
-  return _.extend(
+  instance.descriptor = _.extend(
     {}
     , schema
     , {
-      fields: (schema.fields || []).map(field => {
+      fields: _.map((schema.fields || []), field => {
         const copyField = _.extend({}, field)
 
+        // Set name to lower case if caseInsensitiveHeaders flag is True
+        if (instance.caseInsensitiveHeaders) {
+          copyField.name = field.name.toLowerCase()
+        }
+
         // Ensure we have a default type if no type was declared
-        if (!copyField.type) {
+        if (!field.type) {
           copyField.type = DEFAULTS.type
         }
 
-        // Ensure we have a default format if no format was
-        // declared
-        if (!copyField.format) {
+        // Ensure we have a default format if no format was declared
+        if (!field.format) {
           copyField.format = DEFAULTS.format
         }
 
         // Ensure we have a minimum constraints declaration
-        if (!copyField.constraints) {
+        if (!field.constraints) {
           copyField.constraints = DEFAULTS.constraints
         } else if (_.isUndefined(field.constraints.required)) {
           copyField.constraints.required = DEFAULTS.constraints.required
