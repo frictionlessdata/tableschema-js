@@ -3,7 +3,6 @@ import 'isomorphic-fetch'
 import url from 'url'
 import validate from './validate'
 import utilities from './utilities'
-import Type from './types'
 
 /**
  * Model for a JSON Table Schema.
@@ -22,9 +21,7 @@ import Type from './types'
  */
 export default class Schema {
   constructor(source, caseInsensitiveHeaders = false) {
-    this.caseInsensitiveHeaders = caseInsensitiveHeaders
-    this.type = new Type()
-
+    this.caseInsensitiveHeaders = !!caseInsensitiveHeaders
     return load(this, source)
   }
 

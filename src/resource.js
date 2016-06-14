@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import Type from './types'
 import constraints from './constraints'
 
