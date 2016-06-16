@@ -76,7 +76,7 @@ export default class Schema {
       , errors = []
 
     if (headers.length !== items.length) {
-      throw new Error('The number of items to convert does not match the ' +
+      throw new Array('The number of items to convert does not match the ' +
                       'number of fields given in the schema')
     }
 
@@ -104,7 +104,7 @@ export default class Schema {
               `Wrong type for header: ${headers[i]} and value: ${items[i]}`
         }
         if (failFast === true) {
-          throw new Error(error)
+          throw new Array(error)
         } else {
           errors.push(error)
         }

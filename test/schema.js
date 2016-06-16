@@ -279,7 +279,7 @@ describe('Models', () => {
     (new Schema(SCHEMA)).then(schema => {
       assert.throws(() => {
         schema.convertRow(['string', '10.0', '1', 'string'])
-      }, Error)
+      }, Array)
       done()
     }, error => {
       assert.isNull(error)
@@ -292,7 +292,7 @@ describe('Models', () => {
       assert.throws(() => {
         schema.convertRow(
           ['string', '10.0', '1', 'string', 'string', 'string'])
-      }, Error)
+      }, Array)
       done()
     }, error => {
       assert.isNull(error)
@@ -305,7 +305,7 @@ describe('Models', () => {
       assert.throws(() => {
         schema.convertRow(['string', 'notdecimal', '10.6', 'string', 'string']
           , true)
-      }, Error)
+      }, Array)
       done()
     }, error => {
       assert.isNull(error)
@@ -359,7 +359,7 @@ describe('Models', () => {
             , ['string', '10.0', '1', 'string', 'string']
             , ['string', '10.0', 'integer', 'string', 'string']
           ], true)
-      }, Error)
+      }, Array)
       done()
     }, error => {
       assert.isNull(error)
@@ -397,7 +397,7 @@ describe('Models', () => {
             , ['string', '10.0', '1', 'string', 'string']
             , ['string', '10.0', '1', 'string', 'string']
           ], true)
-      }, Error)
+      }, Array)
       done()
     }, error => {
       assert.isNull(error)
