@@ -19,10 +19,10 @@ export default class Resource {
 
   /**
    * Iter through the given dataset and return the converted dataset
-   * @param failFast
-   * @param skipConstraints
-   * @returns {Array|*|Function}
-   * @throws Array of errors if cast failed on some field
+   * @param {boolean} failFast. Default is false
+   * @param {boolean} skipConstraints. Default is false
+   * @returns {Array} result of casted data
+   * @throws {Array} of errors if cast failed on some field
    */
   iter(failFast = false, skipConstraints = false) {
     this.schema.uniqueness = {}

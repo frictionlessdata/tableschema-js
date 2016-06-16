@@ -14,7 +14,7 @@ A utility library for working with [JSON Table Schema](http://dataprotocols.org/
   - [Infer](#infer) - a utility that creates a JSON Table Schema based on a data sample
   - [Validate](#validate) - a utility to validate a **schema** as valid according to the current spec
   - [Types](#types) - class to validate type/format and constraints of data described by a JSON Table Schema  
-  - [Resource](#resource)
+  - [Resource](#resource)  
 [Goals](#goals)  
 [Contributing](#contributing)
 
@@ -316,13 +316,20 @@ Available types, formats and resultant value of the cast:
 
 ### Resource
 
-instance always returns `Promise`
+Instance always returns `Promise`. In case if schema object is not valid, it will reject promise.
+
+Following methods are available on `Resource` instances:
+* `iter(failFast, skipConstraints)`<sup>1,2</sup> - iterate through the given dataset provided in constructor and return the converted data
+
+<sup>1</sup> If `failFast` is set to `true`, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur). Default is `false`  
+<sup>2</sup> Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value. Default is `false`
 
 ```javascript
 var parse = require('csv-parse');
 var fs = require('fs');
-var Infer = require('jsontableschema').infer;
-var Resource = require('jsontableschema').resource;
+var jts = require('jsontableschema');
+var Infer = jts.infer;
+var Resource = jts.resource;
 
 fs.readFile('/path/to/example.csv', function(err, data) {
   parse(data, function(error, values) {
@@ -330,6 +337,7 @@ fs.readFile('/path/to/example.csv', function(err, data) {
         , schema = Infer(headers, values)
         , model = new Resource(schema, values)
         
+    // resolved promise has instance of Resource
     model.then(function(resource) {
         try {
             var converted = resource.iter()
@@ -338,14 +346,11 @@ fs.readFile('/path/to/example.csv', function(err, data) {
           // conversion failed
         }
     }).catch(function(error) {
-        // something went wrong and error variable has explanations
+        // schema object is invalid and error variable has explanations
     })
   });
 });
 ```
-
-Following methods are available on `Resource` instances:
-* `iter(failFast = false, skipConstraints = false)` - Iter through the given dataset and return the converted dataset
 
 ## Goals
 
