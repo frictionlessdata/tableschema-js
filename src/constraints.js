@@ -137,7 +137,7 @@ export default {
     throw new Error(`The value for field '${name}' must be in the enum array`)
   }
 
-  , check_unique(fieldName, headers, unique, value) {
+  , check_unique(fieldName, value, headers, unique) {
     if (!_.includes(headers, fieldName)) {
       return
     }

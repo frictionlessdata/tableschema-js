@@ -13,8 +13,7 @@ describe('Constraints', () => {
       , items = ['string', 'string']
     assert.throws(() => {
       for (let i = 0, length = items.length; i < length; i++) {
-        constraints.check_unique(fieldName, headers, unique,
-                                 items[i])
+        constraints.check_unique(fieldName, items[i], headers, unique)
       }
       constraints.check_unique('id')
     }, Error)
