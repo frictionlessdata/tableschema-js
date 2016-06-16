@@ -40,10 +40,10 @@ describe('Resource', () => {
 
     DATA = [
       ['string', '10.0', '1', 'string', '2012-06-15']
-      , ['string2', '10.0', '1', 'string', '2013-06-15']
-      , ['string3', '10.0', '1', 'string', '2014-06-15']
-      , ['string4', '10.0', '1', 'string', '2015-06-15']
-      , ['string5', '10.0', '1', 'string', '2016-06-15']
+      , ['string2', '10.1', '2', 'string', '2013-06-15']
+      , ['string3', '10.2', '3', 'string', '2014-06-15']
+      , ['string4', '10.3', '4', 'string', '2015-06-15']
+      , ['string5', '10.4', '5', 'string', '2016-06-15']
     ]
     done()
   })
@@ -63,19 +63,22 @@ describe('Resource', () => {
       let convItem
         , origItem
 
-      const converted = resource.iter()
-      assert.equal(DATA.length, converted.length)
+      try {
+        const converted = resource.iter()
+        assert.equal(DATA.length, converted.length)
 
-      for (let i = 0, l1 = converted.length; i < l1; i++) {
-        convItem = converted[i]
-        origItem = DATA[i]
-        assert.equal(convItem[0], String(origItem[0]))
-        assert.equal(convItem[1], Number(origItem[1]))
-        assert.equal(convItem[2], parseInt(origItem[2], 10))
-        assert.equal(convItem[3], String(origItem[3]))
-        assert.isTrue(moment.isMoment(convItem[4]))
+        for (let i = 0, l1 = converted.length; i < l1; i++) {
+          convItem = converted[i]
+          origItem = DATA[i]
+          assert.equal(convItem[0], String(origItem[0]))
+          assert.equal(convItem[1], Number(origItem[1]))
+          assert.equal(convItem[2], parseInt(origItem[2], 10))
+          assert.equal(convItem[3], String(origItem[3]))
+          assert.isTrue(moment.isMoment(convItem[4]))
+        }
+      } catch (e) {
+        assert.isNull(e)
       }
-
       done()
     }, error => {
       assert.isNull(error)
@@ -125,6 +128,23 @@ describe('Resource', () => {
       assert.doesNotThrow(() => {
         resource.iter(true, true)
       }, Array)
+      done()
+    }, error => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
+  it('unique constraints violation for primary key', done => {
+    SCHEMA.primaryKey = ['height', 'age']
+    DATA.push(['string', '10.0', '1', 'string', '2012-06-15']);
+    (new Resource(SCHEMA, DATA)).then(resource => {
+      try {
+        resource.iter()
+      } catch (e) {
+        assert.isArray(e)
+        assert.equal(e.length, 1)
+      }
       done()
     }, error => {
       assert.isNull(error)

@@ -133,7 +133,16 @@ export default class Schema {
 
     for (const item of items) {
       try {
-        result.push(this.convertRow(item, failFast, skipConstraints))
+        const values = this.convertRow(item, failFast, skipConstraints)
+
+        if (!skipConstraints) {
+          // unique constraints available only from Resource
+          if (this.uniqueness && this.primaryHeaders) {
+            constraints.check_unique_primary(values, this.primaryHeaders,
+                                             this.uniqueness)
+          }
+        }
+        result.push(values)
       } catch (e) {
         if (failFast === true) {
           throw e
@@ -349,4 +358,8 @@ function expand(instance, schema) {
         return copyField
       })
     })
+
+  if (_.isString(instance.descriptor.primaryKey)) {
+    instance.descriptor.primaryKey = [instance.descriptor.primaryKey]
+  }
 }

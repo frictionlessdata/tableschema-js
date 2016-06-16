@@ -33,22 +33,25 @@ export default (headers, values, options = {}) => {
     , descriptor = { fields: [] }
 
   if (opts.primaryKey) {
+    if (_.isString(opts.primaryKey)) {
+      opts.primaryKey = [opts.primaryKey]
+    }
     descriptor.primaryKey = opts.primaryKey
   }
 
   descriptor.fields = headers.map(header => {
     const constraints = {}
       , field = {
-      name: header
-      , title: ''
-      , description: ''
-    }
+        name: header
+        , title: ''
+        , description: ''
+      }
 
     if (opts.explicit) {
       constraints.required = true
     }
 
-    if (header === opts.primaryKey) {
+    if (_.includes(opts.primaryKey, header)) {
       constraints.unique = true
     }
 
