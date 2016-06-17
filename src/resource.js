@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import Schema from './schema'
+import constraints from './constraints'
 /**
  * @returns Promise
  */
@@ -27,27 +28,74 @@ export default class Resource {
    */
   iter(failFast = false, skipConstraints = false) {
     const primaryKey = this.schema.primaryKey()
-
-    let uniqueHeaders = this.schema.getUniqueHeaders()
-      , primaryHeaders
+    let uniqueHeaders = getUniqueHeaders(this.schema)
 
     if (primaryKey && primaryKey.length > 1) {
       const headers = this.schema.headers()
       uniqueHeaders = _.difference(uniqueHeaders, primaryKey)
-      primaryHeaders = {}
+      // using to check unique constraints for the row, because need to check
+      // uniquness of the values combination (primary key for example)
+      this.primaryHeaders = {}
       for (const header of primaryKey) {
         // need to know the index of the header, so later it possible to
         // combine correct values in the row
-        primaryHeaders[header] = headers.indexOf(header)
+        this.primaryHeaders[header] = headers.indexOf(header)
       }
     }
-    this.schema.uniqueness = {}
+    this.uniqueness = {}
+    this.schema.uniqueness = this.uniqueness
     // using for regular unique constraints for every value independently
     this.schema.uniqueHeaders = uniqueHeaders
-    // using to check unique constraints for the row, because need to check
-    // uniquness of the values combination (primary key for example)
-    this.schema.primaryHeaders = primaryHeaders
-
-    return this.schema.convert(this.data, failFast, skipConstraints)
+    return this.convert(this.data, failFast, skipConstraints)
   }
+
+  /**
+   * Convert an array of rows to the types of the current schema. If the option
+   * `failFast` is given, it will raise the first error it encounters,
+   * otherwise an array of errors thrown (if there are any errors occur)
+   *
+   * @param items
+   * @param failFast
+   * @param skipConstraints
+   * @returns {Array}
+   */
+  convert(items, failFast = false, skipConstraints = false) {
+    const result = []
+    let errors = []
+
+    for (const item of items) {
+      try {
+        const values = this.schema.castRow(item, failFast, skipConstraints)
+
+        if (!skipConstraints && this.primaryHeaders) {
+          // unique constraints available only from Resource
+          constraints.check_unique_primary(values, this.primaryHeaders,
+                                           this.uniqueness)
+        }
+        result.push(values)
+      } catch (e) {
+        if (failFast === true) {
+          throw e
+        } else {
+          errors = errors.concat(e)
+        }
+      }
+    }
+
+    if (errors.length > 0) {
+      throw errors
+    }
+    return result
+  }
+}
+
+/**
+ * Get all headers with unique constraints set to true
+ * @returns {Array}
+ */
+function getUniqueHeaders(schema) {
+  return _.chain(schema.fields())
+    .filter(field => field.constraints.unique === true)
+    .map(field => field.name)
+    .value()
 }

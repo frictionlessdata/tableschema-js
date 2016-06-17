@@ -39,7 +39,7 @@ export default class Schema {
    * @returns {Type}
    * @throws Error if value can't be casted
    */
-  cast(fieldName, value, index = 0, skipConstraints = true) {
+  castValue(fieldName, value, index = 0, skipConstraints = true) {
     const field = this.getField(fieldName, index)
     return this.type.cast(field, value, skipConstraints)
   }
@@ -54,7 +54,7 @@ export default class Schema {
    *
    * @returns {Boolean}
    */
-  test(fieldName, value, index = 0, skipConstraints = true) {
+  testValue(fieldName, value, index = 0, skipConstraints = true) {
     const field = this.getField(fieldName, index)
     return this.type.test(field, value, skipConstraints)
   }
@@ -70,7 +70,7 @@ export default class Schema {
    * @param skipConstraints
    * @returns {Array}
    */
-  convertRow(items, failFast = false, skipConstraints = false) {
+  castRow(items, failFast = false, skipConstraints = false) {
     const headers = this.headers()
       , result = []
       , errors = []
@@ -83,7 +83,7 @@ export default class Schema {
     for (let i = 0, length = items.length; i < length; i++) {
       try {
         const fieldName = headers[i]
-          , value = this.cast(fieldName, items[i], i, skipConstraints)
+          , value = this.castValue(fieldName, items[i], i, skipConstraints)
 
         if (!skipConstraints) {
           // unique constraints available only from Resource
@@ -107,47 +107,6 @@ export default class Schema {
           throw new Array(error)
         } else {
           errors.push(error)
-        }
-      }
-    }
-
-    if (errors.length > 0) {
-      throw errors
-    }
-    return result
-  }
-
-  /**
-   * Convert an array of rows to the types of the current schema. If the option
-   * `failFast` is given, it will raise the first error it encounters,
-   * otherwise an array of errors thrown (if there are any errors occur)
-   *
-   * @param items
-   * @param failFast
-   * @param skipConstraints
-   * @returns {Array}
-   */
-  convert(items, failFast = false, skipConstraints = false) {
-    const result = []
-    let errors = []
-
-    for (const item of items) {
-      try {
-        const values = this.convertRow(item, failFast, skipConstraints)
-
-        if (!skipConstraints) {
-          // unique constraints available only from Resource
-          if (this.uniqueness && this.primaryHeaders) {
-            constraints.check_unique_primary(values, this.primaryHeaders,
-                                             this.uniqueness)
-          }
-        }
-        result.push(values)
-      } catch (e) {
-        if (failFast === true) {
-          throw e
-        } else {
-          errors = errors.concat(e)
         }
       }
     }
@@ -227,20 +186,9 @@ export default class Schema {
    * Get all headers with required constraints set to true
    * @returns {Array}
    */
-  getRequiredHeaders() {
+  requiredHeaders() {
     return _.chain(this.descriptor.fields)
       .filter(field => field.constraints.required === true)
-      .map(field => field.name)
-      .value()
-  }
-
-  /**
-   * Get all headers with unique constraints set to true
-   * @returns {Array}
-   */
-  getUniqueHeaders() {
-    return _.chain(this.descriptor.fields)
-      .filter(field => field.constraints.unique === true)
       .map(field => field.name)
       .value()
   }
