@@ -77,6 +77,7 @@ describe('Resource', () => {
           assert.isTrue(moment.isMoment(convItem[4]))
         }
       } catch (e) {
+        console.log(e)
         assert.isNull(e)
       }
       done()
@@ -89,7 +90,7 @@ describe('Resource', () => {
   it('unique constraints violation', done => {
     SCHEMA.fields[0].constraints.unique = true
     DATA.push(['string', '10.0', '1', 'string', '2012-06-15'])
-    DATA.push(['string', '10.0', '1', 'string', '2012-06-15'])
+    DATA.push(['string', '10.0', '1', 'string', '2012-06-15']);
     (new Resource(SCHEMA, DATA)).then(resource => {
       try {
         resource.iter()

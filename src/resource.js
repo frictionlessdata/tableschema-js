@@ -46,47 +46,47 @@ export default class Resource {
     this.schema.uniqueness = this.uniqueness
     // using for regular unique constraints for every value independently
     this.schema.uniqueHeaders = uniqueHeaders
-    return this.convert(this.data, failFast, skipConstraints)
+    return convert(this, this.data, failFast, skipConstraints)
   }
+}
 
-  /**
-   * Convert an array of rows to the types of the current schema. If the option
-   * `failFast` is given, it will raise the first error it encounters,
-   * otherwise an array of errors thrown (if there are any errors occur)
-   *
-   * @param items
-   * @param failFast
-   * @param skipConstraints
-   * @returns {Array}
-   */
-  convert(items, failFast = false, skipConstraints = false) {
-    const result = []
-    let errors = []
+/**
+ * Convert an array of rows to the types of the current schema. If the option
+ * `failFast` is given, it will raise the first error it encounters,
+ * otherwise an array of errors thrown (if there are any errors occur)
+ *
+ * @param items
+ * @param failFast
+ * @param skipConstraints
+ * @returns {Array}
+ */
+function convert(instance, items, failFast = false, skipConstraints = false) {
+  const result = []
+  let errors = []
 
-    for (const item of items) {
-      try {
-        const values = this.schema.castRow(item, failFast, skipConstraints)
+  for (const item of items) {
+    try {
+      const values = instance.schema.castRow(item, failFast, skipConstraints)
 
-        if (!skipConstraints && this.primaryHeaders) {
-          // unique constraints available only from Resource
-          constraints.check_unique_primary(values, this.primaryHeaders,
-                                           this.uniqueness)
-        }
-        result.push(values)
-      } catch (e) {
-        if (failFast === true) {
-          throw e
-        } else {
-          errors = errors.concat(e)
-        }
+      if (!skipConstraints && instance.primaryHeaders) {
+        // unique constraints available only from Resource
+        constraints.check_unique_primary(values, instance.primaryHeaders,
+                                         instance.uniqueness)
+      }
+      result.push(values)
+    } catch (e) {
+      if (failFast === true) {
+        throw e
+      } else {
+        errors = errors.concat(e)
       }
     }
-
-    if (errors.length > 0) {
-      throw errors
-    }
-    return result
   }
+
+  if (errors.length > 0) {
+    throw errors
+  }
+  return result
 }
 
 /**
