@@ -58,17 +58,15 @@ model.then(function(schema) {
 
 Following methods are available on `Schema` instances:
 
-* `cast(fieldName, value, index, skipConstraints)` - returns a value cast against a named `fieldName`
-* `test(fieldName, value, index, skipConstraints)` - returns boolean after a check if value can be casted against a named `fieldName`
-* `convertRow(items, failFast = false, skipConstraints = false)` - convert the arguments given to the types of the current schema <sup>1</sup>
-* `convert(items, failFast = false, skipConstraints = false)` - convert an array of rows using the current schema of the Schema instance <sup>1</sup>
+* `castValue(fieldName, value, index, skipConstraints)` - returns a value cast against a named `fieldName`
+* `testValue(fieldName, value, index, skipConstraints)` - returns boolean after a check if value can be casted against a named `fieldName`
+* `castRow(items, failFast = false, skipConstraints = false)` - convert the arguments given to the types of the current schema <sup>1</sup>
 * `fields` - returns an array of the schema's fields
 * `foreignKeys` - returns the foreign key property for the schema
 * `getConstraints(fieldName, index = 0)` - return the constraints object for a given `fieldName` <sup>2</sup>
 * `getField(fieldName, index = 0)` - return the field object for `fieldName` <sup>2</sup>
 * `getFieldsByType(typeName)` - return all fields that match the given type
-* `getRequiredHeaders` - returns headers with the `required` constraint as an array
-* `getUniqueHeaders` - returns headers with the `unique` constraint as an array
+* `requiredHeaders` - returns headers with the `required` constraint as an array
 * `hasField(fieldName)` - checks if the field exists in the schema. Returns a boolean
 * `headers` - returns an array of the schema headers
 * `primaryKey` - returns the primary key field for the schema  
@@ -316,10 +314,12 @@ Available types, formats and resultant value of the cast:
 
 ### Resource
 
+A javascript model of a resource (schema+data)
+
 Instance always returns `Promise`. In case if schema object is not valid, it will reject promise.
 
 Following methods are available on `Resource` instances:
-* `iter(failFast, skipConstraints)`<sup>1,2</sup> - iterate through the given dataset provided in constructor and return the converted data
+* `iter(failFast, skipConstraints)`<sup>1,2</sup> - iterate through the given dataset provided in constructor and returns converted data
 
 <sup>1</sup> If `failFast` is set to `true`, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur). Default is `false`  
 <sup>2</sup> Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value. Default is `false`
