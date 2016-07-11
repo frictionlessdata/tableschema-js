@@ -5,7 +5,7 @@ export default {
   , FALSE_VALUES: ['no', 'n', 'false', 'f', '0']
 
   , isNumeric(value) {
-    return !isNaN(parseInt(value, 10)) && isFinite(value)
+    return !isNaN(parseFloat(value)) && isFinite(value)
   }
 
   , isInteger(value) {
