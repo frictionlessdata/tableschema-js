@@ -40,3 +40,6 @@ rules:
     - 1
   no-param-reassign:
     - 1
+  no-cond-assign:
+    - 2
+    - except-parens

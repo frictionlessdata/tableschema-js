@@ -1,7 +1,7 @@
 'use strict'
 const fs = require('fs')
   , headers = ['id', 'height', 'age', 'name', 'occupation']
-  , rows = 1000
+  , rows = 100
   , ws = fs.createWriteStream('./data/data_big.csv')
 
 write(headers)

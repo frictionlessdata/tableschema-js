@@ -1,5 +1,6 @@
 /* global describe, beforeEach, it */
 import { assert } from 'chai'
+import fs from 'fs'
 import Resource from '../src/resource'
 import moment from 'moment'
 
@@ -12,7 +13,7 @@ describe('Resource', () => {
       fields: [
         {
           name: 'id'
-          , type: 'string'
+          , type: 'integer'
           , constraints: { required: true }
         }
         , {
@@ -32,44 +33,91 @@ describe('Resource', () => {
         }
         , {
           name: 'occupation'
-          , type: 'date'
+          , type: 'datetime'
           , constraints: { required: false }
         }
       ]
     }
 
     DATA = [
-      ['string', '10.0', '1', 'string', '2012-06-15']
-      , ['string2', '10.1', '2', 'string', '2013-06-15']
-      , ['string3', '10.2', '3', 'string', '2014-06-15']
-      , ['string4', '10.3', '4', 'string', '2015-06-15']
-      , ['string5', '10.4', '5', 'string', '2016-06-15']
+      [1, '10.0', '1', 'string1', '2012-06-15 00:00:00']
+      , [2, '10.1', '2', 'string2', '2013-06-15 01:00:00']
+      , [3, '10.2', '3', 'string3', '2014-06-15 02:00:00']
+      , [4, '10.3', '4', 'string4', '2015-06-15 03:00:00']
+      , [5, '10.4', '5', 'string5', '2016-06-15 04:00:00']
     ]
     done()
   })
 
-  it('should return converted values', function (done) {
-    this.timeout(50000);
+  it('shouldn\'t instantiate with wrong schema', done => {
+    (new Resource('wrong schema', DATA)).then(resource => {
+      assert.isTrue(false)
+      done()
+    }, error => {
+      assert.isNotNull(error)
+      done()
+    })
+  })
+
+  it('should return converted values for provided array', function (done) {
+    let count = 0;
+    (new Resource(SCHEMA, DATA)).then(
+      resource => {
+        resource.iter(items => {
+          // ... do something with items
+          count++
+        }).then(() => {
+          assert.equal(count, 5)
+          done()
+        }, errors => {
+          assert.isNull(errors)
+          done()
+        })
+      }, error => {
+        assert.isNull(error)
+        done()
+      })
+  })
+
+  it('should return converted values for readable stream', function (done) {
+    let count = 0;
+    (new Resource(SCHEMA, fs.createReadStream('./data/data_big.csv'))).then(
+      resource => {
+        resource.iter(items => {
+          // ... do something with items
+          count++
+        }).then(() => {
+          assert.equal(count, 100)
+          done()
+        }, errors => {
+          assert.isNull(errors)
+          done()
+        })
+      }, error => {
+        assert.isNull(error)
+        done()
+      })
+  })
+
+  it('should return converted values for local path', function (done) {
+    let count = 0;
     (new Resource(SCHEMA, './data/data_big.csv')).then(resource => {
       resource.iter(items => {
-        console.log(items)
+        // ... do something with items
+        count++
+      }).then(() => {
+        assert.equal(count, 100)
+        done()
+      }, errors => {
+        assert.isNull(errors)
+        done()
       })
-      done()
     }, error => {
       assert.isNull(error)
       done()
     })
   })
 
-  //it('shouldn\'t instantiate on wrong schema', done => {
-  //  (new Resource('wrong schema', DATA)).then(resource => {
-  //    assert.isTrue(false)
-  //    done()
-  //  }, error => {
-  //    assert.isNotNull(error)
-  //    done()
-  //  })
-  //})
   //
   //it('should return converted values', done => {
   //  (new Resource(SCHEMA, DATA)).then(resource => {

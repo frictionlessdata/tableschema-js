@@ -2,8 +2,10 @@ import EventEmitter from 'events'
 import url from 'url'
 import fs from 'fs'
 import http from 'http'
+import Stream from 'stream'
 import _ from 'lodash'
 import parse from 'csv-parse'
+import transform from 'stream-transform'
 import Schema from './schema'
 import constraints from './constraints'
 import utilities from './utilities'
@@ -59,8 +61,9 @@ export default class Resource {
     // using for regular unique constraints for every value independently
     this.schema.uniqueHeaders = uniqueHeaders
 
-    proceed(this, getReadStream(this.source), callback, failFast,
-            skipConstraints)
+    return proceed(this, getReadStream(this.source), callback,
+                   failFast,
+                   skipConstraints)
   }
 }
 
@@ -76,42 +79,39 @@ export default class Resource {
  */
 function proceed(instance, readStream, callback, failFast = false,
                  skipConstraints = false) {
-  const parser = parse()
-  let errors = []
-    , isFirst = true
+  return new Promise((resolve, reject) => {
+    const parser = parse()
+    let errors = []
+      , isFirst = true
 
-  readStream.then(stream => {
-    stream.pipe(parser)
-  })
-
-  parser.on('readable', () => {
-    let items
-    while (null !== (items = parser.read())) {
-      if (isFirst) {
-        isFirst = false
-        continue
+    readStream.then(data => {
+      if (data.isArray) {
+        data.stream.on('data', items => {
+          cast(instance, reject, callback, errors, items, failFast,
+               skipConstraints)
+        }).on('end', () => {
+          end(resolve, reject, errors)
+        })
+      } else {
+        data.stream.pipe(parser)
       }
-      try {
-        const values = instance.schema.castRow(items, failFast, skipConstraints)
+    }, error => {
+      reject(error)
+    })
 
-        if (!skipConstraints && instance.primaryHeaders) {
-          // unique constraints available only from Resource
-          constraints.check_unique_primary(values, instance.primaryHeaders,
-                                           instance.uniqueness)
+    parser.on('readable', () => {
+      let items
+      while ((items = parser.read()) !== null) {
+        if (isFirst) {
+          isFirst = false
+          continue
         }
-        callback(values)
-      } catch (e) {
-        if (failFast === true) {
-          throw e
-        } else {
-          errors = errors.concat(e)
-        }
+        cast(instance, reject, callback, errors, items, failFast,
+             skipConstraints)
       }
-    }
-  }).on('end', () => {
-    if (errors.length > 0) {
-      throw errors
-    }
+    }).on('end', () => {
+      end(resolve, reject, errors)
+    })
   })
 }
 
@@ -124,16 +124,6 @@ function getUniqueHeaders(schema) {
     .filter(field => field.constraints.unique === true)
     .map(field => field.name)
     .value()
-}
-
-/**
- * Check if provided value is readable stream
- *
- * @param stream
- * @returns {boolean}
- */
-function isReadStream(stream) {
-  return stream instanceof EventEmitter && _.isFunction(stream.read)
 }
 
 /**
@@ -150,26 +140,74 @@ function isReadStream(stream) {
  */
 function getReadStream(source) {
   return new Promise((resolve, reject) => {
-    // provided array with raw data
-    if (_.isArray(source)) {
-      // create readable stream from the given array
+    if (isReadStream(source)) {
+      // it can be readable stream by it self
+      resolve({ stream: source })
+    } else if (_.isArray(source)) {
+      // provided array with raw data
+      const transformer = transform(data => data)
+      resolve({ stream: transformer, isArray: true })
+      source.forEach(item => {
+        transformer.write(item)
+      })
+      transformer.end()
     } else if (_.isString(source)) {
       // probably it is some URL or local path to the file with the data
       if (utilities.isURL(url.parse(source).protocol)) {
         // create readable stream from remote file
-        http.get(url, res => {
-          resolve(res)
+        http.get(source, res => {
+          resolve({ stream: res })
+        }, error => {
+          reject(error)
         })
       } else {
         // assume that it is path to local file
         // create readable stream
-        resolve(fs.createReadStream(source))
+        resolve({ stream: fs.createReadStream(source) })
       }
     } else {
-      // it can be readable stream by it self
-      if (isReadStream(source)) {
-        resolve(source)
-      }
+      reject('Unsupported format of source')
     }
   })
+}
+
+/**
+ * Check if provided value is readable stream
+ *
+ * @param stream
+ * @returns {boolean}
+ */
+function isReadStream(stream) {
+  return stream instanceof EventEmitter && _.isFunction(stream.read)
+}
+
+function cast(instance, reject, callback, errors, items, failFast,
+              skipConstraints) {
+  try {
+    const values = instance.schema.castRow(items, failFast,
+                                           skipConstraints)
+
+    if (!skipConstraints && instance.primaryHeaders) {
+      // unique constraints available only from Resource
+      constraints.check_unique_primary(values, instance.primaryHeaders,
+                                       instance.uniqueness)
+    }
+    callback(values)
+  } catch (e) {
+    if (failFast === true) {
+      reject(e)
+      return
+    }
+    for (const error of e) {
+      errors.push(error)
+    }
+  }
+}
+
+function end(resolve, reject, errors) {
+  if (errors.length > 0) {
+    reject(errors)
+  } else {
+    resolve()
+  }
 }
