@@ -314,42 +314,42 @@ Available types, formats and resultant value of the cast:
 
 ### Resource
 
-A javascript model of a resource (schema+data)
+A javascript model of a resource (schema+source of data)
 
 Instance always returns `Promise`. In case if schema object is not valid, it will reject promise.
 
+Source of data can be:
+* array of rows with values
+* local CSV file
+* remote CSV file (URL)
+* readable stream
+
 Following methods are available on `Resource` instances:
-* `iter(failFast, skipConstraints)`<sup>1,2</sup> - iterate through the given dataset provided in constructor and returns converted data
+* `iter(callback, failFast, skipConstraints)`<sup>1,2</sup> - iterate through the given dataset provided in constructor and returns converted data
 
 <sup>1</sup> If `failFast` is set to `true`, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur). Default is `false`  
 <sup>2</sup> Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value. Default is `false`
 
 ```javascript
-var parse = require('csv-parse');
-var fs = require('fs');
 var jts = require('jsontableschema');
-var Infer = jts.infer;
 var Resource = jts.resource;
 
-fs.readFile('/path/to/example.csv', function(err, data) {
-  parse(data, function(error, values) {
-    var headers = values.shift()
-        , schema = Infer(headers, values)
-        , model = new Resource(schema, values)
-        
-    // resolved promise has instance of Resource
-    model.then(function(resource) {
-        try {
-            var converted = resource.iter()
-            // do something with converted data
-        } catch(e) {
-          // conversion failed
-        }
-    }).catch(function(error) {
-        // schema object is invalid and error variable has explanations
+var model = new Resource({SCHEMA}, {SOURCE})
+var callback = function(items) {
+    // ... do something with converted items
+    // iter method convert values row by row from the source
+}
+model.then(function (resource) {
+    resource.iter(callback, true, false).then(function() {
+          // ... do something when conversion of all data from source is finished 
+    }, function (errors) {
+          // something went wrong while casting values from source
+          // errors is array with explanations
     })
-  });
-});
+}, function(error) {
+    // Resource can't instantiate for some reason
+    // see error for details
+})
 ```
 
 ## Goals
