@@ -14,9 +14,9 @@ import utilities from './utilities'
  * @returns Promise
  */
 export default class Resource {
-  constructor(schema, source) {
+  constructor(schema, data) {
     const self = this
-    this.source = source
+    this.source = data
 
     return new Promise((resolve, reject) => {
       new Schema(schema).then(model => {

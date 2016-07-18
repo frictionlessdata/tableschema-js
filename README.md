@@ -35,7 +35,7 @@ A model of a schema with helpful methods for working with the schema and support
 The schema is initially validated (see [validate](#validate) below), and will raise an exception if not a valid JSON Table Schema.  
 
 ```javascript
-var Schema = require('jsontableschema').schema;
+var Schema = require('jsontableschema').Schema;
 ```
 
 ```javascript
@@ -61,7 +61,7 @@ Following methods are available on `Schema` instances:
 * `castValue(fieldName, value, index, skipConstraints)` - returns a value cast against a named `fieldName`
 * `testValue(fieldName, value, index, skipConstraints)` - returns boolean after a check if value can be casted against a named `fieldName`
 * `castRow(items, failFast = false, skipConstraints = false)` - convert the arguments given to the types of the current schema <sup>1</sup>
-* `fields` - returns an array of the schema's fields
+* `fields` - returns an array of objects of the schema's fields
 * `foreignKeys` - returns the foreign key property for the schema
 * `getConstraints(fieldName, index = 0)` - return the constraints object for a given `fieldName` <sup>2</sup>
 * `getField(fieldName, index = 0)` - return the field object for `fieldName` <sup>2</sup>
@@ -91,7 +91,7 @@ Call `infer` with headers and values from the datafile:
 ```javascript
 var parse = require('csv-parse');
 var fs = require('fs');
-var infer = require('jsontableschema').infer;
+var infer = require('jsontableschema').Infer;
 
 fs.readFile('/path/to/example.csv', function(err, data) {
   parse(data, function(error, values) {
@@ -140,7 +140,7 @@ It possible to provide additional options to build the JSON schema as 3rd argume
 ```javascript
 var parse = require('csv-parse');
 var fs = require('fs');
-var infer = require('jsontableschema').infer;
+var infer = require('jsontableschema').Infer;
 
 fs.readFile('/path/to/example.csv', function(err, data) {
   parse(data, function(error, values) {
@@ -213,7 +213,7 @@ In this case by limiting rows to 2, we can build schema structure with correct f
 Given a schema as JSON object, `validate` returns `Promise`, which success for a valid JSON Table Schema, or reject with array of errors.
 
 ```javascript
-var validate = require('jsontableschema').validate;
+var validate = require('jsontableschema').Validate;
 var schema = {
    fields: [
      {
@@ -262,7 +262,7 @@ On Type class there are three methods available:
 <sup>1</sup> Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value
 
 ```javascript
-var Types = require('jsontableschema').types;
+var Types = require('jsontableschema').Types;
 
 const fieldDescriptor = {
     'name': 'Field Name',
@@ -319,7 +319,7 @@ A javascript model of a resource (schema+source of data)
 Instance always returns `Promise`. In case if schema object is not valid, it will reject promise.
 
 Source of data can be:
-* array of rows with values
+* array of objects with values, represent the rows
 * local CSV file
 * remote CSV file (URL)
 * readable stream
@@ -332,7 +332,7 @@ Following methods are available on `Resource` instances:
 
 ```javascript
 var jts = require('jsontableschema');
-var Resource = jts.resource;
+var Resource = jts.Resource;
 
 var model = new Resource({SCHEMA}, {SOURCE})
 var callback = function(items) {
