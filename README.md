@@ -91,7 +91,7 @@ Call `infer` with headers and values from the datafile:
 ```javascript
 var parse = require('csv-parse');
 var fs = require('fs');
-var infer = require('jsontableschema').Infer;
+var infer = require('jsontableschema').infer;
 
 fs.readFile('/path/to/example.csv', function(err, data) {
   parse(data, function(error, values) {
@@ -140,7 +140,7 @@ It possible to provide additional options to build the JSON schema as 3rd argume
 ```javascript
 var parse = require('csv-parse');
 var fs = require('fs');
-var infer = require('jsontableschema').Infer;
+var infer = require('jsontableschema').infer;
 
 fs.readFile('/path/to/example.csv', function(err, data) {
   parse(data, function(error, values) {
@@ -213,7 +213,7 @@ In this case by limiting rows to 2, we can build schema structure with correct f
 Given a schema as JSON object, `validate` returns `Promise`, which success for a valid JSON Table Schema, or reject with array of errors.
 
 ```javascript
-var validate = require('jsontableschema').Validate;
+var validate = require('jsontableschema').validate;
 var schema = {
    fields: [
      {
@@ -262,7 +262,7 @@ On Type class there are three methods available:
 <sup>1</sup> Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value
 
 ```javascript
-var Types = require('jsontableschema').Types;
+var Types = require('jsontableschema').types;
 
 const fieldDescriptor = {
     'name': 'Field Name',

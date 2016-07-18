@@ -1,7 +1,7 @@
-import Types from './types'
-import Validate from './validate'
-import Infer from './infer'
+import types from './types'
+import validate from './validate'
+import infer from './infer'
 import Schema from './schema'
 import Resource from './resource'
 
-module.exports = { Infer, Types, Validate, Schema, Resource }
+module.exports = { infer, types, validate, Schema, Resource }
