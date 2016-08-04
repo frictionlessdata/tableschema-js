@@ -85,14 +85,14 @@ export default schema => {
         if (!_.includes(fieldNames, primaryKey)) {
           valid = false
           errs.push(
-            `primary key ${primaryKey} must be found in the schema field names`)
+            `primary key ${primaryKey} must match schema field names`)
         }
       } else if (_.isArray(primaryKey)) {
         _.each(primaryKey, pk => {
           if (!_.includes(fieldNames, pk)) {
             valid = false
             errs.push(
-              `primary key ${pk} must be found in the schema field names`)
+              `primary key ${pk} must match schema field names`)
           }
         })
       }
@@ -108,7 +108,7 @@ export default schema => {
           if (!_.includes(fieldNames, fk.fields)) {
             valid = false
             errs.push(
-              `foreign key ${fk.fields} must be found in the schema field names`)
+              `foreign key ${fk.fields} must match schema field names`)
           }
 
           if (!_.isString(fk.reference.fields)) {
@@ -121,7 +121,7 @@ export default schema => {
             if (!_.includes(fieldNames, field)) {
               valid = false
               errs.push(
-                `foreign key ${field} must be found in the schema field names`)
+                `foreign key ${field} must match schema field names`)
             }
           })
           if (!_.isArray(fk.reference.fields)) {

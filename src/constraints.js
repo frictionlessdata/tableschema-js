@@ -2,6 +2,14 @@ import _ from 'lodash'
 import utilities from './utilities'
 import moment from 'moment'
 
+class UniqueConstraintsError extends Error {
+  constructor(message) {
+    super(message)
+    this.message = message
+    this.name = 'UniqueConstraintsError'
+  }
+}
+
 export default {
   /**
    * Required value constraint. Supported types: all.
@@ -129,7 +137,56 @@ export default {
     throw new Error(`The value for field '${name}' must be in the enum array`)
   }
 
-  , check_unique() {
-    throw new Error('Unique constraint is not supported')
+  /**
+   * Check unique constraints for every header and value independently.
+   * Does not take in count the case, when headers which construct primary key
+   * should be checked in combination with each other
+   *
+   * @param fieldName
+   * @param value
+   * @param headers
+   * @param unique
+   */
+  , check_unique(fieldName, value, headers, unique) {
+    if (!_.includes(headers, fieldName)) {
+      return
+    }
+
+    if (!unique.hasOwnProperty(fieldName)) {
+      unique[fieldName] = [value]
+    } else {
+      if (_.includes(unique[fieldName], value)) {
+        throw new UniqueConstraintsError(
+          `Unique constraint violation for field name '${fieldName}'`)
+      }
+      unique[fieldName].push(value)
+    }
+  }
+
+  /**
+   * Check uniqueness of primary key
+   *
+   * @param values
+   * @param headers
+   * @param unique
+   */
+  , check_unique_primary(values, headers, unique) {
+    const key = _.keys(headers).join('')
+      , indexes = _.values(headers)
+
+    let value = ''
+
+    if (!unique.hasOwnProperty(key)) {
+      unique[key] = []
+    }
+
+    for (const index of indexes) {
+      value += values[index].toString()
+    }
+
+    if (_.includes(unique[key], value)) {
+      throw new UniqueConstraintsError('Unique constraint violation for primary key')
+    }
+    unique[key].push(value)
   }
 }

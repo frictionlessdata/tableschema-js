@@ -203,7 +203,7 @@ describe('Validate', () => {
   })
 
   it('primary key should match field names', done => {
-    SCHEMA.primaryKey = 'unknown'
+    SCHEMA.primaryKey = ['unknown']
     validate(SCHEMA).then(valid => {
       assert.isFalse(valid)
       done()

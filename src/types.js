@@ -6,15 +6,11 @@ import moment from 'moment'
 
 class Abstract {
   constructor(field) {
-    this.js = typeof null
-    this.jstype = undefined
     this.format = 'default'
     this.formats = ['default']
-
-    // `field` is the field schema.
     this.field = field || {}
 
-    if (field) {
+    if (field && field.format) {
       this.format = field.format
     }
   }
@@ -47,14 +43,10 @@ class Abstract {
     }
 
     // Cast with the appropriate handler, falling back to default if none
-    if (!this.format) {
-      format = 'default'
+    if (this.format.indexOf('fmt') === 0) {
+      format = 'fmt'
     } else {
-      if (this.format.indexOf('fmt') === 0) {
-        format = 'fmt'
-      } else {
-        format = this.format
-      }
+      format = this.format
     }
 
     const handler = `cast${format.charAt(0).toUpperCase() +
@@ -87,7 +79,6 @@ class Abstract {
         }
       }
     }
-
     return castValue
   }
 
@@ -108,19 +99,10 @@ class Abstract {
   }
 
   /**
-   * Check if the value can be cast to the type/format
-   *
-   * @param value
-   * @returns {Boolean}
+   * Method should be implemented by every type
+   * @throws Error
    */
-  castDefault(value) {
-    if (this.typeCheck(value)) {
-      return value
-    }
-
-    if (_.isFunction(this.js)) {
-      return this.js(value)
-    }
+  castDefault() {
     throw new Error()
   }
 
@@ -134,23 +116,6 @@ class Abstract {
 
   isRequired() {
     return !!this.getConstraint('required')
-  }
-
-  /**
-   * Type check of value
-   *
-   * @param value
-   * @returns {boolean}
-   */
-  typeCheck(value) {
-    if (this.jstype) {
-      if (typeof value === this.jstype) {
-        return true
-      }
-    } else if (this.js && value instanceof this.js) {
-      return true
-    }
-    throw new Error()
   }
 }
 
@@ -166,6 +131,11 @@ class StringType extends Abstract {
     this.formats = ['default', 'email', 'uri', 'binary']
     this.emailPattern = new RegExp('[^@]+@[^@]+\\.[^@]+')
     this.uriPattern = new RegExp('^http[s]?://')
+  }
+
+  castDefault(value) {
+    this.typeCheck(value)
+    return value
   }
 
   castEmail(value) {
@@ -187,8 +157,14 @@ class StringType extends Abstract {
   }
 
   castBinary(value) {
-    this.typeCheck(value)
-    return (new Buffer(value, 'base64')).toString()
+    try {
+      this.typeCheck(value)
+    } catch (e) {
+      if (!Buffer.isBuffer(value)) {
+        throw new Error()
+      }
+    }
+    return (new Buffer(value)).toString()
   }
 
   typeCheck(value) {
@@ -283,8 +259,6 @@ class BooleanType extends Abstract {
     super(field)
 
     this.constraints = ['required', 'pattern', 'enum']
-    this.js = Boolean
-    this.jstype = 'boolean'
   }
 
   castDefault(value) {
@@ -303,6 +277,13 @@ class BooleanType extends Abstract {
     }
     throw new Error()
   }
+
+  typeCheck(value) {
+    if (typeof value === 'boolean') {
+      return true
+    }
+    throw new Error()
+  }
 }
 
 class ArrayType extends Abstract {
@@ -312,7 +293,6 @@ class ArrayType extends Abstract {
 
   constructor(field) {
     super(field)
-    this.js = Array
     this.constraints = ['required', 'pattern', 'enum', 'minLength', 'maxLength']
   }
 
@@ -326,6 +306,19 @@ class ArrayType extends Abstract {
     }
     throw new Error()
   }
+
+  /**
+   * Type check of value
+   *
+   * @param value
+   * @returns {boolean}
+   */
+  typeCheck(value) {
+    if (_.isArray(value)) {
+      return true
+    }
+    throw new Error()
+  }
 }
 
 class ObjectType extends Abstract {
@@ -335,7 +328,6 @@ class ObjectType extends Abstract {
 
   constructor(field) {
     super(field)
-    this.js = Object
     this.constraints = ['required', 'pattern', 'enum', 'minimum', 'maximum']
   }
 
@@ -344,7 +336,7 @@ class ObjectType extends Abstract {
       return value
     }
     const v = JSON.parse(value)
-    if (!v instanceof this.js) {
+    if (!v instanceof Object) {
       throw new Error()
     }
     return v
@@ -359,7 +351,6 @@ class DateType extends Abstract {
   constructor(field) {
     super(field)
 
-    this.js = Object
     this.formats = ['default', 'any', 'fmt']
     this.ISO8601 = 'YYYY-MM-DD'
     this.constraints = ['required', 'pattern', 'enum', 'minimum', 'maximum']
@@ -398,7 +389,6 @@ class TimeType extends DateType {
 
   constructor(field) {
     super(field)
-    this.js = Object
     this.formats = ['default', 'any', 'fmt']
   }
 
@@ -419,7 +409,6 @@ class DateTimeType extends DateType {
 
   constructor(field) {
     super(field)
-    this.js = Object
     this.formats = ['default', 'any', 'fmt']
     this.ISO8601 = moment.ISO_8601
   }
@@ -448,6 +437,7 @@ class GeoPointType extends Abstract {
     } catch (e) {
 
     }
+
     try {
       return this.castObject(value)
     } catch (e) {
@@ -563,8 +553,6 @@ class GeoJSONType extends GeoPointType {
 
   constructor(field) {
     super(field)
-
-    this.js = Object
     this.formats = ['default', 'topojson']
     this.constraints = ['required', 'pattern', 'enum']
 

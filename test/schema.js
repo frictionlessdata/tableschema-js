@@ -31,12 +31,12 @@ describe('Models', () => {
           , constraints: { required: false }
         }
         , {
-          name: 'age'
+          name: 'Age'
           , type: 'integer'
           , constraints: { required: false }
         }
         , {
-          name: 'name'
+          name: 'Name'
           , type: 'string'
           , constraints: { required: true }
         }
@@ -60,8 +60,11 @@ describe('Models', () => {
   })
 
   it('have a correct number of header required columns', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      assert.equal(schema.requiredHeaders().length, 2)
+    (new Schema(SCHEMA, true)).then(schema => {
+      const headers = schema.requiredHeaders()
+      assert.equal(headers.length, 2)
+      assert.equal(headers[0], 'id')
+      assert.equal(headers[1], 'name')
       done()
     }, (error) => {
       assert(error)
@@ -69,7 +72,7 @@ describe('Models', () => {
   })
 
   it('have one of a field from passed schema', done => {
-    (new Schema(SCHEMA)).then(schema => {
+    (new Schema(SCHEMA, true)).then(schema => {
       assert.isTrue(schema.hasField('id'))
       assert.isTrue(schema.hasField('height'))
       assert.isTrue(schema.hasField('age'))
@@ -99,7 +102,7 @@ describe('Models', () => {
       assert.isArray(stringTypes)
       assert.equal(stringTypes.length, 3)
       assert.equal(_.find(stringTypes, { name: 'id' }).type, 'string')
-      assert.equal(_.find(stringTypes, { name: 'name' }).type, 'string')
+      assert.equal(_.find(stringTypes, { name: 'Name' }).type, 'string')
       assert.equal(_.find(stringTypes, { name: 'occupation' }).type, 'string')
 
       assert.isArray(numberTypes)
@@ -108,7 +111,7 @@ describe('Models', () => {
 
       assert.isArray(integerTypes)
       assert.equal(integerTypes.length, 1)
-      assert.equal(_.find(integerTypes, { name: 'age' }).type, 'integer')
+      assert.equal(_.find(integerTypes, { name: 'Age' }).type, 'integer')
 
       done()
     }, error => {
@@ -124,7 +127,7 @@ describe('Models', () => {
       return copyField
     })
 
-    const model = (new Schema(SCHEMA, { caseInsensitiveHeaders: true }))
+    const model = (new Schema(SCHEMA, true))
     model.then(schema => {
       assert.deepEqual(schema.headers().sort(),
                        ['id', 'height', 'name', 'age', 'occupation'].sort())
@@ -201,17 +204,6 @@ describe('Models', () => {
     })
   })
 
-  it('should return true on test', done => {
-    const model = new Schema(SCHEMA)
-    model.then(schema => {
-      assert.isTrue(schema.test('age', 1))
-      done()
-    }, (error) => {
-      assert.isNull(error)
-      done()
-    })
-  })
-
   it('should throw exception if field name does not exists', done => {
     const model = new Schema(SCHEMA)
     model.then(schema => {
@@ -225,176 +217,12 @@ describe('Models', () => {
     })
   })
 
-  it('convert row', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      const convertedRow = schema.convertRow('string', '10.0', '1', 'string',
-                                             'string')
-      assert.deepEqual(['string', '10.0', 1, 'string', 'string'], convertedRow)
-      done()
-    }, (error) => {
-      assert.isNull(error)
-      done()
-    })
-  })
-
-  it('shouldn\'t convert row with less items than headers count', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      assert.throws(() => {
-        schema.convertRow('string', '10.0', '1', 'string')
-      }, Error)
-      done()
-    }, (error) => {
-      assert.isNull(error)
-      done()
-    })
-  })
-
-  it('shouldn\'t convert row with too many items', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      assert.throws(() => {
-        schema.convertRow('string', '10.0', '1', 'string', 'string', 'string')
-      }, Error)
-      done()
-    }, (error) => {
-      assert.isNull(error)
-      done()
-    })
-  })
-
-  it('shouldn\'t convert row with wrong type (fail fast)', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      assert.throws(() => {
-        schema.convertRow('string', 'notdecimal', '10.6', 'string', 'string',
-                          { failFast: true })
-      }, Error)
-      done()
-    }, (error) => {
-      assert.isNull(error)
-      done()
-    })
-  })
-
-  it('shouldn\'t convert row with wrong type multiple errors', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      try {
-        schema.convertRow('string', 'notdecimal', '10.6', 'string',
-                          true)
-      } catch (e) {
-        assert.isArray(e)
-        assert.equal(e.length, 3)
-      }
-      done()
-    }, (error) => {
-      assert.isNull(error)
-      done()
-    })
-  })
-
-  it('convert multiple rows', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      const rows = schema.convert(
-        [
-          ['string', '10.0', '1', 'string', 'string']
-          , ['string', '10.0', '1', 'string', 'string']
-          , ['string', '10.0', '1', 'string', 'string']
-          , ['string', '10.0', '1', 'string', 'string']
-          , ['string', '10.0', '1', 'string', 'string']
-        ])
-      for (const row of rows) {
-        assert.deepEqual(['string', '10.0', 1, 'string', 'string'],
-                         row)
-      }
-      done()
-    }, (error) => {
-      assert.isNull(error)
-      done()
-    })
-  })
-
-  it('shouldn\'t convert rows with wrong types fail fast', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      assert.throws(() => {
-        schema.convert(
-          [
-            ['string', 'not', '1', 'string', 'string']
-            , ['string', '10.0', '1', 'string', 'string']
-            , ['string', 'an', '1', 'string', 'string']
-            , ['string', '10.0', '1', 'string', 'string']
-            , ['string', '10.0', 'integer', 'string', 'string']
-          ], true)
-      }, Error)
-      done()
-    }, (error) => {
-      assert.isNull(error)
-      done()
-    })
-  })
-
-  it('shouldn\'t convert rows with wrong types multiple errors', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      try {
-        schema.convert([['string', 'not', '1', 'string', 'string']
-                         , ['string', '10.0', '1', 'string', 'string']
-                         , ['string', 'an', '1', 'string', 'string']
-                         , ['string', '10.0', '1', 'string', 'string']
-                         , ['string', '10.0', 'integer', 'string', 'string']])
-      } catch (e) {
-        assert.isArray(e)
-        assert.equal(e.length, 3)
-      }
-      done()
-    }, (error) => {
-      assert.isNull(error)
-      done()
-    })
-  })
-
-  it('shouldn\'t convert rows with incorrect row length fail fast', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      assert.throws(() => {
-        schema.convert(
-          [
-            ['string', '10.0', '1', 'string']
-            , ['string', '10.0', '1', 'string', 'string']
-            , ['string', '10.0', '1', 'string', 'string', 1]
-            , ['string', '10.0', '1', 'string', 'string']
-            , ['string', '10.0', '1', 'string', 'string']
-          ], true)
-      }, Error)
-      done()
-    }, (error) => {
-      assert.isNull(error)
-      done()
-    })
-  })
-
-  it('shouldn\'t convert rows with incorrect row length multiple errors',
-     done => {
-       (new Schema(SCHEMA)).then(schema => {
-         try {
-           schema.convert(
-             [['string', '10.0', '1', 'string']
-               , ['string', '10.0', '1', 'string', 'string']
-               , ['string', '10.0', '1', 'string', 'string', 1]
-               , ['string', '10.0', '1', 'string', 'string']
-               , ['string', '10.0', '1', 'string', 'string']])
-         } catch (e) {
-           assert.isArray(e)
-           assert.equal(e.length, 2)
-         }
-         done()
-       }, (error) => {
-         assert.isNull(error)
-         done()
-       })
-     })
-
   it('should load json file', done => {
     const url = 'http://localhost/remote.json'
     fetchMock.restore()
     fetchMock.mock(url, SCHEMA)
 
-    const model = new Schema(url)
+    const model = new Schema(url, true)
     model.then((schema) => {
       assert.equal(schema.headers().length, 5)
       assert.equal(schema.requiredHeaders().length, 2)
@@ -421,6 +249,81 @@ describe('Models', () => {
       done()
     }).catch(error => {
       assert.isNotNull(error)
+      done()
+    })
+  })
+
+  it('should return true on test', done => {
+    (new Schema(SCHEMA)).then(schema => {
+      assert.isTrue(schema.testValue('height', 1))
+      done()
+    }, (error) => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
+  it('convert row', done => {
+    (new Schema(SCHEMA)).then(schema => {
+      const value = ['string', '10.0', '1', 'string', 'string']
+        , convertedRow = schema.castRow(value)
+      assert.deepEqual(['string', '10.0', 1, 'string', 'string'], convertedRow)
+      done()
+    }, error => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
+  it('shouldn\'t convert row with less items than headers count', done => {
+    (new Schema(SCHEMA)).then(schema => {
+      assert.throws(() => {
+        schema.castRow(['string', '10.0', '1', 'string'])
+      }, Array)
+      done()
+    }, error => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
+  it('shouldn\'t convert row with too many items', done => {
+    (new Schema(SCHEMA)).then(schema => {
+      assert.throws(() => {
+        schema.castRow(
+          ['string', '10.0', '1', 'string', 'string', 'string'])
+      }, Array)
+      done()
+    }, error => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
+  it('shouldn\'t convert row with wrong type (fail fast)', done => {
+    (new Schema(SCHEMA)).then(schema => {
+      assert.throws(() => {
+        schema.castRow(['string', 'notdecimal', '10.6', 'string', 'string']
+          , true)
+      }, Array)
+      done()
+    }, error => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
+  it('shouldn\'t convert row with wrong type multiple errors', done => {
+    (new Schema(SCHEMA)).then(schema => {
+      try {
+        schema.castRow(['string', 'notdecimal', '10.6', 'string', true])
+      } catch (e) {
+        assert.isArray(e)
+        assert.equal(e.length, 3)
+      }
+      done()
+    }, error => {
+      assert.isNull(error)
       done()
     })
   })

@@ -6,9 +6,32 @@ import utilities from '../src/utilities'
 const moment = require('moment')
 
 describe('Constraints', () => {
-  it('unique constraint is not supported', done => {
+  it('unique constraints regular', done => {
+    const unique = {}
+      , headers = ['id']
+      , fieldName = 'id'
+      , items = ['string', 'string']
     assert.throws(() => {
-      constraints.check_unique()
+      for (let i = 0, length = items.length; i < length; i++) {
+        constraints.check_unique(fieldName, items[i], headers, unique)
+      }
+      constraints.check_unique('id')
+    }, Error)
+    done()
+  })
+
+  it('unique constraints primary', done => {
+    const unique = {}
+    // headers is an object of the headers which construct primary key and
+    // their indexes in the field list to make it possible allocate correct
+    // value in every row to combine it and compare later
+      , headers = { id: 0, sentence: 1 }
+      , items = [['string', 'string', 1], ['string', 'string', 2]]
+
+    assert.throws(() => {
+      for (let i = 0, length = items.length; i < length; i++) {
+        constraints.check_unique_primary(items[i], headers, unique)
+      }
     }, Error)
     done()
   })

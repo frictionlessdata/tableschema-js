@@ -8,5 +8,8 @@ module.exports = {
       { test: /\.js$/, loaders: ['babel-loader'], exclude: /node_modules/ }
     ]
   },
-  output: { library: 'JSONTableSchema', libraryTarget: 'umd' }
+  output: { library: 'JSONTableSchema', libraryTarget: 'umd' },
+  node: {
+    fs: "empty"
+  }
 }

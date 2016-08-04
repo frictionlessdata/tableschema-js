@@ -33,6 +33,9 @@ export default (headers, values, options = {}) => {
     , descriptor = { fields: [] }
 
   if (opts.primaryKey) {
+    if (_.isString(opts.primaryKey)) {
+      opts.primaryKey = [opts.primaryKey]
+    }
     descriptor.primaryKey = opts.primaryKey
   }
 
@@ -40,15 +43,15 @@ export default (headers, values, options = {}) => {
     const constraints = {}
       , field = {
         name: header
-      , title: ''
-      , description: ''
+        , title: ''
+        , description: ''
       }
 
     if (opts.explicit) {
       constraints.required = true
     }
 
-    if (header === opts.primaryKey) {
+    if (_.includes(opts.primaryKey, header)) {
       constraints.unique = true
     }
 
@@ -60,14 +63,22 @@ export default (headers, values, options = {}) => {
   })
 
   headers.forEach((header, index) => {
-    let columnValues = _.map(values, (value) => value[index])
+    let columnValues = _.map(values, value => value[index])
     const field = descriptor.fields[index]
 
     if (opts.rowLimit) {
       columnValues = _.take(columnValues, opts.rowLimit)
     }
+
     field.type = type.multiCast(columnValues)
-    field.format = 'default'
+
+    if (opts.cast && opts.cast.hasOwnProperty(field.type)) {
+      field.format = opts.cast[field.type].format
+    }
+
+    if (!field.format) {
+      field.format = 'default'
+    }
   })
 
   return descriptor

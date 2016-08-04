@@ -4,6 +4,7 @@ import url from 'url'
 import validate from './validate'
 import utilities from './utilities'
 import Type from './types'
+import constraints from './constraints'
 
 /**
  * Model for a JSON Table Schema.
@@ -22,9 +23,8 @@ import Type from './types'
  */
 export default class Schema {
   constructor(source, caseInsensitiveHeaders = false) {
-    this.caseInsensitiveHeaders = caseInsensitiveHeaders
+    this.caseInsensitiveHeaders = !!caseInsensitiveHeaders
     this.type = new Type()
-
     return load(this, source)
   }
 
@@ -39,9 +39,24 @@ export default class Schema {
    * @returns {Type}
    * @throws Error if value can't be casted
    */
-  cast(fieldName, value, index, skipConstraints = true) {
+  castValue(fieldName, value, index = 0, skipConstraints = true) {
     const field = this.getField(fieldName, index)
     return this.type.cast(field, value, skipConstraints)
+  }
+
+  /**
+   * Check if value to fieldName's type can be casted
+   *
+   * @param fieldName
+   * @param value
+   * @param index
+   * @param skipConstraints
+   *
+   * @returns {Boolean}
+   */
+  testValue(fieldName, value, index = 0, skipConstraints = true) {
+    const field = this.getField(fieldName, index)
+    return this.type.test(field, value, skipConstraints)
   }
 
   /**
@@ -50,74 +65,52 @@ export default class Schema {
    * given, it will raise the first error it encounters, otherwise an array of
    * errors thrown (if there are any errors occur)
    *
-   * @param args
+   * @param items
+   * @param failFast
+   * @param skipConstraints
    * @returns {Array}
    */
-  convertRow(...args) {
-    let items = args
-      , failFast = false
-    if (_.isArray(args[0])) {
-      items = args[0]
-    }
+  castRow(items, failFast = false, skipConstraints = false) {
     const headers = this.headers()
       , result = []
       , errors = []
-      , last = _.last(items)
-
-    if (last && last.hasOwnProperty('failFast')) {
-      items.pop()
-      if (last.failFast === true) {
-        failFast = true
-      }
-    }
 
     if (headers.length !== items.length) {
-      throw new Error('The number of items to convert does not match the ' +
+      throw new Array('The number of items to convert does not match the ' +
                       'number of fields given in the schema')
     }
+
     for (let i = 0, length = items.length; i < length; i++) {
       try {
-        result.push(this.cast(headers[i], items[i]))
+        const fieldName = headers[i]
+          , value = this.castValue(fieldName, items[i], i, skipConstraints)
+
+        if (!skipConstraints) {
+          // unique constraints available only from Resource
+          if (this.uniqueness && this.uniqueHeaders) {
+            constraints.check_unique(fieldName, value, this.uniqueHeaders,
+                                     this.uniqueness)
+          }
+        }
+        result.push(value)
       } catch (e) {
-        const error = `Wrong type for header: ${headers[i]} and value: ${items[i]}`
+        let error
+        switch (e.name) {
+          case 'UniqueConstraintsError':
+            error = e.message
+            break
+          default:
+            error =
+              `Wrong type for header: ${headers[i]} and value: ${items[i]}`
+        }
         if (failFast === true) {
-          throw new Error(error)
+          throw new Array(error)
         } else {
           errors.push(error)
         }
       }
     }
 
-    if (errors.length > 0) {
-      throw errors
-    }
-    return result
-  }
-
-  /**
-   * Convert an array of rows to the types of the current schema. If the option
-   * `failFast` is given, it will raise the first error it encounters,
-   * otherwise an array of errors thrown (if there are any errors occur)
-   *
-   * @param items
-   * @param failFast
-   * @returns {Array}
-   */
-  convert(items, failFast = false) {
-    const result = []
-    let errors = []
-    for (const item of items) {
-      try {
-        item.push({ failFast })
-        result.push(this.convertRow(item))
-      } catch (e) {
-        if (failFast === true) {
-          throw e
-        } else {
-          errors = errors.concat(e)
-        }
-      }
-    }
     if (errors.length > 0) {
       throw errors
     }
@@ -158,16 +151,25 @@ export default class Schema {
    * field names.
    *
    * @param fieldName
-   * @param index
-   * @returns {Object|Null}
+   * @param index - index of the field inside the fields array
+   * @returns {Object}
+   * @throws Error in case fieldName does not exists in the given schema
    */
   getField(fieldName, index = 0) {
-    const field = _.filter(this.fields(),
-                           F => _.includes(fieldName, F.name))[index]
-    if (!field) {
+    let name = fieldName
+    if (this.caseInsensitiveHeaders) {
+      name = fieldName.toLowerCase()
+    }
+    const fields = _.filter(this.fields(), F => F.name === name)
+
+    if (!fields.length) {
       throw new Error(`No such field name in schema: ${fieldName}`)
     }
-    return field
+
+    if (!index) {
+      return fields[0]
+    }
+    return this.fields()[index]
   }
 
   /**
@@ -177,7 +179,18 @@ export default class Schema {
    * @returns {Array}
    */
   getFieldsByType(typeName) {
-    return _.filter(this.fields(), field => _.includes(typeName, field.type))
+    return _.filter(this.fields(), field => field.type === typeName)
+  }
+
+  /**
+   * Get all headers with required constraints set to true
+   * @returns {Array}
+   */
+  requiredHeaders() {
+    return _.chain(this.descriptor.fields)
+      .filter(field => field.constraints.required === true)
+      .map(field => field.name)
+      .value()
   }
 
   /**
@@ -200,12 +213,7 @@ export default class Schema {
    * @returns {Array}
    */
   headers() {
-    const raw = _.chain(this.descriptor.fields).map(_.property('name')).value()
-
-    if (this.caseInsensitiveHeaders) {
-      return _.invokeMap(raw, 'toLowerCase')
-    }
-    return raw
+    return _.map(this.descriptor.fields, field => field.name)
   }
 
   /**
@@ -215,41 +223,11 @@ export default class Schema {
   primaryKey() {
     return this.descriptor.primaryKey
   }
-
-  /**
-   * Get all headers with required constraints set to true
-   * @returns {Array}
-   */
-  requiredHeaders() {
-    const raw = _.chain(this.descriptor.fields)
-      .filter(field => field.constraints.required === true)
-      .map(_.property('name'))
-      .value()
-
-    if (this.caseInsensitiveHeaders) {
-      return _.invokeMap(raw, 'toLowerCase')
-    }
-    return raw
-  }
-
-  /**
-   * Check if value to fieldName's type can be casted
-   *
-   * @param fieldName
-   * @param value
-   * @param index
-   * @param skipConstraints
-   *
-   * @returns {Boolean}
-   */
-  test(fieldName, value, index, skipConstraints = true) {
-    const field = this.getField(fieldName, index)
-    return this.type.test(field, value, skipConstraints)
-  }
 }
 
 /**
  * Load a JSON source, from string, URL or buffer
+ * @param instance
  * @param source
  * @returns {Promise}
  */
@@ -257,14 +235,14 @@ function load(instance, source) {
   if (_.isString(source)) {
     if (utilities.isURL(url.parse(source).protocol)) {
       return new Promise((resolve, reject) => {
-        fetch(source).then((response) => {
+        fetch(source).then(response => {
           if (response.status >= 400) {
             reject('Failed to download file due to bad response')
           }
           return response.json()
         }).then(json => {
           validate(json).then(() => {
-            instance.descriptor = expand(json)
+            expand(instance, json)
             resolve(instance)
           }).catch(errors => {
             reject(errors)
@@ -275,7 +253,7 @@ function load(instance, source) {
   }
   return new Promise((resolve, reject) => {
     validate(source).then(() => {
-      instance.descriptor = expand(source)
+      expand(instance, source)
       resolve(instance)
     }).catch(errors => {
       reject(errors)
@@ -286,36 +264,41 @@ function load(instance, source) {
 /**
  * Expand the schema with additional default properties
  *
+ * @param instance
  * @param schema
  * @returns {*}
  */
-function expand(schema) {
+function expand(instance, schema) {
   const DEFAULTS = {
     constraints: { required: false }
     , format: 'default'
     , type: 'string'
   }
 
-  return _.extend(
+  instance.descriptor = _.extend(
     {}
     , schema
     , {
-      fields: (schema.fields || []).map(field => {
+      fields: _.map((schema.fields || []), field => {
         const copyField = _.extend({}, field)
 
+        // Set name to lower case if caseInsensitiveHeaders flag is True
+        if (instance.caseInsensitiveHeaders) {
+          copyField.name = field.name.toLowerCase()
+        }
+
         // Ensure we have a default type if no type was declared
-        if (!copyField.type) {
+        if (!field.type) {
           copyField.type = DEFAULTS.type
         }
 
-        // Ensure we have a default format if no format was
-        // declared
-        if (!copyField.format) {
+        // Ensure we have a default format if no format was declared
+        if (!field.format) {
           copyField.format = DEFAULTS.format
         }
 
         // Ensure we have a minimum constraints declaration
-        if (!copyField.constraints) {
+        if (!field.constraints) {
           copyField.constraints = DEFAULTS.constraints
         } else if (_.isUndefined(field.constraints.required)) {
           copyField.constraints.required = DEFAULTS.constraints.required
@@ -323,4 +306,8 @@ function expand(schema) {
         return copyField
       })
     })
+
+  if (_.isString(instance.descriptor.primaryKey)) {
+    instance.descriptor.primaryKey = [instance.descriptor.primaryKey]
+  }
 }
