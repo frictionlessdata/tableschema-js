@@ -362,7 +362,7 @@ class DateType extends Abstract {
     if (!date.isValid()) {
       throw new Error()
     }
-    return date
+    return date.toDate()
   }
 
   castDefault(value) {
@@ -370,7 +370,7 @@ class DateType extends Abstract {
     if (!date.isValid()) {
       throw new Error()
     }
-    return date
+    return date.toDate()
   }
 
   castFmt(value) {
@@ -378,7 +378,7 @@ class DateType extends Abstract {
     if (date == null) {
       throw new Error()
     }
-    return moment(date)
+    return moment(date).toDate()
   }
 }
 
@@ -398,7 +398,7 @@ class TimeType extends DateType {
     if (!date.isValid()) {
       throw new Error()
     }
-    return date
+    return date.toDate()
   }
 }
 
