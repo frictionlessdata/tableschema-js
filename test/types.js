@@ -348,14 +348,16 @@ describe('Types', () => {
     })
 
     it('cast simple date', done => {
-      assert.isObject(type.cast(BASE_FIELD, '2019-01-01'))
+      assert.equal(type.cast(BASE_FIELD, '2019-01-01').getTime(),
+                   new Date('Mon, 31 Dec 2018 23:00:00 GMT').getTime())
       assert.isTrue(type.test(BASE_FIELD, '2019-01-01'))
       done()
     })
 
     it('cast any date', done => {
       BASE_FIELD.format = 'any'
-      assert.isObject(type.cast(BASE_FIELD, '10 Jan 1969'))
+      assert.equal(type.cast(BASE_FIELD, '10 Jan 1969').getTime(),
+                   new Date('Thu, 09 Jan 1969 23:00:00 GMT').getTime())
       assert.isTrue(type.test(BASE_FIELD, '10 Jan 1969'))
       done()
     })
@@ -364,7 +366,7 @@ describe('Types', () => {
       BASE_FIELD.format = 'fmt:%d/%m/%Y'
 
       const value = '10/06/2014'
-        , result = moment(d3time.timeParse('%d/%m/%Y')(value))
+        , result = moment(d3time.timeParse('%d/%m/%Y')(value)).toDate()
 
       assert.deepEqual(type.cast(BASE_FIELD, value), result)
       assert.isTrue(type.test(BASE_FIELD, value))
@@ -410,7 +412,8 @@ describe('Types', () => {
     })
 
     it('cast simple time', done => {
-      assert.isObject(type.cast(BASE_FIELD, '06:00:00'))
+      assert.equal(type.cast(BASE_FIELD, '06:00:00').getTime(),
+                      new Date('Mon, 08 Aug 2016 04:00:00 GMT').getTime())
       assert.isTrue(type.test(BASE_FIELD, '06:00:00'))
       done()
     })
@@ -432,14 +435,16 @@ describe('Types', () => {
     })
 
     it('cast simple datetime', done => {
-      assert.isObject(type.cast(BASE_FIELD, '2014-01-01T06:00:00Z'))
+      assert.equal(type.cast(BASE_FIELD, '2014-01-01T06:00:00Z').getTime(),
+                      new Date('Wed, 01 Jan 2014 06:00:00 GMT').getTime())
       assert.isTrue(type.test(BASE_FIELD, '2014-01-01T06:00:00Z'))
       done()
     })
 
     it('cast any datetime', done => {
       BASE_FIELD.format = 'any'
-      assert.isObject(type.cast(BASE_FIELD, '10 Jan 1969 9:00'))
+      assert.equal(type.cast(BASE_FIELD, '10 Jan 1969 9:00').getTime(),
+                      new Date('Fri, 10 Jan 1969 08:00:00 GMT').getTime())
       assert.isTrue(type.test(BASE_FIELD, '10 Jan 1969 9:00'))
       done()
     })
