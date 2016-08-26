@@ -3,7 +3,6 @@ import url from 'url'
 import fs from 'fs'
 import http from 'http'
 import https from 'https'
-import Stream from 'stream'
 import _ from 'lodash'
 import parse from 'csv-parse'
 import transform from 'stream-transform'
@@ -73,13 +72,13 @@ export default class Resource {
    * @returns {}
    */
   map(row) {
-    const result = {};
-    let i = 0;
+    const result = {}
+    let i = 0
     for (const header of this.schema.headers()) {
-      result[header] = row[i];
-      i++;
+      result[header] = row[i]
+      i++
     }
-    return result;
+    return result
   }
 }
 
@@ -97,8 +96,8 @@ function proceed(instance, readStream, callback, failFast = false,
                  skipConstraints = false) {
   return new Promise((resolve, reject) => {
     const parser = parse()
-    let errors = []
-      , isFirst = true
+      , errors = []
+    let isFirst = true
 
     readStream.then(data => {
       if (data.isArray) {
@@ -169,9 +168,9 @@ function getReadStream(source) {
       transformer.end()
     } else if (_.isString(source)) {
       // probably it is some URL or local path to the file with the data
-      const protocol = url.parse(source).protocol;
+      const protocol = url.parse(source).protocol
       if (utilities.isURL(protocol)) {
-        let processor = protocol.indexOf('https') !== -1 ? https : http;
+        const processor = protocol.indexOf('https') !== -1 ? https : http
         // create readable stream from remote file
         processor.get(source, res => {
           resolve({ stream: res })

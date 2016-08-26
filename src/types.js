@@ -1,8 +1,8 @@
 import _ from 'lodash'
+import moment from 'moment'
+import { timeParse } from 'd3-time-format'
 import utilities from './utilities'
 import constraints from './constraints'
-import d3time from 'd3-time-format'
-import moment from 'moment'
 
 class Abstract {
   constructor(field) {
@@ -336,7 +336,7 @@ class ObjectType extends Abstract {
       return value
     }
     const v = JSON.parse(value)
-    if (!v instanceof Object) {
+    if (!(v instanceof Object)) {
       throw new Error()
     }
     return v
@@ -374,7 +374,7 @@ class DateType extends Abstract {
   }
 
   castFmt(value) {
-    const date = d3time.timeParse(this.format.replace(/^fmt:/, ''))(value)
+    const date = timeParse(this.format.replace(/^fmt:/, ''))(value)
     if (date == null) {
       throw new Error()
     }
@@ -602,7 +602,7 @@ class AnyType extends Abstract {
     return value
   }
 
-  test(value) {
+  test() {
     return true
   }
 }

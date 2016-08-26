@@ -1,6 +1,6 @@
 import _ from 'lodash'
-import utilities from './utilities'
 import moment from 'moment'
+import utilities from './utilities'
 
 class UniqueConstraintsError extends Error {
   constructor(message) {
