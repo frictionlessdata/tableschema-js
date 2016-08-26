@@ -301,9 +301,9 @@ Available types, formats and resultant value of the cast:
 | boolean | default | Boolean |
 | array | default | Array |
 | object | default | Object |
-| date | default, any, fmt | Moment object |
-| time | default, any, fmt | Moment object |
-| datetime | default, any, fmt | Moment object |
+| date | default, any, fmt | Date object |
+| time | default, any, fmt | Date object |
+| datetime | default, any, fmt | Date object |
 | geopoint | default, array, object | Accordingly to format<sup>3</sup> |
 | geojson | default, topojson | Accordingly to format<sup>3,4</sup> |
 

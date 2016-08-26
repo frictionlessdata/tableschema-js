@@ -2,6 +2,7 @@ import EventEmitter from 'events'
 import url from 'url'
 import fs from 'fs'
 import http from 'http'
+import https from 'https'
 import Stream from 'stream'
 import _ from 'lodash'
 import parse from 'csv-parse'
@@ -64,6 +65,21 @@ export default class Resource {
     return proceed(this, getReadStream(this.source), callback,
                    failFast,
                    skipConstraints)
+  }
+
+  /**
+   * Return object with map of values to headers of the row of values
+   * @param row
+   * @returns {}
+   */
+  map(row) {
+    const result = {};
+    let i = 0;
+    for (const header of this.schema.headers()) {
+      result[header] = row[i];
+      i++;
+    }
+    return result;
   }
 }
 
@@ -153,9 +169,11 @@ function getReadStream(source) {
       transformer.end()
     } else if (_.isString(source)) {
       // probably it is some URL or local path to the file with the data
-      if (utilities.isURL(url.parse(source).protocol)) {
+      const protocol = url.parse(source).protocol;
+      if (utilities.isURL(protocol)) {
+        let processor = protocol.indexOf('https') !== -1 ? https : http;
         // create readable stream from remote file
-        http.get(source, res => {
+        processor.get(source, res => {
           resolve({ stream: res })
         }, error => {
           reject(error)
