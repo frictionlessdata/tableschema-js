@@ -357,8 +357,7 @@ class DateType extends Abstract {
   }
 
   castAny(value) {
-    const date = moment(value)
-
+    const date = moment(new Date(value))
     if (!date.isValid()) {
       throw new Error()
     }
