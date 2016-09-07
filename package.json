@@ -9,6 +9,9 @@
     "open data",
     "open knowledge"
   ],
+  "engines": {
+    "node": ">=4"
+  },
   "main": "lib/index.js",
   "dependencies": {
     "csv-parse": "^1.1.0",
