@@ -19,12 +19,17 @@ export default class Resource {
     this.source = data
 
     return new Promise((resolve, reject) => {
-      new Schema(schema).then(model => {
-        self.schema = model
+      if (schema instanceof Schema) {
+        self.schema = schema
         resolve(self)
-      }).catch(error => {
-        reject(error)
-      })
+      } else {
+        new Schema(schema).then(model => {
+          self.schema = model
+          resolve(self)
+        }).catch(error => {
+          reject(error)
+        })
+      }
     })
   }
 
@@ -65,21 +70,6 @@ export default class Resource {
                    failFast,
                    skipConstraints)
   }
-
-  /**
-   * Return object with map of values to headers of the row of values
-   * @param row
-   * @returns {}
-   */
-  map(row) {
-    const result = {}
-    let i = 0
-    for (const header of this.schema.headers()) {
-      result[header] = row[i]
-      i++
-    }
-    return result
-  }
 }
 
 /**
@@ -119,10 +109,10 @@ function proceed(instance, readStream, callback, failFast = false,
       while ((items = parser.read()) !== null) {
         if (isFirst) {
           isFirst = false
-          continue
+        } else {
+          cast(instance, reject, callback, errors, items, failFast,
+               skipConstraints)
         }
-        cast(instance, reject, callback, errors, items, failFast,
-             skipConstraints)
       }
     }).on('end', () => {
       end(resolve, reject, errors)

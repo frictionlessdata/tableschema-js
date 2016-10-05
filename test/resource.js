@@ -2,7 +2,7 @@
 import { assert } from 'chai'
 import fs from 'fs'
 import Resource from '../src/resource'
-import moment from 'moment'
+import Schema from '../src/schema'
 
 let SCHEMA
   , DATA
@@ -59,13 +59,37 @@ describe('Resource', () => {
     })
   })
 
+  it('should work with Schema instance', function (done) {
+    let count = 0;
+    (new Schema(SCHEMA)).then(model => {
+      (new Resource(model, DATA)).then(resource => {
+        resource.iter(items => {
+          // ... do something with items
+          count += 1
+        }).then(() => {
+          assert.equal(count, 5)
+          done()
+        }, errors => {
+          assert.isNull(errors)
+          done()
+        })
+      }, error => {
+        assert.isNull(error)
+        done()
+      }, error => {
+        assert.isNull(error)
+        done()
+      })
+    })
+  })
+
   it('should return converted values for provided array', function (done) {
     let count = 0;
     (new Resource(SCHEMA, DATA)).then(
       resource => {
         resource.iter(items => {
           // ... do something with items
-          count++
+          count += 1
         }).then(() => {
           assert.equal(count, 5)
           done()
