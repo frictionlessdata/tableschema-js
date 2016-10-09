@@ -43,3 +43,6 @@ rules:
   no-cond-assign:
     - 2
     - except-parens
+  arrow-parens:
+    - 2
+    - as-needed

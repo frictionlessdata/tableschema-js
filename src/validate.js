@@ -9,7 +9,7 @@ import tv4 from 'tv4'
  * `schema`: a dict to check if it is valid JSON Table Schema
 
  Returns:
- * A tuple of `valid`, `errors`
+ * Promise. In case of success true, in error - list of errors
  */
 export default schema => {
   const fieldNames = _.map(schema.fields || [], _.property('name'))
