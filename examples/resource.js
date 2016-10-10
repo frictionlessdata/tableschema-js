@@ -1,5 +1,5 @@
 import jts from '../src/index'
-import jsonSchema from 'schema.json'
+import jsonSchema from '../data/schema.json'
 
 new jts.Resource(jsonSchema, 'http://url.to.csv').then(resource => {
   const values = []

@@ -1,5 +1,5 @@
 import jts from '../src/index'
-import jsonSchema from 'schema.json'
+import jsonSchema from '../data/schema.json'
 
 jts.validate(jsonSchema).then(valid => {
   // schema is valid

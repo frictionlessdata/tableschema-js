@@ -1,5 +1,5 @@
 import jts from '../src/index'
-import jsonSchema from 'schema.json'
+import jsonSchema from '../data/schema.json'
 
 (new jts.Schema(jsonSchema)).then(schema => {
   // working with schema instance
