@@ -54,7 +54,7 @@ describe('Models', () => {
     (new Schema(SCHEMA)).then(schema => {
       assert.equal(schema.headers().length, 5)
       done()
-    }, (error) => {
+    }, error => {
       assert(error)
     })
   })
@@ -66,7 +66,7 @@ describe('Models', () => {
       assert.equal(headers[0], 'id')
       assert.equal(headers[1], 'name')
       done()
-    }, (error) => {
+    }, error => {
       assert(error)
     })
   })
@@ -79,7 +79,7 @@ describe('Models', () => {
       assert.isTrue(schema.hasField('name'))
       assert.isTrue(schema.hasField('occupation'))
       done()
-    }, (error) => {
+    }, error => {
       assert(error)
     })
   })
@@ -88,7 +88,7 @@ describe('Models', () => {
     (new Schema(SCHEMA)).then(schema => {
       assert.isFalse(schema.hasField('religion'))
       done()
-    }, (error) => {
+    }, error => {
       assert(error)
     })
   })
@@ -120,7 +120,7 @@ describe('Models', () => {
   })
 
   it('respect caseInsensitiveHeaders option', done => {
-    SCHEMA.fields = SCHEMA.fields.map((field) => {
+    SCHEMA.fields = SCHEMA.fields.map(field => {
       const copyField = _.extend({}, field)
       copyField.name = copyField.name[0].toUpperCase() +
                        _.drop(copyField.name).join('').toLowerCase()
@@ -132,7 +132,7 @@ describe('Models', () => {
       assert.deepEqual(schema.headers().sort(),
                        ['id', 'height', 'name', 'age', 'occupation'].sort())
       done()
-    }, (error) => {
+    }, error => {
       assert(error)
     })
   })
@@ -141,7 +141,7 @@ describe('Models', () => {
     (new Schema('this is string')).then(schema => {
       assert.isObject(schema)
       assert.isTrue(false)
-    }, (error) => {
+    }, error => {
       assert.isArray(error)
       done()
     })
@@ -151,7 +151,7 @@ describe('Models', () => {
     (new Schema({})).then(schema => {
       assert.isObject(schema)
       assert.isTrue(false)
-    }, (error) => {
+    }, error => {
       assert.isArray(error)
       done()
     })
@@ -165,7 +165,7 @@ describe('Models', () => {
       assert.equal(_.find(stringTypes, { name: 'id' }).type, 'string')
       assert.equal(_.find(stringTypes, { name: 'height' }).type, 'string')
       done()
-    }, (error) => {
+    }, error => {
       assert.isNull(error)
       done()
     })
@@ -184,7 +184,7 @@ describe('Models', () => {
       assert.isArray(schema.requiredHeaders())
       assert.equal(schema.requiredHeaders().length, 1)
       done()
-    }, (error) => {
+    }, error => {
       assert.isNull(error)
       done()
     })
@@ -198,7 +198,7 @@ describe('Models', () => {
     model.then(schema => {
       assert.deepEqual(data, schemaCopy)
       done()
-    }, (error) => {
+    }, error => {
       assert.isNull(error)
       done()
     })
@@ -211,7 +211,7 @@ describe('Models', () => {
         schema.getField('unknown')
       }, Error)
       done()
-    }, (error) => {
+    }, error => {
       assert.isNull(error)
       done()
     })
@@ -223,7 +223,7 @@ describe('Models', () => {
     fetchMock.mock(url, SCHEMA)
 
     const model = new Schema(url, true)
-    model.then((schema) => {
+    model.then(schema => {
       assert.equal(schema.headers().length, 5)
       assert.equal(schema.requiredHeaders().length, 2)
       assert.isTrue(schema.hasField('id'))
@@ -232,7 +232,7 @@ describe('Models', () => {
       assert.isTrue(schema.hasField('name'))
       assert.isTrue(schema.hasField('occupation'))
       done()
-    }, (error) => {
+    }, error => {
       assert.isNull(error)
       done()
     })
@@ -257,7 +257,7 @@ describe('Models', () => {
     (new Schema(SCHEMA)).then(schema => {
       assert.isTrue(schema.testValue('height', 1))
       done()
-    }, (error) => {
+    }, error => {
       assert.isNull(error)
       done()
     })

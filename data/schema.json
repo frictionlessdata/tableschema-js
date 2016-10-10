@@ -1,0 +1,25 @@
+{
+  "fields": [
+    {
+      "name": "id",
+      "title": "",
+      "description": "",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "capital",
+      "title": "",
+      "description": "",
+      "type": "number",
+      "format": "currency"
+    },
+    {
+      "name": "url",
+      "title": "",
+      "description": "",
+      "type": "string",
+      "format": "uri"
+    }
+  ]
+}
