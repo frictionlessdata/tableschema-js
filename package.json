@@ -39,6 +39,7 @@
     "chai": "^2.3.0",
     "chai-spies": "^0.6.0",
     "fetch-mock": "^4.5.0",
+    "json-loader": "^0.5.4",
     "mocha": "^2.4.5",
     "superagent-mock": "^1.1.0",
     "webpack": "^1.12.11",

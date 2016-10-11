@@ -1,6 +1,6 @@
-import fetch from 'isomorphic-fetch'
 import _ from 'lodash'
 import tv4 from 'tv4'
+import standard from '../schemas/json-table-schema.json'
 
 /**
  Validate that `schema` is a valid JSON Table Schema.
@@ -15,26 +15,18 @@ export default schema => {
   const fieldNames = _.map(schema.fields || [], _.property('name'))
 
   return new Promise((resolve, reject) => {
-    fetch('http://schemas.datapackages.org/json-table-schema.json')
-      .then(response => {
-        if (response.status >= 400) {
-          return reject(['Failed to download JSON schema'])
-        }
-        return response.json()
-      })
-      .then(standard => {
-        const result = tv4.validateMultiple(schema, standard)
-        if (result.valid) {
-          const validation = extra()
-          if (validation.valid) {
-            resolve(true)
-          } else {
-            reject(validation.errors)
-          }
-        } else {
-          reject(errors(result.errors))
-        }
-      })
+    const result = tv4.validateMultiple(schema, standard)
+    if (result.valid) {
+      const validation = extra()
+      if (validation.valid) {
+        resolve(true)
+      } else {
+        reject(validation.errors)
+      }
+    } else {
+      reject(errors(result.errors))
+    }
+
   })
 
   /**
