@@ -4,7 +4,6 @@ import url from 'url'
 import fs from 'fs'
 import validate from './validate'
 import utilities from './utilities'
-import Type from './types'
 import Field from './field'
 import constraints from './constraints'
 
@@ -26,7 +25,6 @@ import constraints from './constraints'
 export default class Schema {
   constructor(source, caseInsensitiveHeaders = false) {
     this.caseInsensitiveHeaders = !!caseInsensitiveHeaders
-    this.type = new Type()
     this.Fields = []
     return load(this, source)
   }
