@@ -60,9 +60,9 @@ Following methods are available on `Schema` instances:
 * `castRow(items, failFast = false, skipConstraints = false)` - convert the arguments given to the types of the current schema <sup>1</sup>
 * `fields` - returns an array of [Field](#field) instances of the schema's fields
 * `foreignKeys` - returns the foreign key property for the schema
-* `getField(fieldName, index = 0)` - return the field object for `fieldName` <sup>2</sup>
-* `getFieldsByType(typeName)` - return all fields that match the given type
-* `hasField(fieldName)` - checks if the field exists in the schema. Returns a boolean
+* `getField(fieldName, index = 0)` - returns an instance of [Field](#field) by field name (`fieldName`) <sup>2</sup>
+* `getFieldsByType(typeName)` - returns all fields that match the given type
+* `hasField(fieldName)` - checks if the field exists in the schema by it's name. Returns a boolean
 * `headers` - returns an array of the schema headers
 * `primaryKey` - returns the primary key field for the schema  
 * `requiredHeaders` - returns headers with the `required` constraint as an array
