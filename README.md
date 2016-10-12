@@ -66,7 +66,7 @@ Following methods are available on `Schema` instances:
 * `headers` - returns an array of the schema headers
 * `primaryKey` - returns the primary key field for the schema  
 * `requiredHeaders` - returns headers with the `required` constraint as an array
-* `save(path)` - saves the schema JSON to provided `path`   
+* `save(path)` - saves the schema JSON to provided local `path`. Returns `Promise`   
 
 <sup>1</sup> Where the option `failFast` is given, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur)  
 <sup>2</sup> Where the optional index argument is available, it can be used as a positional argument if the schema has multiple fields with the same name
