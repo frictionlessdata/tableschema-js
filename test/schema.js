@@ -16,7 +16,7 @@ const SCHEMA_MIN = {
   ]
 }
 
-describe('Models', () => {
+describe('Schema', () => {
   beforeEach(done => {
     SCHEMA = {
       fields: [
@@ -101,17 +101,24 @@ describe('Models', () => {
 
       assert.isArray(stringTypes)
       assert.equal(stringTypes.length, 3)
-      assert.equal(_.find(stringTypes, { name: 'id' }).type, 'string')
-      assert.equal(_.find(stringTypes, { name: 'Name' }).type, 'string')
-      assert.equal(_.find(stringTypes, { name: 'occupation' }).type, 'string')
 
       assert.isArray(numberTypes)
       assert.equal(numberTypes.length, 1)
-      assert.equal(_.find(numberTypes, { name: 'height' }).type, 'number')
 
       assert.isArray(integerTypes)
       assert.equal(integerTypes.length, 1)
-      assert.equal(_.find(integerTypes, { name: 'Age' }).type, 'integer')
+
+      stringTypes.forEach(F => {
+        assert.equal(F.type(), 'string')
+      })
+
+      numberTypes.forEach(F => {
+        assert.equal(F.type(), 'number')
+      })
+
+      integerTypes.forEach(F => {
+        assert.equal(F.type(), 'integer')
+      })
 
       done()
     }, error => {
@@ -162,8 +169,9 @@ describe('Models', () => {
       const stringTypes = schema.getFieldsByType('string')
       assert.isArray(stringTypes)
       assert.equal(stringTypes.length, 2)
-      assert.equal(_.find(stringTypes, { name: 'id' }).type, 'string')
-      assert.equal(_.find(stringTypes, { name: 'height' }).type, 'string')
+      stringTypes.forEach(F => {
+        assert.equal(F.type(), 'string')
+      })
       done()
     }, error => {
       assert.isNull(error)
@@ -181,8 +189,12 @@ describe('Models', () => {
       , model = new Schema(data)
 
     model.then(schema => {
-      assert.isArray(schema.requiredHeaders())
-      assert.equal(schema.requiredHeaders().length, 1)
+      const requiredHeaders = schema.requiredHeaders()
+
+      assert.isArray(requiredHeaders)
+      assert.equal(requiredHeaders.length, 1)
+      assert.equal(requiredHeaders[0], 'id')
+
       done()
     }, error => {
       assert.isNull(error)
@@ -249,16 +261,6 @@ describe('Models', () => {
       done()
     }).catch(error => {
       assert.isNotNull(error)
-      done()
-    })
-  })
-
-  it('should return true on test', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      assert.isTrue(schema.testValue('height', 1))
-      done()
-    }, error => {
-      assert.isNull(error)
       done()
     })
   })

@@ -1,9 +1,11 @@
 import _ from 'lodash'
 import 'isomorphic-fetch'
 import url from 'url'
+import fs from 'fs'
 import validate from './validate'
 import utilities from './utilities'
 import Type from './types'
+import Field from './field'
 import constraints from './constraints'
 
 /**
@@ -25,38 +27,8 @@ export default class Schema {
   constructor(source, caseInsensitiveHeaders = false) {
     this.caseInsensitiveHeaders = !!caseInsensitiveHeaders
     this.type = new Type()
+    this.Fields = []
     return load(this, source)
-  }
-
-  /**
-   * Cast value to fieldName's type
-   *
-   * @param fieldName
-   * @param value
-   * @param index
-   * @param skipConstraints
-   *
-   * @returns {Type}
-   * @throws Error if value can't be casted
-   */
-  castValue(fieldName, value, index = 0, skipConstraints = true) {
-    const field = this.getField(fieldName, index)
-    return this.type.cast(field, value, skipConstraints)
-  }
-
-  /**
-   * Check if value to fieldName's type can be casted
-   *
-   * @param fieldName
-   * @param value
-   * @param index
-   * @param skipConstraints
-   *
-   * @returns {Boolean}
-   */
-  testValue(fieldName, value, index = 0, skipConstraints = true) {
-    const field = this.getField(fieldName, index)
-    return this.type.test(field, value, skipConstraints)
   }
 
   /**
@@ -82,13 +54,13 @@ export default class Schema {
 
     for (let i = 0, length = items.length; i < length; i++) {
       try {
-        const fieldName = headers[i]
-          , value = this.castValue(fieldName, items[i], i, skipConstraints)
+        const field = this.getField(headers[i], i)
+          , value = field.castValue(items[i], skipConstraints)
 
         if (!skipConstraints) {
           // unique constraints available only from Resource
           if (this.uniqueness && this.uniqueHeaders) {
-            constraints.check_unique(fieldName, value, this.uniqueHeaders,
+            constraints.check_unique(field.name(), value, this.uniqueHeaders,
                                      this.uniqueness)
           }
         }
@@ -123,7 +95,7 @@ export default class Schema {
    * @returns {Array}
    */
   fields() {
-    return this.descriptor.fields
+    return this.Fields
   }
 
   /**
@@ -133,16 +105,6 @@ export default class Schema {
    */
   foreignKeys() {
     return this.descriptor.foreignKeys
-  }
-
-  /**
-   * Return the `constraints` object for `fieldName`.
-   * @param {string} fieldName
-   * @param {number} index
-   * @returns {object}
-   */
-  getConstraints(fieldName, index = 0) {
-    return this.getField(fieldName, index).constraints
   }
 
   /**
@@ -160,7 +122,7 @@ export default class Schema {
     if (this.caseInsensitiveHeaders) {
       name = fieldName.toLowerCase()
     }
-    const fields = _.filter(this.fields(), F => F.name === name)
+    const fields = _.filter(this.fields(), F => F.name() === name)
 
     if (!fields.length) {
       throw new Error(`No such field name in schema: ${fieldName}`)
@@ -179,7 +141,7 @@ export default class Schema {
    * @returns {Array}
    */
   getFieldsByType(typeName) {
-    return _.filter(this.fields(), field => field.type === typeName)
+    return _.filter(this.fields(), F => F.type() === typeName)
   }
 
   /**
@@ -187,9 +149,9 @@ export default class Schema {
    * @returns {Array}
    */
   requiredHeaders() {
-    return _.chain(this.descriptor.fields)
-      .filter(field => field.constraints.required === true)
-      .map(field => field.name)
+    return _.chain(this.Fields)
+      .filter(F => F.constraints().required === true)
+      .map(F => F.name())
       .value()
   }
 
@@ -213,7 +175,7 @@ export default class Schema {
    * @returns {Array}
    */
   headers() {
-    return _.map(this.descriptor.fields, field => field.name)
+    return _.map(this.Fields, F => F.name())
   }
 
   /**
@@ -222,6 +184,18 @@ export default class Schema {
    */
   primaryKey() {
     return this.descriptor.primaryKey
+  }
+
+  save(path) {
+    return new Promise((resolve, reject) => {
+      fs.writeFile(path, this.descriptor, e => {
+        if (e) {
+          reject(e)
+        } else {
+          resolve()
+        }
+      })
+    })
   }
 }
 
@@ -303,6 +277,7 @@ function expand(instance, schema) {
         } else if (_.isUndefined(field.constraints.required)) {
           copyField.constraints.required = DEFAULTS.constraints.required
         }
+        instance.Fields.push(new Field(copyField))
         return copyField
       })
     })

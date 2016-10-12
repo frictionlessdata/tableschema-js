@@ -649,7 +649,7 @@ export default class Type {
    * @param field
    * @param value
    * @param skipConstraints
-   * @returns {result of cast}
+   * @returns any
    * @throws Error if cast failed
    */
   cast(field, value, skipConstraints = true) {
