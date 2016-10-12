@@ -242,4 +242,67 @@ describe('Table', () => {
       done()
     })
   })
+
+  it('should read from data with limit of rows', done => {
+    (new Table(SCHEMA, DATA)).then(table => {
+      table.read(false, false, 2).then(data => {
+        assert.isArray(data)
+        assert.equal(data.length, 2)
+        done()
+      }, errors => {
+        // never should get here
+        assert.isNull(errors)
+        done()
+      })
+    }, error => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
+  it('should read from data with limit and return keyed rows', done => {
+    (new Table(SCHEMA, DATA)).then(table => {
+      table.read(true, false, 2).then(data => {
+        assert.isArray(data)
+        assert.equal(data.length, 2)
+        for (const value of data) {
+          for (const header of table.schema.headers()) {
+            assert.isTrue(value.hasOwnProperty(header))
+          }
+        }
+        done()
+      }, errors => {
+        // never should get here
+        assert.isNull(errors)
+        done()
+      })
+    }, error => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
+  it('should read from data with limit and return extended rows', done => {
+    (new Table(SCHEMA, DATA)).then(table => {
+      table.read(false, true, 2).then(data => {
+        assert.isArray(data)
+        assert.equal(data.length, 2)
+        let index = 1
+        for (const value of data) {
+          for (const header of table.schema.headers()) {
+            assert.isTrue(value[index].hasOwnProperty(header))
+          }
+          index += 1
+        }
+        done()
+      }, errors => {
+        // never should get here
+        assert.isNull(errors)
+        done()
+      })
+    }, error => {
+      assert.isNull(error)
+      done()
+    })
+  })
 })

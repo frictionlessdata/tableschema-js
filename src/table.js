@@ -69,6 +69,36 @@ export default class Table {
     return proceed(this, getReadStream(this.source), callback, failFast,
                    skipConstraints)
   }
+
+  read(keyed = false, extended = false, limit = 0) {
+    const self = this
+      , headers = this.schema.headers()
+      , result = []
+    return new Promise((resolve, reject) => {
+      let index = 1
+      self.iter(items => {
+        if (limit && index > limit) {
+          return true
+        }
+
+        if (keyed) {
+          result.push(_.zipObject(headers, items))
+        } else if (extended) {
+          const object = {}
+          object[index] = _.zipObject(headers, items)
+          result.push(object)
+        } else {
+          result.push(items)
+        }
+
+        index += 1
+      }).then(() => {
+        resolve(result)
+      }, errors => {
+        reject(errors)
+      })
+    })
+  }
 }
 
 /**
