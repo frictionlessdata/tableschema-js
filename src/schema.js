@@ -184,6 +184,12 @@ export default class Schema {
     return this.descriptor.primaryKey
   }
 
+  /**
+   * Save descriptor of schema into local file
+   *
+   * @param path
+   * @returns {Promise}
+   */
   save(path) {
     return new Promise((resolve, reject) => {
       fs.writeFile(path, this.descriptor, e => {

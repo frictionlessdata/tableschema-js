@@ -331,7 +331,7 @@ Source of data can be:
 Following methods are available on `Table` instances:
 * `iter(callback, failFast, skipConstraints)`<sup>1,2</sup> - iterate through the given dataset provided in constructor and returns converted data
 * `read(keyed, extended, limit)` - Read part or full source into array
-* `save(path)` - Save source to file locally in CSV format with `,` (comma) delimiter
+* `save(path)` - Save source to file locally in CSV format with `,` (comma) delimiter. Returns `Promise`
 
 <sup>1</sup> If `failFast` is set to `true`, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur). Default is `false`  
 <sup>2</sup> Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value. Default is `false`
