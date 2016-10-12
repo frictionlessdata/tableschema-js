@@ -30,7 +30,6 @@ Library requires `Promise` to work properly, and need to be sure that `Promise` 
 Let's look at each of the components in more detail.
 
 ### Schema
-
 A model of a schema with helpful methods for working with the schema and supported data. Schema instances can be initialized with a schema source as a url to a JSON file or a JSON object. 
 The schema is initially validated (see [validate](#validate) below), and will raise an exception if not a valid JSON Table Schema.  
 
@@ -58,24 +57,31 @@ model.then(function(schema) {
 
 Following methods are available on `Schema` instances:
 
-* `castValue(fieldName, value, index, skipConstraints)` - returns a value cast against a named `fieldName`
-* `testValue(fieldName, value, index, skipConstraints)` - returns boolean after a check if value can be casted against a named `fieldName`
 * `castRow(items, failFast = false, skipConstraints = false)` - convert the arguments given to the types of the current schema <sup>1</sup>
-* `fields` - returns an array of objects of the schema's fields
+* `fields` - returns an array of [Field](#field) instances of the schema's fields
 * `foreignKeys` - returns the foreign key property for the schema
-* `getConstraints(fieldName, index = 0)` - return the constraints object for a given `fieldName` <sup>2</sup>
 * `getField(fieldName, index = 0)` - return the field object for `fieldName` <sup>2</sup>
 * `getFieldsByType(typeName)` - return all fields that match the given type
-* `requiredHeaders` - returns headers with the `required` constraint as an array
 * `hasField(fieldName)` - checks if the field exists in the schema. Returns a boolean
 * `headers` - returns an array of the schema headers
 * `primaryKey` - returns the primary key field for the schema  
+* `requiredHeaders` - returns headers with the `required` constraint as an array
+* `save(path)` - saves the schema JSON to provided `path`   
 
 <sup>1</sup> Where the option `failFast` is given, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur)  
 <sup>2</sup> Where the optional index argument is available, it can be used as a positional argument if the schema has multiple fields with the same name
 
-### Infer
+### Field
+Class represents field in the [Schema](#schema)
 
+* `castValue(value, skipConstraints)` - returns a value cast against the type of the field and it's constraints
+* `constraints()` - returns the constraints object for a given `fieldName` <sup>2</sup>
+* `format()` - returns the format of the field
+* `name()` - returns the name of the field
+* `testValue(value, skipConstraints)` - returns boolean after a check if value can be casted against the type of the field and it's constraints
+* `type()` - returns the type of the field
+
+### Infer
 Given headers and data, `infer` will return a JSON Table Schema as a JSON object based on the data values. Given the data file, example.csv:
 
 ```csv
