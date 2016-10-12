@@ -11,10 +11,11 @@ A utility library for working with [JSON Table Schema](http://dataprotocols.org/
 [Installation](#installation)  
 [Components](#components)
   - [Schema](#schema) - a javascript model of a JSON Table Schema with useful methods for interaction
+  - [Field](#field) - a javascript model of a JSON Table Schema field
   - [Infer](#infer) - a utility that creates a JSON Table Schema based on a data sample
   - [Validate](#validate) - a utility to validate a **schema** as valid according to the current spec
   - [Types](#types) - class to validate type/format and constraints of data described by a JSON Table Schema  
-  - [Resource](#resource)  
+  - [Table](#table)  
 [Goals](#goals)  
 [Contributing](#contributing)
 
@@ -215,7 +216,6 @@ In this case by limiting rows to 2, we can build schema structure with correct f
 `cast`: every `string` value will be casted using `email` format, `number` will be tried as a `currency` format, and `date` - as `any` format 
 
 ### Validate
-
 Given a schema as JSON object, `validate` returns `Promise`, which success for a valid JSON Table Schema, or reject with array of errors.
 
 ```javascript
@@ -255,7 +255,6 @@ validate(schema).then(function() {
 Note: `validate()` validates whether a **schema** is a validate JSON Table Schema accordingly to the (specifications)[http://schemas.datapackages.org/json-table-schema.json]. It does **not** validate data against a schema.
 
 ### Types
-
 Data values can be cast to native Javascript types with a type instance from `jsontableschema.types`. Casting a value will check the value is of the expected type, is in the correct format, and complies with any constraints imposed by a schema.
 
 Type instances can be initialized with [field descriptors](http://dataprotocols.org/json-table-schema/#field-descriptors). This allows formats and constraints to be defined:
@@ -318,9 +317,8 @@ Available types, formats and resultant value of the cast:
 <sup>3</sup> default format returns String  
 <sup>4</sup> topojson is not implemented
 
-### Resource
-
-A javascript model of a resource (schema+source of data)
+### Table
+A javascript model of a table (schema+source of data)
 
 Instance always returns `Promise`. In case if schema object is not valid, it will reject promise.
 
@@ -330,7 +328,7 @@ Source of data can be:
 * remote CSV file (URL)
 * readable stream
 
-Following methods are available on `Resource` instances:
+Following methods are available on `Table` instances:
 * `iter(callback, failFast, skipConstraints)`<sup>1,2</sup> - iterate through the given dataset provided in constructor and returns converted data
 
 <sup>1</sup> If `failFast` is set to `true`, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur). Default is `false`  
@@ -338,22 +336,22 @@ Following methods are available on `Resource` instances:
 
 ```javascript
 var jts = require('jsontableschema');
-var Resource = jts.Resource;
+var Table = jts.Table;
 
-var model = new Resource({SCHEMA}, {SOURCE})
+var model = new Table({SCHEMA}, {SOURCE})
 var callback = function(items) {
     // ... do something with converted items
     // iter method convert values row by row from the source
 }
-model.then(function (resource) {
-    resource.iter(callback, true, false).then(function() {
+model.then(function (table) {
+    table.iter(callback, true, false).then(function() {
           // ... do something when conversion of all data from source is finished 
     }, function (errors) {
           // something went wrong while casting values from source
           // errors is array with explanations
     })
 }, function(error) {
-    // Resource can't instantiate for some reason
+    // Table can't instantiate for some reason
     // see error for details
 })
 ```
