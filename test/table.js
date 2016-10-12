@@ -305,4 +305,25 @@ describe('Table', () => {
       done()
     })
   })
+
+  it('should save source', done => {
+    const path = 'test.csv';
+    (new Table(SCHEMA, DATA)).then(table => {
+      table.save(path).then(() => {
+        fs.readFile(path, 'utf8', (error, data) => {
+          assert.isNull(error)
+          assert.isNotNull(data)
+          fs.unlinkSync(path)
+          done()
+        })
+      }).catch(error => {
+        // never should get here
+        assert.isNull(error)
+        done()
+      })
+    }, error => {
+      assert.isNull(error)
+      done()
+    })
+  })
 })

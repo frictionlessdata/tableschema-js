@@ -70,6 +70,15 @@ export default class Table {
                    skipConstraints)
   }
 
+  /**
+   * Read part or full source
+   *
+   * @param keyed {boolean} array of {key:value} object is returned
+   * @param extended {boolean} array of {number: {key:value} } extended
+   *   object is returned
+   * @param limit {integer} limit to certain amount of rows to load
+   * @returns {Promise}
+   */
   read(keyed = false, extended = false, limit = 0) {
     const self = this
       , headers = this.schema.headers()
@@ -96,6 +105,35 @@ export default class Table {
         resolve(result)
       }, errors => {
         reject(errors)
+      })
+    })
+  }
+
+  /**
+   * Save source to file locally in CSV format with `,` (comma) delimiter
+   *
+   * @param path
+   * @returns {Promise}
+   */
+  save(path) {
+    const self = this
+    return new Promise((resolve, reject) => {
+      getReadStream(self.source).then(data => {
+        const writableStream = fs.createWriteStream(path, { encoding: 'utf8' })
+        writableStream.write(`${self.schema.headers().join(',')}\r\n`)
+
+        data.stream.on('data', chunk => {
+          if (data.isArray) {
+            chunk = chunk.join(',')
+            chunk += '\r\n'
+          }
+          writableStream.write(chunk)
+        }).on('end', () => {
+          writableStream.end()
+          resolve()
+        })
+      }).catch(error => {
+        reject(error)
       })
     })
   }
