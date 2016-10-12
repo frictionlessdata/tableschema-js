@@ -13,7 +13,7 @@ import utilities from './utilities'
 /**
  * @returns Promise
  */
-export default class Resource {
+export default class Table {
   constructor(schema, data) {
     const self = this
     this.source = data
@@ -126,8 +126,8 @@ function proceed(instance, readStream, callback, failFast = false,
  */
 function getUniqueHeaders(schema) {
   return _.chain(schema.fields())
-    .filter(field => field.constraints.unique === true)
-    .map(field => field.name)
+    .filter(F => F.constraints().unique === true)
+    .map(F => F.name())
     .value()
 }
 

@@ -38,6 +38,20 @@ describe('Field', () => {
     done()
   })
 
+  it('should get correct instance', done => {
+    (new Schema(SCHEMA)).then(schema => {
+      const Field = schema.getField('height')
+
+      assert.equal(Field.name(), 'height')
+      assert.equal(Field.format(), 'default')
+      assert.equal(Field.type(), 'number')
+      done()
+    }, error => {
+      assert.isNull(error)
+      done()
+    })
+  })
+
   it('should return true on test', done => {
     (new Schema(SCHEMA)).then(schema => {
       const Field = schema.getField('height')

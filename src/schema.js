@@ -209,7 +209,7 @@ function load(instance, source) {
       return new Promise((resolve, reject) => {
         fetch(source).then(response => {
           if (response.status >= 400) {
-            reject('Failed to download file due to bad response')
+            throw new Error('Failed to download file due to bad response')
           }
           return response.json()
         }).then(json => {
@@ -219,6 +219,8 @@ function load(instance, source) {
           }).catch(errors => {
             reject(errors)
           })
+        }).catch(e => {
+          reject(e)
         })
       })
     }
