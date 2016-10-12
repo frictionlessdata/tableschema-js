@@ -66,8 +66,7 @@ export default class Table {
     // using for regular unique constraints for every value independently
     this.schema.uniqueHeaders = uniqueHeaders
 
-    return proceed(this, getReadStream(this.source), callback,
-                   failFast,
+    return proceed(this, getReadStream(this.source), callback, failFast,
                    skipConstraints)
   }
 }
@@ -125,10 +124,13 @@ function proceed(instance, readStream, callback, failFast = false,
  * @returns {Array}
  */
 function getUniqueHeaders(schema) {
-  return _.chain(schema.fields())
-    .filter(F => F.constraints().unique === true)
-    .map(F => F.name())
-    .value()
+  const filtered = []
+  for (const F of schema.fields()) {
+    if (F.constraints().unique === true) {
+      filtered.push(F.name())
+    }
+  }
+  return filtered
 }
 
 /**
@@ -205,8 +207,12 @@ function cast(instance, reject, callback, errors, items, failFast,
       reject(e)
       return
     }
-    for (const error of e) {
-      errors.push(error)
+    if (_.isArray(e)) {
+      for (const error of e) {
+        errors.push(error)
+      }
+    } else {
+      errors.push(e)
     }
   }
 }

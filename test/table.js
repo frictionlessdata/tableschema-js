@@ -225,21 +225,21 @@ describe('Table', () => {
     })
   })
 
-  //it('unique constraints violation for primary key', done => {
-  //  SCHEMA.primaryKey = ['height', 'age']
-  //  DATA.push([6, '10.0', 1, 'string', '2012-06-15']);
-  //  (new Table(SCHEMA, DATA)).then(table => {
-  //    table.iter(items => {
-  //    }).then(() => {
-  //      done()
-  //    }, errors => {
-  //      assert.isArray(errors)
-  //      assert.equal(errors.length, 1)
-  //      done()
-  //    })
-  //  }, error => {
-  //    assert.isNull(error)
-  //    done()
-  //  })
-  //})
+  it('unique constraints violation for primary key', done => {
+    SCHEMA.primaryKey = ['height', 'age']
+    DATA.push([6, '10.0', 1, 'string', '2012-06-15']);
+    (new Table(SCHEMA, DATA)).then(table => {
+      table.iter(items => {
+      }).then(() => {
+        done()
+      }, errors => {
+        assert.isArray(errors)
+        assert.equal(errors.length, 1)
+        done()
+      })
+    }, error => {
+      assert.isNull(error)
+      done()
+    })
+  })
 })
