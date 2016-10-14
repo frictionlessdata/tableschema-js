@@ -42,9 +42,9 @@ describe('Field', () => {
     (new Schema(SCHEMA)).then(schema => {
       const Field = schema.getField('height')
 
-      assert.equal(Field.name(), 'height')
-      assert.equal(Field.format(), 'default')
-      assert.equal(Field.type(), 'number')
+      assert.equal(Field.name, 'height')
+      assert.equal(Field.format, 'default')
+      assert.equal(Field.type, 'number')
       done()
     }, error => {
       assert.isNull(error)

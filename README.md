@@ -59,13 +59,13 @@ model.then(function(schema) {
 Following methods are available on `Schema` instances:
 
 * `castRow(items, failFast = false, skipConstraints = false)` - convert the arguments given to the types of the current schema <sup>1</sup>
+* `descriptor` - JSON representation of `Schema` description
 * `fields` - returns an array of [Field](#field) instances of the schema's fields
 * `foreignKeys` - returns the foreign key property for the schema
 * `getField(fieldName, index = 0)` - returns an instance of [Field](#field) by field name (`fieldName`) <sup>2</sup>
-* `getFieldsByType(typeName)` - returns all fields that match the given type
 * `hasField(fieldName)` - checks if the field exists in the schema by it's name. Returns a boolean
 * `headers` - returns an array of the schema headers
-* `primaryKey` - returns the primary key field for the schema  
+* `primaryKey` - returns the primary key field for the schema as an array
 * `requiredHeaders` - returns headers with the `required` constraint as an array
 * `save(path)` - saves the schema JSON to provided local `path`. Returns `Promise`   
 
@@ -75,12 +75,65 @@ Following methods are available on `Schema` instances:
 ### Field
 Class represents field in the [Schema](#schema)
 
-* `castValue(value, skipConstraints)` - returns a value cast against the type of the field and it's constraints
-* `constraints()` - returns the constraints object for a given `fieldName` <sup>2</sup>
-* `format()` - returns the format of the field
-* `name()` - returns the name of the field
-* `testValue(value, skipConstraints)` - returns boolean after a check if value can be casted against the type of the field and it's constraints
-* `type()` - returns the type of the field
+* `castValue(value, skipConstraints)` - returns a value cast against the type of the field and it's constraints <sup>1</sup>
+* `constraints` - returns the constraints object for a given `fieldName`
+* `format` - returns the format of the field
+* `name` - returns the name of the field
+* `required` - returns `boolean`
+* `testValue(value, skipConstraints)` - returns boolean after a check if value can be casted against the type of the field and it's constraints <sup>1</sup>
+* `type` - returns the type of the field
+
+Data values can be cast to native Javascript types. Casting a value will check the value is of the expected type, is in the correct format, and complies with any constraints imposed by a schema.
+
+<sup>1</sup> Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value
+
+```javascript
+{
+    'name': 'birthday',
+    'type': 'date',
+    'format': 'default',
+    'constraints': {
+        'required': True,
+        'minimum': '2015-05-30'
+    }
+}
+```
+Following code will not raise the exception, despite the fact our date is less than minimum constraints in the field, because we do not check constraints of the field descriptor
+```javascript
+var dateType = field.cast('2014-05-29')
+```
+And following example will raise exception, because we set flag 'skip constraints' to `false`, and our date is less than allowed by `minimum` constraints of the field. Exception will be raised as well in situation of trying to cast non-date format values, or empty values
+```javascript
+try {
+    var dateType = field.cast('2014-05-29', false)
+} catch(e) {
+    // uh oh, something went wrong
+}
+```
+Values that can't be cast will raise an `Error` exception.  
+Casting a value that doesn't meet the constraints will raise an `Error` exception.  
+**Note**: the `unique` constraint is not currently supported.
+
+Available types, formats and resultant value of the cast:
+
+| Type | Formats | Casting result |
+| ---- | ------- | -------------- |
+| string | default<sup>1</sup>, uri, email, binary | String |
+| integer | default | Number |
+| number | default, currency | Number<sup>2</sup> |
+| boolean | default | Boolean |
+| array | default | Array |
+| object | default | Object |
+| date | default, any, fmt | Date object |
+| time | default, any, fmt | Date object |
+| datetime | default, any, fmt | Date object |
+| geopoint | default, array, object | Accordingly to format<sup>3</sup> |
+| geojson | default, topojson | Accordingly to format<sup>3,4</sup> |
+
+<sup>1</sup> `default` format can be not specified in the field descriptor  
+<sup>2</sup> in case value has 00 after point (1.00), it will return Number(1).toFixed(2), which is actually String '1.00'  
+<sup>3</sup> default format returns String  
+<sup>4</sup> topojson is not implemented
 
 ### Infer
 Given headers and data, `infer` will return a JSON Table Schema as a JSON object based on the data values. Given the data file, example.csv:
@@ -254,69 +307,6 @@ validate(schema).then(function() {
 ```
 Note: `validate()` validates whether a **schema** is a validate JSON Table Schema accordingly to the (specifications)[http://schemas.datapackages.org/json-table-schema.json]. It does **not** validate data against a schema.
 
-### Types
-Data values can be cast to native Javascript types with a type instance from `jsontableschema.types`. Casting a value will check the value is of the expected type, is in the correct format, and complies with any constraints imposed by a schema.
-
-Type instances can be initialized with [field descriptors](http://dataprotocols.org/json-table-schema/#field-descriptors). This allows formats and constraints to be defined:
-
-On Type class there are three methods available:
-* `cast(field, value, skipConstraints)` - Cast the value of the field accordingly to the field type. Skip constraints default value is `true`<sup>1</sup>. May raise an exception if cast is failed
-* `test(field, value, skipConstraints)` - check if given value can be casted by field type. Skip constraints default value is `true`<sup>1</sup>. Returns boolean
-* `multiCast(values)` - Try to find the best suited Type for provided array of values. Returns `String`
-
-<sup>1</sup> Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value
-
-```javascript
-var Types = require('jsontableschema').types;
-
-const fieldDescriptor = {
-    'name': 'Field Name',
-    'type': 'date',
-    'format': 'default',
-    'constraints': {
-        'required': True,
-        'minimum': '2015-05-30'
-    }
-}
-var types = new Types()
-```
-Following code will not raise the exception, despite the fact our date is less than minimum constraints in the field, because we do not check constraints of the field descriptor
-```javascript
-var dateType = types.cast(fieldDescriptor, '2014-05-29')
-```
-And following example will raise exception, because we set flag 'skip constraints' to `false`, and our date is less than allowed by `minimum` constraints of the field. Exception will be raised as well in situation of trying to cast non-date format values, or empty values
-```javascript
-try {
-    var dateType = types.cast(fieldDescriptor, '2014-05-29', false)
-} catch(e) {
-    // uh oh, something went wrong
-}
-```
-Values that can't be cast will raise an `Error` exception.  
-Casting a value that doesn't meet the constraints will raise an `Error` exception.  
-**Note**: the `unique` constraint is not currently supported.
-
-Available types, formats and resultant value of the cast:
-
-| Type | Formats | Casting result |
-| ---- | ------- | -------------- |
-| string | default<sup>1</sup>, uri, email, binary | String |
-| integer | default | Number |
-| number | default, currency | Number<sup>2</sup> |
-| boolean | default | Boolean |
-| array | default | Array |
-| object | default | Object |
-| date | default, any, fmt | Date object |
-| time | default, any, fmt | Date object |
-| datetime | default, any, fmt | Date object |
-| geopoint | default, array, object | Accordingly to format<sup>3</sup> |
-| geojson | default, topojson | Accordingly to format<sup>3,4</sup> |
-
-<sup>1</sup> `default` format can be not specified in the field descriptor  
-<sup>2</sup> in case value has 00 after point (1.00), it will return Number(1).toFixed(2), which is actually String '1.00'  
-<sup>3</sup> default format returns String  
-<sup>4</sup> topojson is not implemented
-
 ### Table
 A javascript model of a table (schema+source of data)
 
@@ -330,11 +320,11 @@ Source of data can be:
 
 Following methods are available on `Table` instances:
 * `iter(callback, failFast, skipConstraints)`<sup>1,2</sup> - iterate through the given dataset provided in constructor and returns converted data
-* `read(keyed, extended, limit)` - Read part or full source into array
+* `read(keyed, extended, limit)` - Read part or full source into array of objects if `keyed`/`extended`
 * `save(path)` - Save source to file locally in CSV format with `,` (comma) delimiter. Returns `Promise`
 
 <sup>1</sup> If `failFast` is set to `true`, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur). Default is `false`  
-<sup>2</sup> Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value. Default is `false`
+<sup>2</sup> Skip constraints if set to `true`, will check all the constraints set for field while casting or testing the value. Default is `false`
 
 ```javascript
 var jts = require('jsontableschema');

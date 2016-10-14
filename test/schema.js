@@ -52,7 +52,7 @@ describe('Schema', () => {
 
   it('have a correct number of header columns', done => {
     (new Schema(SCHEMA)).then(schema => {
-      assert.equal(schema.headers().length, 5)
+      assert.equal(schema.headers.length, 5)
       done()
     }, error => {
       assert(error)
@@ -61,7 +61,7 @@ describe('Schema', () => {
 
   it('have a correct number of header required columns', done => {
     (new Schema(SCHEMA, true)).then(schema => {
-      const headers = schema.requiredHeaders()
+      const headers = schema.requiredHeaders
       assert.equal(headers.length, 2)
       assert.equal(headers[0], 'id')
       assert.equal(headers[1], 'name')
@@ -93,39 +93,6 @@ describe('Schema', () => {
     })
   })
 
-  it('have correct number of fields of certain type', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      const stringTypes = schema.getFieldsByType('string')
-        , numberTypes = schema.getFieldsByType('number')
-        , integerTypes = schema.getFieldsByType('integer')
-
-      assert.isArray(stringTypes)
-      assert.equal(stringTypes.length, 3)
-
-      assert.isArray(numberTypes)
-      assert.equal(numberTypes.length, 1)
-
-      assert.isArray(integerTypes)
-      assert.equal(integerTypes.length, 1)
-
-      stringTypes.forEach(F => {
-        assert.equal(F.type(), 'string')
-      })
-
-      numberTypes.forEach(F => {
-        assert.equal(F.type(), 'number')
-      })
-
-      integerTypes.forEach(F => {
-        assert.equal(F.type(), 'integer')
-      })
-
-      done()
-    }, error => {
-      assert(error)
-    })
-  })
-
   it('respect caseInsensitiveHeaders option', done => {
     SCHEMA.fields = SCHEMA.fields.map(field => {
       const copyField = _.extend({}, field)
@@ -136,7 +103,7 @@ describe('Schema', () => {
 
     const model = (new Schema(SCHEMA, true))
     model.then(schema => {
-      assert.deepEqual(schema.headers().sort(),
+      assert.deepEqual(schema.headers.sort(),
                        ['id', 'height', 'name', 'age', 'occupation'].sort())
       done()
     }, error => {
@@ -166,11 +133,11 @@ describe('Schema', () => {
 
   it('set default types if not provided', done => {
     (new Schema(SCHEMA_MIN)).then(schema => {
-      const stringTypes = schema.getFieldsByType('string')
-      assert.isArray(stringTypes)
-      assert.equal(stringTypes.length, 2)
-      stringTypes.forEach(F => {
-        assert.equal(F.type(), 'string')
+      const fields = _.filter(schema.fields, F => F.type === 'string')
+      assert.isArray(fields)
+      assert.equal(fields.length, 2)
+      fields.forEach(F => {
+        assert.equal(F.type, 'string')
       })
       done()
     }, error => {
@@ -189,7 +156,7 @@ describe('Schema', () => {
       , model = new Schema(data)
 
     model.then(schema => {
-      const requiredHeaders = schema.requiredHeaders()
+      const requiredHeaders = schema.requiredHeaders
 
       assert.isArray(requiredHeaders)
       assert.equal(requiredHeaders.length, 1)
@@ -236,8 +203,8 @@ describe('Schema', () => {
 
     const model = new Schema(url, true)
     model.then(schema => {
-      assert.equal(schema.headers().length, 5)
-      assert.equal(schema.requiredHeaders().length, 2)
+      assert.equal(schema.headers.length, 5)
+      assert.equal(schema.requiredHeaders.length, 2)
       assert.isTrue(schema.hasField('id'))
       assert.isTrue(schema.hasField('height'))
       assert.isTrue(schema.hasField('age'))

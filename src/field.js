@@ -7,11 +7,11 @@ export default class Field {
     this.Type = new Type()
   }
 
-  name() {
+  get name() {
     return this.descriptor.name
   }
 
-  format() {
+  get format() {
     return this.descriptor.format || 'default'
   }
 
@@ -19,11 +19,15 @@ export default class Field {
    * Return the `constraints` object of field.
    * @returns {object}
    */
-  constraints() {
+  get constraints() {
     return this.descriptor.constraints || {}
   }
 
-  type() {
+  get required() {
+    return this.descriptor.constraints.required === true
+  }
+
+  get type() {
     return this.descriptor.type || 'string'
   }
 
@@ -53,9 +57,3 @@ export default class Field {
   }
 
 }
-
-/*
-
- def cast_value(self, value):
- return self.__type.cast(value)
- */

@@ -42,7 +42,7 @@ export default class Table {
    * @throws {Array} of errors if cast failed on some field
    */
   iter(callback, failFast = false, skipConstraints = false) {
-    const primaryKey = this.schema.primaryKey()
+    const primaryKey = this.schema.primaryKey
     let uniqueHeaders = getUniqueHeaders(this.schema)
 
     if (!_.isFunction(callback)) {
@@ -50,7 +50,7 @@ export default class Table {
     }
 
     if (primaryKey && primaryKey.length > 1) {
-      const headers = this.schema.headers()
+      const headers = this.schema.headers
       uniqueHeaders = _.difference(uniqueHeaders, primaryKey)
       // using to check unique constraints for the row, because need to check
       // uniquness of the values combination (primary key for example)
@@ -81,7 +81,7 @@ export default class Table {
    */
   read(keyed = false, extended = false, limit = 0) {
     const self = this
-      , headers = this.schema.headers()
+      , headers = this.schema.headers
       , result = []
     return new Promise((resolve, reject) => {
       let index = 1
@@ -120,7 +120,7 @@ export default class Table {
     return new Promise((resolve, reject) => {
       getReadStream(self.source).then(data => {
         const writableStream = fs.createWriteStream(path, { encoding: 'utf8' })
-        writableStream.write(`${self.schema.headers().join(',')}\r\n`)
+        writableStream.write(`${self.schema.headers.join(',')}\r\n`)
 
         data.stream.on('data', chunk => {
           if (data.isArray) {
@@ -193,9 +193,9 @@ function proceed(instance, readStream, callback, failFast = false,
  */
 function getUniqueHeaders(schema) {
   const filtered = []
-  for (const F of schema.fields()) {
-    if (F.constraints().unique === true) {
-      filtered.push(F.name())
+  for (const F of schema.fields) {
+    if (F.constraints.unique === true) {
+      filtered.push(F.name)
     }
   }
   return filtered

@@ -266,7 +266,7 @@ describe('Table', () => {
         assert.isArray(data)
         assert.equal(data.length, 2)
         for (const value of data) {
-          for (const header of table.schema.headers()) {
+          for (const header of table.schema.headers) {
             assert.isTrue(value.hasOwnProperty(header))
           }
         }
@@ -289,7 +289,7 @@ describe('Table', () => {
         assert.equal(data.length, 2)
         let index = 1
         for (const value of data) {
-          for (const header of table.schema.headers()) {
+          for (const header of table.schema.headers) {
             assert.isTrue(value[index].hasOwnProperty(header))
           }
           index += 1

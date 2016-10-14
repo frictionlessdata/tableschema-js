@@ -41,7 +41,7 @@ export default class Schema {
    * @returns {Array}
    */
   castRow(items, failFast = false, skipConstraints = false) {
-    const headers = this.headers()
+    const headers = this.headers
       , result = []
       , errors = []
 
@@ -58,7 +58,7 @@ export default class Schema {
         if (!skipConstraints) {
           // unique constraints available only from Resource
           if (this.uniqueness && this.uniqueHeaders) {
-            constraints.check_unique(field.name(), value, this.uniqueHeaders,
+            constraints.check_unique(field.name, value, this.uniqueHeaders,
                                      this.uniqueness)
           }
         }
@@ -92,7 +92,7 @@ export default class Schema {
    *
    * @returns {Array}
    */
-  fields() {
+  get fields() {
     return this.Fields
   }
 
@@ -101,7 +101,7 @@ export default class Schema {
    *
    * @returns {Array}
    */
-  foreignKeys() {
+  get foreignKeys() {
     return this.descriptor.foreignKeys
   }
 
@@ -120,7 +120,7 @@ export default class Schema {
     if (this.caseInsensitiveHeaders) {
       name = fieldName.toLowerCase()
     }
-    const fields = _.filter(this.fields(), F => F.name() === name)
+    const fields = _.filter(this.fields, F => F.name === name)
 
     if (!fields.length) {
       throw new Error(`No such field name in schema: ${fieldName}`)
@@ -129,27 +129,17 @@ export default class Schema {
     if (!index) {
       return fields[0]
     }
-    return this.fields()[index]
-  }
-
-  /**
-   * Return all fields that match the given type
-   *
-   * @param typeName
-   * @returns {Array}
-   */
-  getFieldsByType(typeName) {
-    return _.filter(this.fields(), F => F.type() === typeName)
+    return this.fields[index]
   }
 
   /**
    * Get all headers with required constraints set to true
    * @returns {Array}
    */
-  requiredHeaders() {
-    return _.chain(this.Fields)
-      .filter(F => F.constraints().required === true)
-      .map(F => F.name())
+  get requiredHeaders() {
+    return _.chain(this.fields)
+      .filter(F => F.constraints.required === true)
+      .map(F => F.name)
       .value()
   }
 
@@ -172,15 +162,15 @@ export default class Schema {
    *
    * @returns {Array}
    */
-  headers() {
-    return _.map(this.Fields, F => F.name())
+  get headers() {
+    return _.map(this.Fields, F => F.name)
   }
 
   /**
    * Get primary key
    * @returns {string|Array}
    */
-  primaryKey() {
+  get primaryKey() {
     return this.descriptor.primaryKey
   }
 
@@ -254,8 +244,7 @@ function expand(instance, schema) {
     , format: 'default'
     , type: 'string'
   }
-
-  instance.descriptor = _.extend(
+    , descriptor = _.extend(
     {}
     , schema
     , {
@@ -288,7 +277,9 @@ function expand(instance, schema) {
       })
     })
 
-  if (_.isString(instance.descriptor.primaryKey)) {
-    instance.descriptor.primaryKey = [instance.descriptor.primaryKey]
+  if (_.isString(descriptor.primaryKey)) {
+    descriptor.primaryKey = [descriptor.primaryKey]
   }
+
+  instance.descriptor = Object.freeze(descriptor)
 }
