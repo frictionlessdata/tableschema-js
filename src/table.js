@@ -13,7 +13,7 @@ import utilities from './utilities'
 /**
  * @returns Promise
  */
-export default class Resource {
+export default class Table {
   constructor(schema, data) {
     const self = this
     this.source = data
@@ -42,7 +42,7 @@ export default class Resource {
    * @throws {Array} of errors if cast failed on some field
    */
   iter(callback, failFast = false, skipConstraints = false) {
-    const primaryKey = this.schema.primaryKey()
+    const primaryKey = this.schema.primaryKey
     let uniqueHeaders = getUniqueHeaders(this.schema)
 
     if (!_.isFunction(callback)) {
@@ -50,7 +50,7 @@ export default class Resource {
     }
 
     if (primaryKey && primaryKey.length > 1) {
-      const headers = this.schema.headers()
+      const headers = this.schema.headers
       uniqueHeaders = _.difference(uniqueHeaders, primaryKey)
       // using to check unique constraints for the row, because need to check
       // uniquness of the values combination (primary key for example)
@@ -66,9 +66,76 @@ export default class Resource {
     // using for regular unique constraints for every value independently
     this.schema.uniqueHeaders = uniqueHeaders
 
-    return proceed(this, getReadStream(this.source), callback,
-                   failFast,
+    return proceed(this, getReadStream(this.source), callback, failFast,
                    skipConstraints)
+  }
+
+  /**
+   * Read part or full source
+   *
+   * @param keyed {boolean} array of {key:value} object is returned
+   * @param extended {boolean} array of {number: {key:value} } extended
+   *   object is returned
+   * @param limit {integer} limit to certain amount of rows to load
+   * @returns {Promise}
+   */
+  read(keyed = false, extended = false, limit = 0) {
+    const self = this
+      , headers = this.schema.headers
+      , result = []
+    return new Promise((resolve, reject) => {
+      let index = 1
+      self.iter(items => {
+        if (limit && index > limit) {
+          return true
+        }
+
+        if (keyed) {
+          result.push(_.zipObject(headers, items))
+        } else if (extended) {
+          const object = {}
+          object[index] = _.zipObject(headers, items)
+          result.push(object)
+        } else {
+          result.push(items)
+        }
+
+        index += 1
+      }).then(() => {
+        resolve(result)
+      }, errors => {
+        reject(errors)
+      })
+    })
+  }
+
+  /**
+   * Save source to file locally in CSV format with `,` (comma) delimiter
+   *
+   * @param path
+   * @returns {Promise}
+   */
+  save(path) {
+    const self = this
+    return new Promise((resolve, reject) => {
+      getReadStream(self.source).then(data => {
+        const writableStream = fs.createWriteStream(path, { encoding: 'utf8' })
+        writableStream.write(`${self.schema.headers.join(',')}\r\n`)
+
+        data.stream.on('data', chunk => {
+          if (data.isArray) {
+            chunk = chunk.join(',')
+            chunk += '\r\n'
+          }
+          writableStream.write(chunk)
+        }).on('end', () => {
+          writableStream.end()
+          resolve()
+        })
+      }).catch(error => {
+        reject(error)
+      })
+    })
   }
 }
 
@@ -125,10 +192,13 @@ function proceed(instance, readStream, callback, failFast = false,
  * @returns {Array}
  */
 function getUniqueHeaders(schema) {
-  return _.chain(schema.fields())
-    .filter(field => field.constraints.unique === true)
-    .map(field => field.name)
-    .value()
+  const filtered = []
+  for (const F of schema.fields) {
+    if (F.constraints.unique === true) {
+      filtered.push(F.name)
+    }
+  }
+  return filtered
 }
 
 /**
@@ -205,8 +275,12 @@ function cast(instance, reject, callback, errors, items, failFast,
       reject(e)
       return
     }
-    for (const error of e) {
-      errors.push(error)
+    if (_.isArray(e)) {
+      for (const error of e) {
+        errors.push(error)
+      }
+    } else {
+      errors.push(e)
     }
   }
 }

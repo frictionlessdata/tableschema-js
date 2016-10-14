@@ -1,9 +1,10 @@
 import _ from 'lodash'
 import 'isomorphic-fetch'
 import url from 'url'
+import fs from 'fs'
 import validate from './validate'
 import utilities from './utilities'
-import Type from './types'
+import Field from './field'
 import constraints from './constraints'
 
 /**
@@ -24,39 +25,8 @@ import constraints from './constraints'
 export default class Schema {
   constructor(source, caseInsensitiveHeaders = false) {
     this.caseInsensitiveHeaders = !!caseInsensitiveHeaders
-    this.type = new Type()
+    this.Fields = []
     return load(this, source)
-  }
-
-  /**
-   * Cast value to fieldName's type
-   *
-   * @param fieldName
-   * @param value
-   * @param index
-   * @param skipConstraints
-   *
-   * @returns {Type}
-   * @throws Error if value can't be casted
-   */
-  castValue(fieldName, value, index = 0, skipConstraints = true) {
-    const field = this.getField(fieldName, index)
-    return this.type.cast(field, value, skipConstraints)
-  }
-
-  /**
-   * Check if value to fieldName's type can be casted
-   *
-   * @param fieldName
-   * @param value
-   * @param index
-   * @param skipConstraints
-   *
-   * @returns {Boolean}
-   */
-  testValue(fieldName, value, index = 0, skipConstraints = true) {
-    const field = this.getField(fieldName, index)
-    return this.type.test(field, value, skipConstraints)
   }
 
   /**
@@ -71,7 +41,7 @@ export default class Schema {
    * @returns {Array}
    */
   castRow(items, failFast = false, skipConstraints = false) {
-    const headers = this.headers()
+    const headers = this.headers
       , result = []
       , errors = []
 
@@ -82,13 +52,13 @@ export default class Schema {
 
     for (let i = 0, length = items.length; i < length; i++) {
       try {
-        const fieldName = headers[i]
-          , value = this.castValue(fieldName, items[i], i, skipConstraints)
+        const field = this.getField(headers[i], i)
+          , value = field.castValue(items[i], skipConstraints)
 
         if (!skipConstraints) {
           // unique constraints available only from Resource
           if (this.uniqueness && this.uniqueHeaders) {
-            constraints.check_unique(fieldName, value, this.uniqueHeaders,
+            constraints.check_unique(field.name, value, this.uniqueHeaders,
                                      this.uniqueness)
           }
         }
@@ -122,8 +92,8 @@ export default class Schema {
    *
    * @returns {Array}
    */
-  fields() {
-    return this.descriptor.fields
+  get fields() {
+    return this.Fields
   }
 
   /**
@@ -131,18 +101,8 @@ export default class Schema {
    *
    * @returns {Array}
    */
-  foreignKeys() {
+  get foreignKeys() {
     return this.descriptor.foreignKeys
-  }
-
-  /**
-   * Return the `constraints` object for `fieldName`.
-   * @param {string} fieldName
-   * @param {number} index
-   * @returns {object}
-   */
-  getConstraints(fieldName, index = 0) {
-    return this.getField(fieldName, index).constraints
   }
 
   /**
@@ -160,7 +120,7 @@ export default class Schema {
     if (this.caseInsensitiveHeaders) {
       name = fieldName.toLowerCase()
     }
-    const fields = _.filter(this.fields(), F => F.name === name)
+    const fields = _.filter(this.fields, F => F.name === name)
 
     if (!fields.length) {
       throw new Error(`No such field name in schema: ${fieldName}`)
@@ -169,28 +129,21 @@ export default class Schema {
     if (!index) {
       return fields[0]
     }
-    return this.fields()[index]
-  }
-
-  /**
-   * Return all fields that match the given type
-   *
-   * @param typeName
-   * @returns {Array}
-   */
-  getFieldsByType(typeName) {
-    return _.filter(this.fields(), field => field.type === typeName)
+    return this.fields[index]
   }
 
   /**
    * Get all headers with required constraints set to true
    * @returns {Array}
    */
-  requiredHeaders() {
-    return _.chain(this.descriptor.fields)
-      .filter(field => field.constraints.required === true)
-      .map(field => field.name)
-      .value()
+  get requiredHeaders() {
+    const result = []
+    for (const F of this.fields) {
+      if (F.required) {
+        result.push(F.name)
+      }
+    }
+    return result
   }
 
   /**
@@ -212,16 +165,34 @@ export default class Schema {
    *
    * @returns {Array}
    */
-  headers() {
-    return _.map(this.descriptor.fields, field => field.name)
+  get headers() {
+    return _.map(this.Fields, F => F.name)
   }
 
   /**
    * Get primary key
    * @returns {string|Array}
    */
-  primaryKey() {
+  get primaryKey() {
     return this.descriptor.primaryKey
+  }
+
+  /**
+   * Save descriptor of schema into local file
+   *
+   * @param path
+   * @returns {Promise}
+   */
+  save(path) {
+    return new Promise((resolve, reject) => {
+      fs.writeFile(path, this.descriptor, e => {
+        if (e) {
+          reject(e)
+        } else {
+          resolve()
+        }
+      })
+    })
   }
 }
 
@@ -237,7 +208,7 @@ function load(instance, source) {
       return new Promise((resolve, reject) => {
         fetch(source).then(response => {
           if (response.status >= 400) {
-            reject('Failed to download file due to bad response')
+            throw new Error('Failed to download file due to bad response')
           }
           return response.json()
         }).then(json => {
@@ -247,6 +218,8 @@ function load(instance, source) {
           }).catch(errors => {
             reject(errors)
           })
+        }).catch(e => {
+          reject(e)
         })
       })
     }
@@ -274,8 +247,7 @@ function expand(instance, schema) {
     , format: 'default'
     , type: 'string'
   }
-
-  instance.descriptor = _.extend(
+    , descriptor = _.extend(
     {}
     , schema
     , {
@@ -303,11 +275,14 @@ function expand(instance, schema) {
         } else if (_.isUndefined(field.constraints.required)) {
           copyField.constraints.required = DEFAULTS.constraints.required
         }
+        instance.Fields.push(new Field(copyField))
         return copyField
       })
     })
 
-  if (_.isString(instance.descriptor.primaryKey)) {
-    instance.descriptor.primaryKey = [instance.descriptor.primaryKey]
+  if (_.isString(descriptor.primaryKey)) {
+    descriptor.primaryKey = [descriptor.primaryKey]
   }
+
+  instance.descriptor = Object.freeze(descriptor)
 }

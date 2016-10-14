@@ -16,7 +16,7 @@ const SCHEMA_MIN = {
   ]
 }
 
-describe('Models', () => {
+describe('Schema', () => {
   beforeEach(done => {
     SCHEMA = {
       fields: [
@@ -52,7 +52,7 @@ describe('Models', () => {
 
   it('have a correct number of header columns', done => {
     (new Schema(SCHEMA)).then(schema => {
-      assert.equal(schema.headers().length, 5)
+      assert.equal(schema.headers.length, 5)
       done()
     }, error => {
       assert(error)
@@ -61,7 +61,7 @@ describe('Models', () => {
 
   it('have a correct number of header required columns', done => {
     (new Schema(SCHEMA, true)).then(schema => {
-      const headers = schema.requiredHeaders()
+      const headers = schema.requiredHeaders
       assert.equal(headers.length, 2)
       assert.equal(headers[0], 'id')
       assert.equal(headers[1], 'name')
@@ -93,32 +93,6 @@ describe('Models', () => {
     })
   })
 
-  it('have correct number of fields of certain type', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      const stringTypes = schema.getFieldsByType('string')
-        , numberTypes = schema.getFieldsByType('number')
-        , integerTypes = schema.getFieldsByType('integer')
-
-      assert.isArray(stringTypes)
-      assert.equal(stringTypes.length, 3)
-      assert.equal(_.find(stringTypes, { name: 'id' }).type, 'string')
-      assert.equal(_.find(stringTypes, { name: 'Name' }).type, 'string')
-      assert.equal(_.find(stringTypes, { name: 'occupation' }).type, 'string')
-
-      assert.isArray(numberTypes)
-      assert.equal(numberTypes.length, 1)
-      assert.equal(_.find(numberTypes, { name: 'height' }).type, 'number')
-
-      assert.isArray(integerTypes)
-      assert.equal(integerTypes.length, 1)
-      assert.equal(_.find(integerTypes, { name: 'Age' }).type, 'integer')
-
-      done()
-    }, error => {
-      assert(error)
-    })
-  })
-
   it('respect caseInsensitiveHeaders option', done => {
     SCHEMA.fields = SCHEMA.fields.map(field => {
       const copyField = _.extend({}, field)
@@ -129,7 +103,7 @@ describe('Models', () => {
 
     const model = (new Schema(SCHEMA, true))
     model.then(schema => {
-      assert.deepEqual(schema.headers().sort(),
+      assert.deepEqual(schema.headers.sort(),
                        ['id', 'height', 'name', 'age', 'occupation'].sort())
       done()
     }, error => {
@@ -159,11 +133,12 @@ describe('Models', () => {
 
   it('set default types if not provided', done => {
     (new Schema(SCHEMA_MIN)).then(schema => {
-      const stringTypes = schema.getFieldsByType('string')
-      assert.isArray(stringTypes)
-      assert.equal(stringTypes.length, 2)
-      assert.equal(_.find(stringTypes, { name: 'id' }).type, 'string')
-      assert.equal(_.find(stringTypes, { name: 'height' }).type, 'string')
+      const fields = _.filter(schema.fields, F => F.type === 'string')
+      assert.isArray(fields)
+      assert.equal(fields.length, 2)
+      fields.forEach(F => {
+        assert.equal(F.type, 'string')
+      })
       done()
     }, error => {
       assert.isNull(error)
@@ -181,8 +156,12 @@ describe('Models', () => {
       , model = new Schema(data)
 
     model.then(schema => {
-      assert.isArray(schema.requiredHeaders())
-      assert.equal(schema.requiredHeaders().length, 1)
+      const requiredHeaders = schema.requiredHeaders
+
+      assert.isArray(requiredHeaders)
+      assert.equal(requiredHeaders.length, 1)
+      assert.equal(requiredHeaders[0], 'id')
+
       done()
     }, error => {
       assert.isNull(error)
@@ -224,8 +203,8 @@ describe('Models', () => {
 
     const model = new Schema(url, true)
     model.then(schema => {
-      assert.equal(schema.headers().length, 5)
-      assert.equal(schema.requiredHeaders().length, 2)
+      assert.equal(schema.headers.length, 5)
+      assert.equal(schema.requiredHeaders.length, 2)
       assert.isTrue(schema.hasField('id'))
       assert.isTrue(schema.hasField('height'))
       assert.isTrue(schema.hasField('age'))
@@ -249,16 +228,6 @@ describe('Models', () => {
       done()
     }).catch(error => {
       assert.isNotNull(error)
-      done()
-    })
-  })
-
-  it('should return true on test', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      assert.isTrue(schema.testValue('height', 1))
-      done()
-    }, error => {
-      assert.isNull(error)
       done()
     })
   })
