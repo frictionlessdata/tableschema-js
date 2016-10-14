@@ -50,7 +50,7 @@ instance always returns `Promise`
 ```javascript
 model.then(function(schema) {
     // working code to use schema model
-    var fields = schema.fields();
+    var fields = schema.fields;
    
 }).catch(function(error) {
     // something went wrong and error variable has explanations
@@ -103,12 +103,12 @@ Data values can be cast to native Javascript types. Casting a value will check t
 ```
 Following code will not raise the exception, despite the fact our date is less than minimum constraints in the field, because we do not check constraints of the field descriptor
 ```javascript
-var dateType = field.cast('2014-05-29')
+var dateType = field.castValue('2014-05-29')
 ```
 And following example will raise exception, because we set flag 'skip constraints' to `false`, and our date is less than allowed by `minimum` constraints of the field. Exception will be raised as well in situation of trying to cast non-date format values, or empty values
 ```javascript
 try {
-    var dateType = field.cast('2014-05-29', false)
+    var dateType = field.castValue('2014-05-29', false)
 } catch(e) {
     // uh oh, something went wrong
 }
