@@ -16,7 +16,6 @@ A utility library for working with [JSON Table Schema](http://dataprotocols.org/
   - [Field](#field) - a javascript model of a JSON Table Schema field
   - [Infer](#infer) - a utility that creates a JSON Table Schema based on a data sample
   - [Validate](#validate) - a utility to validate a **schema** as valid according to the current spec
-  - [Types](#types) - class to validate type/format and constraints of data described by a JSON Table Schema  
   - [Table](#table)  
 [Goals](#goals)  
 [Contributing](#contributing)
@@ -68,7 +67,6 @@ Following methods are available on `Schema` instances:
 * `hasField(fieldName)` - checks if the field exists in the schema by it's name. Returns a boolean
 * `headers` - returns an array of the schema headers
 * `primaryKey` - returns the primary key field for the schema as an array
-* `requiredHeaders` - returns headers with the `required` constraint as an array
 * `save(path)` - saves the schema JSON to provided local `path`. Returns `Promise`   
 
 <sup>1</sup> Where the option `failFast` is given, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur)  

@@ -137,10 +137,13 @@ export default class Schema {
    * @returns {Array}
    */
   get requiredHeaders() {
-    return _.chain(this.fields)
-      .filter(F => F.constraints.required === true)
-      .map(F => F.name)
-      .value()
+    const result = []
+    for (const F of this.fields) {
+      if (F.required) {
+        result.push(F.name)
+      }
+    }
+    return result
   }
 
   /**
