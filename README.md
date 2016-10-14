@@ -6,6 +6,8 @@
 
 A utility library for working with [JSON Table Schema](http://dataprotocols.org/json-table-schema/) in Javascript.
 
+> Version v0.2.0 has renewed API introduced in NOT backward-compatibility manner. Previous version could be found [here](https://github.com/frictionlessdata/jsontableschema-js/tree/9144e83a27515110c77ed54f0daca2a8db326b99).
+
 ## Table of Contents
 
 [Installation](#installation)  
