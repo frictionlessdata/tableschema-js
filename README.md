@@ -2,7 +2,7 @@
 
 [![Gitter](https://img.shields.io/gitter/room/frictionlessdata/chat.svg)](https://gitter.im/frictionlessdata/chat)
 [![Travis Build Status](https://travis-ci.org/frictionlessdata/jsontableschema-js.svg?branch=master)](https://travis-ci.org/frictionlessdata/jsontableschema-js)
-[![Coveralls](http://img.shields.io/coveralls/frictionlessdata/jsontableschema-js.svg?branch=master)](https://coveralls.io/r/frictionlessdata/jsontableschema-js?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/frictionlessdata/jsontableschema-js/badge.svg?branch=master)](https://coveralls.io/github/frictionlessdata/jsontableschema-js?branch=master)
 
 A utility library for working with [JSON Table Schema](http://dataprotocols.org/json-table-schema/) in Javascript.
 
