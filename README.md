@@ -83,9 +83,12 @@ Class represents field in the [Schema](#schema)
 * `testValue(value, skipConstraints)` - returns boolean after a check if value can be casted against the type of the field and it's constraints <sup>1</sup>
 * `type` - returns the type of the field
 
+<sup>1</sup> Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value
+
+#### Field types
+
 Data values can be cast to native Javascript types. Casting a value will check the value is of the expected type, is in the correct format, and complies with any constraints imposed by a schema.
 
-<sup>1</sup> Skip constraints if set to `false`, will check all the constraints set for field while casting or testing the value
 
 ```javascript
 {
