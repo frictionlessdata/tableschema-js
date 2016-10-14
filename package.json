@@ -61,7 +61,8 @@
   "files": [
     "lib",
     "dist",
-    "src"
+    "src",
+    "schemas"
   ],
   "author": {
     "name": "Open Knowledge",
