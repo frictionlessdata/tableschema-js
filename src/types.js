@@ -63,12 +63,12 @@ class Abstract {
     }
 
     if (!skipConstraints) {
-      for (const constraint of _.keys(this.field.constraints)) {
+      _.forEach(_.keys(this.field.constraints), constraint => {
         switch (constraint) {
           case 'unique':
           case 'pattern':
           case 'required':
-            continue
+            return
           default:
             if (this.constraints.indexOf(constraint) === -1) {
               throw new Error(`Field type '${this.field.type}' does ` +
@@ -77,7 +77,7 @@ class Abstract {
             constraints[`check_${constraint}`](this.field.name, castValue,
                                                this.field.constraints[constraint])
         }
-      }
+      })
     }
     return castValue
   }
@@ -239,7 +239,7 @@ class NumberType extends IntegerType {
       return Number(newValue).toFixed(toFixed)
     }
     // here probably normal float number
-    if (Number(newValue) == newValue) {
+    if (!isNaN(newValue)) {
       return Number(newValue)
     }
     throw new Error()
@@ -533,13 +533,13 @@ class GeoPointType extends Abstract {
    */
   reFormat(geoPoint) {
     const result = []
-    for (let point of geoPoint) {
+    _.forEach(geoPoint, point => {
       point = String(point)
       if (point.indexOf('.') === -1) {
         point = Number(point).toFixed(1)
       }
       result.push(point)
-    }
+    })
     return result
   }
 }
@@ -688,10 +688,8 @@ function suitableTypes(values, options) {
 }
 
 function getType(field) {
-  for (const T of _.keys(Types)) {
-    if (Types[T].name === field.type) {
-      return new Types[T](field)
-    }
-  }
+  const MatchingType = _.find(Types, T => T.name === field.type)
+  if (MatchingType) return new MatchingType(field)
+
   throw new Error('Unsupported field type')
 }

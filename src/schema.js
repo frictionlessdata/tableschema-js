@@ -50,7 +50,7 @@ export default class Schema {
                       'number of fields given in the schema')
     }
 
-    for (let i = 0, length = items.length; i < length; i++) {
+    for (let i = 0, length = items.length; i < length; i += 1) {
       try {
         const field = this.getField(headers[i], i)
           , value = field.castValue(items[i], skipConstraints)
@@ -138,11 +138,12 @@ export default class Schema {
    */
   get requiredHeaders() {
     const result = []
-    for (const F of this.fields) {
+    _.forEach(this.fields, F => {
       if (F.required) {
         result.push(F.name)
       }
-    }
+    })
+
     return result
   }
 
@@ -243,10 +244,10 @@ function load(instance, source) {
  */
 function expand(instance, schema) {
   const DEFAULTS = {
-    constraints: { required: false }
+      constraints: { required: false }
     , format: 'default'
     , type: 'string'
-  }
+    }
     , descriptor = _.extend(
     {}
     , schema
