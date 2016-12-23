@@ -26,7 +26,6 @@ export default schema => {
     } else {
       reject(errors(result.errors))
     }
-
   })
 
   /**
@@ -36,9 +35,9 @@ export default schema => {
    */
   function errors(values) {
     const result = []
-    for (const error of values) {
+    _.forEach(values, error => {
       result.push(message(error))
-    }
+    })
     return result
   }
 
@@ -120,12 +119,10 @@ export default schema => {
             valid = false
             errs.push(
               `foreign key ${fk.reference.fields} must be same type as ${fk.fields}`)
-          } else {
-            if (fk.reference.fields.length !== fk.fields.length) {
-              valid = false
-              errs.push('foreign key fields must contain the same number ' +
-                        'entries as reference.fields')
-            }
+          } else if (fk.reference.fields.length !== fk.fields.length) {
+            valid = false
+            errs.push('foreign key fields must contain the same number ' +
+                      'entries as reference.fields')
           }
         }
 

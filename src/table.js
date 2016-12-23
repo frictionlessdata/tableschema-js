@@ -55,11 +55,11 @@ export default class Table {
       // using to check unique constraints for the row, because need to check
       // uniquness of the values combination (primary key for example)
       this.primaryHeaders = {}
-      for (const header of primaryKey) {
+      _.forEach(primaryKey, header => {
         // need to know the index of the header, so later it possible to
         // combine correct values in the row
         this.primaryHeaders[header] = headers.indexOf(header)
-      }
+      })
     }
     this.uniqueness = {}
     this.schema.uniqueness = this.uniqueness
@@ -86,21 +86,19 @@ export default class Table {
     return new Promise((resolve, reject) => {
       let index = 1
       self.iter(items => {
-        if (limit && index > limit) {
-          return true
-        }
+        if (!(limit && index > limit)) {
+          if (keyed) {
+            result.push(_.zipObject(headers, items))
+          } else if (extended) {
+            const object = {}
+            object[index] = _.zipObject(headers, items)
+            result.push(object)
+          } else {
+            result.push(items)
+          }
 
-        if (keyed) {
-          result.push(_.zipObject(headers, items))
-        } else if (extended) {
-          const object = {}
-          object[index] = _.zipObject(headers, items)
-          result.push(object)
-        } else {
-          result.push(items)
+          index += 1
         }
-
-        index += 1
       }).then(() => {
         resolve(result)
       }, errors => {
@@ -149,8 +147,8 @@ export default class Table {
  * @param failFast
  * @param skipConstraints
  */
-function proceed(instance, readStream, callback, failFast = false,
-                 skipConstraints = false) {
+function proceed(instance, readStream, callback, failFast = false
+               , skipConstraints = false) {
   return new Promise((resolve, reject) => {
     const parser = parse()
       , errors = []
@@ -193,11 +191,11 @@ function proceed(instance, readStream, callback, failFast = false,
  */
 function getUniqueHeaders(schema) {
   const filtered = []
-  for (const F of schema.fields) {
+  _.forEach(schema.fields, F => {
     if (F.constraints.unique === true) {
       filtered.push(F.name)
     }
-  }
+  })
   return filtered
 }
 
@@ -258,8 +256,8 @@ function isReadStream(stream) {
   return stream instanceof EventEmitter && _.isFunction(stream.read)
 }
 
-function cast(instance, reject, callback, errors, items, failFast,
-              skipConstraints) {
+function cast(instance, reject, callback, errors, items, failFast
+            , skipConstraints) {
   try {
     const values = instance.schema.castRow(items, failFast,
                                            skipConstraints)
@@ -276,9 +274,9 @@ function cast(instance, reject, callback, errors, items, failFast,
       return
     }
     if (_.isArray(e)) {
-      for (const error of e) {
+      _.forEach(e, error => {
         errors.push(error)
-      }
+      })
     } else {
       errors.push(e)
     }

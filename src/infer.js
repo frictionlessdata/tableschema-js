@@ -72,7 +72,7 @@ export default (headers, values, options = {}) => {
 
     field.type = type.multiCast(columnValues)
 
-    if (opts.cast && opts.cast.hasOwnProperty(field.type)) {
+    if (opts.cast && opts.cast.hasOwnProperty.call(opts.cast, field.type)) {
       field.format = opts.cast[field.type].format
     }
 

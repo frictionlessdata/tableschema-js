@@ -152,7 +152,7 @@ export default {
       return
     }
 
-    if (!unique.hasOwnProperty(fieldName)) {
+    if (!Object.prototype.hasOwnProperty.call(unique, fieldName)) {
       unique[fieldName] = [value]
     } else {
       if (_.includes(unique[fieldName], value)) {
@@ -176,13 +176,13 @@ export default {
 
     let value = ''
 
-    if (!unique.hasOwnProperty(key)) {
+    if (!Object.prototype.hasOwnProperty.call(unique, key)) {
       unique[key] = []
     }
 
-    for (const index of indexes) {
+    _.forEach(indexes, index => {
       value += values[index].toString()
-    }
+    })
 
     if (_.includes(unique[key], value)) {
       throw new UniqueConstraintsError('Unique constraint violation for primary key')
