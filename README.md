@@ -311,6 +311,7 @@ validate(schema).then(function() {
 Note: `validate()` validates whether a **schema** is a validate JSON Table Schema accordingly to the (specifications)[http://schemas.datapackages.org/json-table-schema.json]. It does **not** validate data against a schema.
 
 ### Table
+
 A javascript model of a table (schema+source of data)
 
 Instance always returns `Promise`. In case if schema object is not valid, it will reject promise.
@@ -322,8 +323,14 @@ Source of data can be:
 * readable stream
 
 Following methods are available on `Table` instances:
+
 * `iter(callback, failFast, skipConstraints)`<sup>1,2</sup> - iterate through the given dataset provided in constructor and returns converted data
-* `read(keyed, extended, limit)` - Read part or full source into array of objects if `keyed`/`extended`
+* `read(keyed, extended, limit)` - Read part or full source into array.
+  * `keyed`: row looks like `{header1: value1, header2: value2}`
+  * `extended`: row looks like `[row_number, [header1, header2], [value1, value2]]`.
+    * Low-level usage: when you need all information about row from stream but there is no guarantee that it is not malformed. For example, in goodtables you cannot use keyed because there is no guarantee that it will not fail - https://github.com/frictionlessdata/goodtables-py/blob/master/goodtables/inspector.py#L205
+    * High-level usage: useful when you need to get row + row number. This row number is exact row number of source stream row. It's not like counted or similar. So if you skip first 9 rows using skipRows first row number from iter(extended=True) will be 10. It's not possible to get this information on client code level using other approach - iter() index in this case will start from 0.
+  * `limit`: limt the number of rows return to `limit`
 * `save(path)` - Save source to file locally in CSV format with `,` (comma) delimiter. Returns `Promise`
 
 <sup>1</sup> If `failFast` is set to `true`, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur). Default is `false`  
