@@ -50,3 +50,5 @@ rules:
     - as-needed
   class-methods-use-this:
     - off
+  object-curly-spacing:
+    - off
