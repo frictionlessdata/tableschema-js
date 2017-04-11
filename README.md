@@ -6,6 +6,8 @@
 
 A utility library for working with [Table Schema](http://specs.frictionlessdata.io/table-schema/) in Javascript.
 
+> Version v1.0.0-alpha [WIP] has BREAKING CHANGES. A migration guide will be published.
+
 > Version v0.2.0 has renewed API introduced in NOT backward-compatibility manner. Previous version could be found [here](https://github.com/frictionlessdata/tableschema-js/tree/9144e83a27515110c77ed54f0daca2a8db326b99).
 
 ## Table of Contents
@@ -41,11 +43,13 @@ var Schema = require('tableschema').Schema;
 ```
 
 ```javascript
-var model = new Schema('http://someurl.com/remote.json')
+var model = new Schema('http://someurl.com/remote.json') // v.0.2
+var model = Schema.load('http://someurl.com/remote.json') // v.1.0-alpha
 ```
 or
 ```javascript
-var model = new Schema({JSON OBJECT})
+var model = new Schema({JSON OBJECT}) // v.0.2
+var model = Schema.load({JSON OBJECT}) // v.1.0-alpha
 ```
 instance always returns `Promise`
 ```javascript
