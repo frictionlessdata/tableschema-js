@@ -1,6 +1,6 @@
 {
   "name": "tableschema",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.1", 
   "description": "A utility library for working with JSON Table Schema in Javascript.",
   "keywords": [
     "data package",
