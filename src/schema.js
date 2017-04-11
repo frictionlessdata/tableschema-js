@@ -6,6 +6,7 @@ import Field from './field'
 import * as helpers from './helpers'
 import constraints from './constraints'
 
+
 // Module API
 
 /**
@@ -103,6 +104,15 @@ export default class Schema {
   }
 
   /**
+   * Get descriptor
+   *
+   * @returns {Array}
+   */
+  get descriptor() {
+    return this._descriptor
+  }
+
+  /**
    * Get fields of schema
    *
    * @returns {Array}
@@ -117,7 +127,7 @@ export default class Schema {
    * @returns {Array}
    */
   get foreignKeys() {
-    return this.descriptor.foreignKeys
+    return this._descriptor.foreignKeys
   }
 
   /**
@@ -193,7 +203,7 @@ export default class Schema {
    * @returns {string|Array}
    */
   get primaryKey() {
-    return this.descriptor.primaryKey
+    return this._descriptor.primaryKey
   }
 
   /**
@@ -204,7 +214,7 @@ export default class Schema {
    */
   save(path) {
     return new Promise((resolve, reject) => {
-      fs.writeFile(path, this.descriptor, e => {
+      fs.writeFile(path, this._descriptor, e => {
         if (e) {
           reject(e)
         } else {
@@ -217,6 +227,7 @@ export default class Schema {
   // Private
 
   constructor(descriptor, caseInsensitiveHeaders=false) {
+    this._descriptor = descriptor
     this._caseInsensitiveHeaders = caseInsensitiveHeaders
     this._fields = []
     for (const field of descriptor.fields) {

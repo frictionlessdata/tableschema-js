@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import tv4 from 'tv4'
+import * as helpers from './helpers'
 import profile from '../profiles/table-schema.json'
 
 /**
@@ -12,6 +13,8 @@ import profile from '../profiles/table-schema.json'
  * Promise. In case of success true, in error - list of errors
  */
 export default schema => {
+  schema = helpers.expandSchemaDescriptor(schema)
+
   const fieldNames = _.map(schema.fields || [], _.property('name'))
 
   return new Promise((resolve, reject) => {
@@ -126,7 +129,7 @@ export default schema => {
           }
         }
 
-        if (fk.reference.resource === 'self') {
+        if (fk.reference.resource === '') {
           if (_.isString(fk.reference.fields)) {
             if (!_.includes(fieldNames, fk.reference.fields)) {
               valid = false

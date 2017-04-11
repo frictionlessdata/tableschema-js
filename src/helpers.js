@@ -4,6 +4,7 @@ import lodash from 'lodash'
 import utilities from './utilities'
 import config from './config'
 
+
 // Module API
 
 /**
@@ -24,6 +25,7 @@ export async function retrieveDescriptor(descriptor) {
   return descriptor
 }
 
+
 /**
  * Expand schema descriptor with spec defaults.
  */
@@ -35,11 +37,14 @@ export function expandSchemaDescriptor(descriptor) {
   return descriptor
 }
 
+
 /**
  * Expand field descriptor with spec defaults.
  */
 export function expandFieldDescriptor(descriptor) {
-  if (!descriptor.type) descriptor.type = config.defaultFieldType
-  if (!descriptor.format) descriptor.format = config.defaultFieldFormat
+  if (descriptor instanceof Object) {
+    if (!descriptor.type) descriptor.type = config.defaultFieldType
+    if (!descriptor.format) descriptor.format = config.defaultFieldFormat
+  }
   return descriptor
 }
