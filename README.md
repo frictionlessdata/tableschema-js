@@ -1,29 +1,30 @@
 # JSON Table Schema
 
 [![Gitter](https://img.shields.io/gitter/room/frictionlessdata/chat.svg)](https://gitter.im/frictionlessdata/chat)
-[![Travis Build Status](https://travis-ci.org/frictionlessdata/jsontableschema-js.svg?branch=master)](https://travis-ci.org/frictionlessdata/jsontableschema-js)
-[![Coverage Status](https://coveralls.io/repos/github/frictionlessdata/jsontableschema-js/badge.svg?branch=master)](https://coveralls.io/github/frictionlessdata/jsontableschema-js?branch=master)
+[![Travis Build Status](https://travis-ci.org/frictionlessdata/tableschema-js.svg?branch=master)](https://travis-ci.org/frictionlessdata/tableschema-js)
+[![Coverage Status](https://coveralls.io/repos/github/frictionlessdata/tableschema-js/badge.svg?branch=master)](https://coveralls.io/github/frictionlessdata/tableschema-js?branch=master)
 
 A utility library for working with [JSON Table Schema](http://dataprotocols.org/json-table-schema/) in Javascript.
 
-> Version v0.2.0 has renewed API introduced in NOT backward-compatibility manner. Previous version could be found [here](https://github.com/frictionlessdata/jsontableschema-js/tree/9144e83a27515110c77ed54f0daca2a8db326b99).
+> Version v0.2.0 has renewed API introduced in NOT backward-compatibility manner. Previous version could be found [here](https://github.com/frictionlessdata/tableschema-js/tree/9144e83a27515110c77ed54f0daca2a8db326b99).
 
 ## Table of Contents
 
-[Installation](#installation)  
+[Installation](#installation)
 [Components](#components)
   - [Schema](#schema) - a javascript model of a JSON Table Schema with useful methods for interaction
   - [Field](#field) - a javascript model of a JSON Table Schema field
   - [Infer](#infer) - a utility that creates a JSON Table Schema based on a data sample
   - [Validate](#validate) - a utility to validate a **schema** as valid according to the current spec
-  - [Table](#table)  
-[Goals](#goals)  
+  - [Table](#table)
+[Goals](#goals)
 [Contributing](#contributing)
 
 ## Installation
 
 ```
-npm install jsontableschema
+$ npm install jsontableschema # v0.2
+$ npm install tableschema # v1.0-alpha
 ```
 Library requires `Promise` to work properly, and need to be sure that `Promise` available globally. You are free to choose any Promise polyfill.
 
@@ -32,11 +33,11 @@ Library requires `Promise` to work properly, and need to be sure that `Promise` 
 Let's look at each of the components in more detail.
 
 ### Schema
-A model of a schema with helpful methods for working with the schema and supported data. Schema instances can be initialized with a schema source as a url to a JSON file or a JSON object. 
-The schema is initially validated (see [validate](#validate) below), and will raise an exception if not a valid JSON Table Schema.  
+A model of a schema with helpful methods for working with the schema and supported data. Schema instances can be initialized with a schema source as a url to a JSON file or a JSON object.
+The schema is initially validated (see [validate](#validate) below), and will raise an exception if not a valid JSON Table Schema.
 
 ```javascript
-var Schema = require('jsontableschema').Schema;
+var Schema = require('tableschema').Schema;
 ```
 
 ```javascript
@@ -51,7 +52,7 @@ instance always returns `Promise`
 model.then(function(schema) {
     // working code to use schema model
     var fields = schema.fields;
-   
+
 }).catch(function(error) {
     // something went wrong and error variable has explanations
 })
@@ -67,9 +68,9 @@ Following methods are available on `Schema` instances:
 * `hasField(fieldName)` - checks if the field exists in the schema by it's name. Returns a boolean
 * `headers` - returns an array of the schema headers
 * `primaryKey` - returns the primary key field for the schema as an array
-* `save(path)` - saves the schema JSON to provided local `path`. Returns `Promise`   
+* `save(path)` - saves the schema JSON to provided local `path`. Returns `Promise`
 
-<sup>1</sup> Where the option `failFast` is given, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur)  
+<sup>1</sup> Where the option `failFast` is given, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur)
 <sup>2</sup> Where the optional index argument is available, it can be used as a positional argument if the schema has multiple fields with the same name
 
 ### Field
@@ -113,8 +114,8 @@ try {
     // uh oh, something went wrong
 }
 ```
-Values that can't be cast will raise an `Error` exception.  
-Casting a value that doesn't meet the constraints will raise an `Error` exception.  
+Values that can't be cast will raise an `Error` exception.
+Casting a value that doesn't meet the constraints will raise an `Error` exception.
 **Note**: the `unique` constraint is not currently supported.
 
 Available types, formats and resultant value of the cast:
@@ -133,9 +134,9 @@ Available types, formats and resultant value of the cast:
 | geopoint | default, array, object | Accordingly to format<sup>3</sup> |
 | geojson | default, topojson | Accordingly to format<sup>3,4</sup> |
 
-<sup>1</sup> `default` format can be not specified in the field descriptor  
-<sup>2</sup> in case value has 00 after point (1.00), it will return Number(1).toFixed(2), which is actually String '1.00'  
-<sup>3</sup> default format returns String  
+<sup>1</sup> `default` format can be not specified in the field descriptor
+<sup>2</sup> in case value has 00 after point (1.00), it will return Number(1).toFixed(2), which is actually String '1.00'
+<sup>3</sup> default format returns String
 <sup>4</sup> topojson is not implemented
 
 ### Infer
@@ -154,7 +155,7 @@ Call `infer` with headers and values from the datafile:
 ```javascript
 var parse = require('csv-parse');
 var fs = require('fs');
-var infer = require('jsontableschema').infer;
+var infer = require('tableschema').infer;
 
 fs.readFile('/path/to/example.csv', function(err, data) {
   parse(data, function(error, values) {
@@ -203,7 +204,7 @@ It possible to provide additional options to build the JSON schema as 3rd argume
 ```javascript
 var parse = require('csv-parse');
 var fs = require('fs');
-var infer = require('jsontableschema').infer;
+var infer = require('tableschema').infer;
 
 fs.readFile('/path/to/example.csv', function(err, data) {
   parse(data, function(error, values) {
@@ -216,7 +217,7 @@ fs.readFile('/path/to/example.csv', function(err, data) {
             string : { format : 'email' },
             number : { format : 'currency' },
             date: { format : 'any'}
-          } 
+          }
         },
         schema = infer(headers, values, options);
   });
@@ -269,13 +270,13 @@ four,28,Judy
 ```
 In this case by limiting rows to 2, we can build schema structure with correct field types
 
-`cast`: every `string` value will be casted using `email` format, `number` will be tried as a `currency` format, and `date` - as `any` format 
+`cast`: every `string` value will be casted using `email` format, `number` will be tried as a `currency` format, and `date` - as `any` format
 
 ### Validate
 Given a schema as JSON object, `validate` returns `Promise`, which success for a valid JSON Table Schema, or reject with array of errors.
 
 ```javascript
-var validate = require('jsontableschema').validate;
+var validate = require('tableschema').validate;
 var schema = {
    fields: [
      {
@@ -333,11 +334,11 @@ Following methods are available on `Table` instances:
   * `limit`: limt the number of rows return to `limit`
 * `save(path)` - Save source to file locally in CSV format with `,` (comma) delimiter. Returns `Promise`
 
-<sup>1</sup> If `failFast` is set to `true`, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur). Default is `false`  
+<sup>1</sup> If `failFast` is set to `true`, it will raise the first error it encounters, otherwise an array of errors thrown (if there are any errors occur). Default is `false`
 <sup>2</sup> Skip constraints if set to `true`, will check all the constraints set for field while casting or testing the value. Default is `false`
 
 ```javascript
-var jts = require('jsontableschema');
+var jts = require('tableschema');
 var Table = jts.Table;
 
 var model = new Table({SCHEMA}, {SOURCE})
@@ -347,7 +348,7 @@ var callback = function(items) {
 }
 model.then(function (table) {
     table.iter(callback, true, false).then(function() {
-          // ... do something when conversion of all data from source is finished 
+          // ... do something when conversion of all data from source is finished
     }, function (errors) {
           // something went wrong while casting values from source
           // errors is array with explanations

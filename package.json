@@ -1,6 +1,6 @@
 {
-  "name": "jsontableschema",
-  "version": "0.2.2",
+  "name": "tableschema",
+  "version": "1.0.0-alpha.1",
   "description": "A utility library for working with JSON Table Schema in Javascript.",
   "keywords": [
     "data package",
@@ -91,11 +91,11 @@
       "url": "http://zhenyab.me"
     }
   ],
-  "homepage": "https://github.com/frictionlessdata/jsontableschema-js",
-  "bugs": "https://github.com/frictionlessdata/jsontableschema-js/issues",
+  "homepage": "https://github.com/frictionlessdata/tableschema-js",
+  "bugs": "https://github.com/frictionlessdata/tableschema-js/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/frictionlessdata/jsontableschema-js.git"
+    "url": "https://github.com/frictionlessdata/tableschema-js.git"
   },
   "license": "MIT"
 }
