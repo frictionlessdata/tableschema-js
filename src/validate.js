@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import tv4 from 'tv4'
-import standard from '../schemas/json-table-schema.json'
+import profile from '../profiles/table-schema.json'
 
 /**
  Validate that `schema` is a valid Table Schema.
@@ -15,7 +15,7 @@ export default schema => {
   const fieldNames = _.map(schema.fields || [], _.property('name'))
 
   return new Promise((resolve, reject) => {
-    const result = tv4.validateMultiple(schema, standard)
+    const result = tv4.validateMultiple(schema, profile)
     if (result.valid) {
       const validation = extra()
       if (validation.valid) {
