@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import tv4 from 'tv4'
 import * as helpers from './helpers'
-import profile from '../profiles/table-schema.json'
+import profile from './profiles/table-schema.json'
 
 /**
  Validate that `schema` is a valid Table Schema.

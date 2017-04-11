@@ -56,12 +56,12 @@
     "webpack-dev-server": "^1.14.1"
   },
   "scripts": {
-    "build:lib": "babel src --out-dir lib",
+    "build:lib": "babel src --out-dir lib --copy-files",
     "build:dist": "webpack --config webpack.config.development.js",
     "build:dist:min": "webpack --config webpack.config.production.js",
     "build": "npm run build:lib && npm run build:dist && npm run build:dist:min",
     "prepublish": "npm run build",
-    "profiles": "wget -O profiles/table-schema.json https://specs.frictionlessdata.io/schemas/table-schema.json",
+    "profiles": "wget -O src/profiles/table-schema.json https://specs.frictionlessdata.io/schemas/table-schema.json",
     "lint": "eslint scripts src",
     "pretest": "npm run lint",
     "test": "mocha --opts .mocharc",
