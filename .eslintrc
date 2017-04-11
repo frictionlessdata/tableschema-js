@@ -52,3 +52,11 @@ rules:
     - off
   object-curly-spacing:
     - off
+  import/prefer-default-export:
+    - off
+  padded-blocks:
+    - off
+  no-underscore-dangle:
+    - off
+  space-infix-ops:
+    - off
