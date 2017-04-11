@@ -4,7 +4,7 @@ var baseConfig = require('./webpack.config.base')
 
 var developmentConfig = {
   output: {
-    filename: 'jsontableschema.js',
+    filename: 'tableschema.js',
     path: './dist'
   },
   plugins: [

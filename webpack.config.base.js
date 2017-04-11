@@ -3,11 +3,11 @@ module.exports = {
   devtool: 'source-map',
   module: {
     loaders: [
-      { test: /\.json$/, loader: 'json' }
-      , { test: /\.js$/, loaders: ['babel-loader'], exclude: /node_modules/ }
+      { test: /\.json$/, loader: 'json' },
+      { test: /\.js$/, loaders: ['babel-loader'], exclude: /node_modules/ }
     ]
   },
-  output: { library: 'JSONTableSchema', libraryTarget: 'umd' },
+  output: { library: 'tableschema', libraryTarget: 'umd' },
   node: {
     fs: "empty"
   }
