@@ -19,10 +19,10 @@ rules:
     - error
     - never
   comma-style:
-    - error
+    - off
     - first
   comma-dangle:
-    - error
+    - off
     - never
   no-empty:
     - error
@@ -52,11 +52,15 @@ rules:
     - off
   object-curly-spacing:
     - off
-  import/prefer-default-export:
-    - off
   padded-blocks:
     - off
   no-underscore-dangle:
     - off
   space-infix-ops:
+    - off
+  no-restricted-syntax:
+    - off
+  no-throw-literal:
+    - off
+  import/prefer-default-export:
     - off

@@ -111,7 +111,7 @@ class Abstract {
   }
 
   getConstraint(value) {
-    return this.field.constraints[value]
+    return (this.field.constraints || {})[value]
   }
 
   isRequired() {

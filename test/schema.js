@@ -28,22 +28,19 @@ describe('Schema', () => {
         , {
           name: 'height'
           , type: 'number'
-          , constraints: { required: false }
         }
         , {
-          name: 'Age'
+          name: 'age'
           , type: 'integer'
-          , constraints: { required: false }
         }
         , {
-          name: 'Name'
+          name: 'name'
           , type: 'string'
           , constraints: { required: true }
         }
         , {
           name: 'occupation'
           , type: 'string'
-          , constraints: { required: false }
         }
       ]
     }
@@ -51,7 +48,7 @@ describe('Schema', () => {
   })
 
   it('have a correct number of header columns', done => {
-    (new Schema(SCHEMA)).then(schema => {
+    (Schema.load(SCHEMA)).then(schema => {
       assert.equal(schema.headers.length, 5)
       done()
     }, error => {
@@ -60,7 +57,7 @@ describe('Schema', () => {
   })
 
   it('have a correct number of header required columns', done => {
-    (new Schema(SCHEMA, true)).then(schema => {
+    (Schema.load(SCHEMA, true)).then(schema => {
       const headers = schema.requiredHeaders
       assert.equal(headers.length, 2)
       assert.equal(headers[0], 'id')
@@ -72,7 +69,7 @@ describe('Schema', () => {
   })
 
   it('have one of a field from passed schema', done => {
-    (new Schema(SCHEMA, true)).then(schema => {
+    (Schema.load(SCHEMA, true)).then(schema => {
       assert.isTrue(schema.hasField('id'))
       assert.isTrue(schema.hasField('height'))
       assert.isTrue(schema.hasField('age'))
@@ -85,7 +82,7 @@ describe('Schema', () => {
   })
 
   it('do not have fields not specified in passed schema', done => {
-    (new Schema(SCHEMA)).then(schema => {
+    (Schema.load(SCHEMA)).then(schema => {
       assert.isFalse(schema.hasField('religion'))
       done()
     }, error => {
@@ -94,17 +91,8 @@ describe('Schema', () => {
   })
 
   it('respect caseInsensitiveHeaders option', done => {
-    SCHEMA.fields = SCHEMA.fields.map(field => {
-      const copyField = _.extend({}, field)
-      copyField.name = copyField.name[0].toUpperCase() +
-                       _.drop(copyField.name).join('').toLowerCase()
-      return copyField
-    })
-
-    const model = (new Schema(SCHEMA, true))
-    model.then(schema => {
-      assert.deepEqual(schema.headers.sort(),
-                       ['id', 'height', 'name', 'age', 'occupation'].sort())
+    (Schema.load(SCHEMA, true)).then(schema => {
+      assert.isTrue(schema.hasField('NAME'))
       done()
     }, error => {
       assert(error)
@@ -112,7 +100,7 @@ describe('Schema', () => {
   })
 
   it('raise exception when invalid json passed as schema', done => {
-    (new Schema('this is string')).then(schema => {
+    (Schema.load('this is string')).then(schema => {
       assert.isObject(schema)
       assert.isTrue(false)
     }, error => {
@@ -122,7 +110,7 @@ describe('Schema', () => {
   })
 
   it('raise exception when invalid format schema passed', done => {
-    (new Schema({})).then(schema => {
+    (Schema.load({})).then(schema => {
       assert.isObject(schema)
       assert.isTrue(false)
     }, error => {
@@ -132,7 +120,7 @@ describe('Schema', () => {
   })
 
   it('set default types if not provided', done => {
-    (new Schema(SCHEMA_MIN)).then(schema => {
+    (Schema.load(SCHEMA_MIN)).then(schema => {
       const fields = _.filter(schema.fields, F => F.type === 'string')
       assert.isArray(fields)
       assert.equal(fields.length, 2)
@@ -153,7 +141,7 @@ describe('Schema', () => {
         , { name: 'label' }
       ]
     }
-      , model = new Schema(data)
+      , model = Schema.load(data)
 
     model.then(schema => {
       const requiredHeaders = schema.requiredHeaders
@@ -172,7 +160,7 @@ describe('Schema', () => {
   it('schema should not mutate', done => {
     const data = { fields: [{ name: 'id' }] }
       , schemaCopy = _.extend({}, data)
-      , model = new Schema(data)
+      , model = Schema.load(data)
 
     model.then(schema => {
       assert.deepEqual(data, schemaCopy)
@@ -184,7 +172,7 @@ describe('Schema', () => {
   })
 
   it('should throw exception if field name does not exists', done => {
-    const model = new Schema(SCHEMA)
+    const model = Schema.load(SCHEMA)
     model.then(schema => {
       assert.throws(() => {
         schema.getField('unknown')
@@ -197,11 +185,11 @@ describe('Schema', () => {
   })
 
   it('should load json file', done => {
-    const url = 'http://localhost/remote.json'
+    const url = 'http://example.com/remote.json'
     fetchMock.restore()
     fetchMock.mock(url, SCHEMA)
 
-    const model = new Schema(url, true)
+    const model = Schema.load(url, true)
     model.then(schema => {
       assert.equal(schema.headers.length, 5)
       assert.equal(schema.requiredHeaders.length, 2)
@@ -218,11 +206,11 @@ describe('Schema', () => {
   })
 
   it('should fail on load of json file', done => {
-    const url = 'http://localhost/remote.json'
+    const url = 'http://example.com/remote.json'
     fetchMock.restore()
     fetchMock.mock(url, 400)
 
-    const model = new Schema(url)
+    const model = Schema.load(url)
     model.then(schema => {
       assert.isTrue(false, 'Shouldn\'t enter here')
       done()
@@ -233,7 +221,7 @@ describe('Schema', () => {
   })
 
   it('convert row', done => {
-    (new Schema(SCHEMA)).then(schema => {
+    (Schema.load(SCHEMA)).then(schema => {
       const value = ['string', '10.0', '1', 'string', 'string']
         , convertedRow = schema.castRow(value)
       assert.deepEqual(['string', '10.0', 1, 'string', 'string'], convertedRow)
@@ -245,7 +233,7 @@ describe('Schema', () => {
   })
 
   it('shouldn\'t convert row with less items than headers count', done => {
-    (new Schema(SCHEMA)).then(schema => {
+    (Schema.load(SCHEMA)).then(schema => {
       assert.throws(() => {
         schema.castRow(['string', '10.0', '1', 'string'])
       }, Array)
@@ -257,7 +245,7 @@ describe('Schema', () => {
   })
 
   it('shouldn\'t convert row with too many items', done => {
-    (new Schema(SCHEMA)).then(schema => {
+    (Schema.load(SCHEMA)).then(schema => {
       assert.throws(() => {
         schema.castRow(
           ['string', '10.0', '1', 'string', 'string', 'string'])
@@ -270,7 +258,7 @@ describe('Schema', () => {
   })
 
   it('shouldn\'t convert row with wrong type (fail fast)', done => {
-    (new Schema(SCHEMA)).then(schema => {
+    (Schema.load(SCHEMA)).then(schema => {
       assert.throws(() => {
         schema.castRow(['string', 'notdecimal', '10.6', 'string', 'string']
           , true)
@@ -283,7 +271,7 @@ describe('Schema', () => {
   })
 
   it('shouldn\'t convert row with wrong type multiple errors', done => {
-    (new Schema(SCHEMA)).then(schema => {
+    (Schema.load(SCHEMA)).then(schema => {
       try {
         schema.castRow(['string', 'notdecimal', '10.6', 'string', true])
       } catch (e) {

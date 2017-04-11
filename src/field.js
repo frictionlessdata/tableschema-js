@@ -1,3 +1,4 @@
+import lodash from 'lodash'
 import Type from './types'
 import * as helpers from './helpers'
 
@@ -14,7 +15,7 @@ export default class Field {
   constructor(descriptor) {
 
     // Process descriptor
-    descriptor = helpers.retrieveDescriptor(descriptor)
+    descriptor = lodash.cloneDeep(descriptor)
     descriptor = helpers.expandFieldDescriptor(descriptor)
 
     // Set attributes
