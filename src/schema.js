@@ -8,10 +8,10 @@ import Field from './field'
 import constraints from './constraints'
 
 /**
- * Model for a JSON Table Schema.
+ * Model for a Table Schema.
  *
  * Providers handy helpers for ingesting, validating and outputting
- * JSON Table Schemas: http://dataprotocols.org/json-table-schema/
+ * Table Schemas: http://specs.frictionlessdata.io/table-schema/
  *
  * @param {string|JSON} source: An url or object that represents a schema
  *

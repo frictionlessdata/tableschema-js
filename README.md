@@ -1,10 +1,10 @@
-# JSON Table Schema
+# Table Schema
 
 [![Gitter](https://img.shields.io/gitter/room/frictionlessdata/chat.svg)](https://gitter.im/frictionlessdata/chat)
 [![Travis Build Status](https://travis-ci.org/frictionlessdata/tableschema-js.svg?branch=master)](https://travis-ci.org/frictionlessdata/tableschema-js)
 [![Coverage Status](https://coveralls.io/repos/github/frictionlessdata/tableschema-js/badge.svg?branch=master)](https://coveralls.io/github/frictionlessdata/tableschema-js?branch=master)
 
-A utility library for working with [JSON Table Schema](http://dataprotocols.org/json-table-schema/) in Javascript.
+A utility library for working with [Table Schema](http://specs.frictionlessdata.io/table-schema/) in Javascript.
 
 > Version v0.2.0 has renewed API introduced in NOT backward-compatibility manner. Previous version could be found [here](https://github.com/frictionlessdata/tableschema-js/tree/9144e83a27515110c77ed54f0daca2a8db326b99).
 
@@ -12,9 +12,9 @@ A utility library for working with [JSON Table Schema](http://dataprotocols.org/
 
 [Installation](#installation)
 [Components](#components)
-  - [Schema](#schema) - a javascript model of a JSON Table Schema with useful methods for interaction
-  - [Field](#field) - a javascript model of a JSON Table Schema field
-  - [Infer](#infer) - a utility that creates a JSON Table Schema based on a data sample
+  - [Schema](#schema) - a javascript model of a Table Schema with useful methods for interaction
+  - [Field](#field) - a javascript model of a Table Schema field
+  - [Infer](#infer) - a utility that creates a Table Schema based on a data sample
   - [Validate](#validate) - a utility to validate a **schema** as valid according to the current spec
   - [Table](#table)
 [Goals](#goals)
@@ -34,7 +34,7 @@ Let's look at each of the components in more detail.
 
 ### Schema
 A model of a schema with helpful methods for working with the schema and supported data. Schema instances can be initialized with a schema source as a url to a JSON file or a JSON object.
-The schema is initially validated (see [validate](#validate) below), and will raise an exception if not a valid JSON Table Schema.
+The schema is initially validated (see [validate](#validate) below), and will raise an exception if not a valid Table Schema.
 
 ```javascript
 var Schema = require('tableschema').Schema;
@@ -140,7 +140,7 @@ Available types, formats and resultant value of the cast:
 <sup>4</sup> topojson is not implemented
 
 ### Infer
-Given headers and data, `infer` will return a JSON Table Schema as a JSON object based on the data values. Given the data file, example.csv:
+Given headers and data, `infer` will return a Table Schema as a JSON object based on the data values. Given the data file, example.csv:
 
 ```csv
 id,age,name
@@ -273,7 +273,7 @@ In this case by limiting rows to 2, we can build schema structure with correct f
 `cast`: every `string` value will be casted using `email` format, `number` will be tried as a `currency` format, and `date` - as `any` format
 
 ### Validate
-Given a schema as JSON object, `validate` returns `Promise`, which success for a valid JSON Table Schema, or reject with array of errors.
+Given a schema as JSON object, `validate` returns `Promise`, which success for a valid Table Schema, or reject with array of errors.
 
 ```javascript
 var validate = require('tableschema').validate;
@@ -309,7 +309,7 @@ validate(schema).then(function() {
   // uh oh, some validation errors in the errors array
 })
 ```
-Note: `validate()` validates whether a **schema** is a validate JSON Table Schema accordingly to the (specifications)[http://schemas.datapackages.org/json-table-schema.json]. It does **not** validate data against a schema.
+Note: `validate()` validates whether a **schema** is a validate Table Schema accordingly to the (specifications)[http://schemas.datapackages.org/json-table-schema.json]. It does **not** validate data against a schema.
 
 ### Table
 
@@ -361,9 +361,9 @@ model.then(function (table) {
 
 ## Goals
 
-* A core set of utilities for working with [JSON Table Schema](http://dataprotocols.org/json-table-schema/)
-* Use in *other* packages that deal with actual validation of data, or other 'higher level' use cases around JSON Table Schema (e.g. [Tabular Validator](https://github.com/okfn/tabular-validator))
-* Be 100% compliant with the the JSON Table Schema specification (we are not there yet)
+* A core set of utilities for working with [Table Schema](http://specs.frictionlessdata.io/table-schema/)
+* Use in *other* packages that deal with actual validation of data, or other 'higher level' use cases around Table Schema (e.g. [Tabular Validator](https://github.com/okfn/tabular-validator))
+* Be 100% compliant with the the Table Schema specification (we are not there yet)
 
 ## Contributing
 

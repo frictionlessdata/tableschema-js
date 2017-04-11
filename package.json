@@ -1,10 +1,10 @@
 {
   "name": "tableschema",
-  "version": "1.0.0-alpha.1", 
-  "description": "A utility library for working with JSON Table Schema in Javascript.",
+  "version": "1.0.0-alpha.1",
+  "description": "A library for working with Table Schema in Javascript.",
   "keywords": [
     "data package",
-    "json table schema",
+    "table schema",
     "frictionless data",
     "open data",
     "open knowledge"

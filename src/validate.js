@@ -3,10 +3,10 @@ import tv4 from 'tv4'
 import standard from '../schemas/json-table-schema.json'
 
 /**
- Validate that `schema` is a valid JSON Table Schema.
+ Validate that `schema` is a valid Table Schema.
 
  Args:
- * `schema`: a dict to check if it is valid JSON Table Schema
+ * `schema`: a dict to check if it is valid Table Schema
 
  Returns:
  * Promise. In case of success true, in error - list of errors
