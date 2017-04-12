@@ -15,7 +15,7 @@ export async function retrieveDescriptor(descriptor) {
     return lodash.cloneDeep(descriptor)
   }
   if (!utilities.isURL(url.parse(descriptor).protocol)) {
-    throw [new Error('Descriptor could be only object or url')]
+    throw [new Error('Descriptor can only be an object or a URL')]
   }
   const response = await fetch(descriptor)
   if (response.status >= 400) {
