@@ -66,5 +66,7 @@ rules:
     - off
   operator-assignment:
     - off
+  one-var-declaration-per-line:
+    - off
   import/prefer-default-export:
     - off
