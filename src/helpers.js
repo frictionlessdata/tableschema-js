@@ -2,7 +2,7 @@ import url from 'url'
 import 'isomorphic-fetch'
 import lodash from 'lodash'
 import utilities from './utilities'
-import config from './config'
+import * as config from './config'
 
 
 // Module API
@@ -33,7 +33,7 @@ export function expandSchemaDescriptor(descriptor) {
   for (const field of (descriptor.fields || [])) {
     expandFieldDescriptor(field)
   }
-  if (!descriptor.missingValues) descriptor.missingValues = config.defaultMissingValues
+  if (!descriptor.missingValues) descriptor.missingValues = config.DEFAULT_MISSING_VALUES
   return descriptor
 }
 
@@ -43,8 +43,8 @@ export function expandSchemaDescriptor(descriptor) {
  */
 export function expandFieldDescriptor(descriptor) {
   if (descriptor instanceof Object) {
-    if (!descriptor.type) descriptor.type = config.defaultFieldType
-    if (!descriptor.format) descriptor.format = config.defaultFieldFormat
+    if (!descriptor.type) descriptor.type = config.DEFAULT_FIELD_TYPE
+    if (!descriptor.format) descriptor.format = config.DEFAULT_FIELD_FORMAT
   }
   return descriptor
 }

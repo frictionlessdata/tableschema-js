@@ -28,7 +28,7 @@ rules:
     - error
     - allowEmptyCatch: true
   no-use-before-define:
-    - error
+    - off
     - nofunc
   one-var:
     - off
@@ -61,6 +61,10 @@ rules:
   no-restricted-syntax:
     - off
   no-throw-literal:
+    - off
+  no-console:
+    - off
+  operator-assignment:
     - off
   import/prefer-default-export:
     - off
