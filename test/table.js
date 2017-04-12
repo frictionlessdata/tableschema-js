@@ -19,12 +19,10 @@ describe('Table', () => {
         , {
           name: 'height'
           , type: 'number'
-          , constraints: { required: false }
         }
         , {
           name: 'age'
           , type: 'integer'
-          , constraints: { required: false }
         }
         , {
           name: 'name'
@@ -34,7 +32,6 @@ describe('Table', () => {
         , {
           name: 'occupation'
           , type: 'datetime'
-          , constraints: { required: false }
         }
       ]
     }
@@ -61,7 +58,7 @@ describe('Table', () => {
 
   it('should work with Schema instance', function (done) {
     let count = 0;
-    (new Schema(SCHEMA)).then(model => {
+    (Schema.load(SCHEMA)).then(model => {
       (new Table(model, DATA)).then(table => {
         table.iter(items => {
           count += 1

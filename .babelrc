@@ -3,18 +3,17 @@
     "es2015"
   ],
   "plugins": [
-    "transform-es2015-arrow-functions",
-    "transform-es2015-for-of",
-    "transform-es2015-literals",
-    "transform-es2015-shorthand-properties",
     "transform-es2015-modules-commonjs",
-    "transform-es2015-classes",
-    [
-      "transform-es2015-template-literals",
-      {
-        "loose": true,
-        "spec": true
-      }
-    ]
-  ]
+    "transform-es2017-object-entries",
+    "transform-async-to-generator",
+    "transform-object-rest-spread",
+    "transform-decorators-legacy",
+    "transform-export-extensions",
+    "transform-class-properties"
+  ],
+  "env": {
+    "testing": {
+      "plugins": ["istanbul"]
+    }
+  }
 }

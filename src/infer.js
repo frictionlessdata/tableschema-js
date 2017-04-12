@@ -18,7 +18,7 @@ import Type from './types'
  *  date: { format : 'any'}
  *  }
  *
- * @returns {object} a JSON Table Schema as a JSON
+ * @returns {object} a Table Schema as a JSON
  */
 export default (headers, values, options = {}) => {
   // Set up default options

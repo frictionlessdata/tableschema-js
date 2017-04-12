@@ -1,34 +1,76 @@
-import _ from 'lodash'
+import lodash from 'lodash'
 import Type from './types'
+import * as helpers from './helpers'
 
+
+// Module API
+
+/**
+ * Field representation for Table Schema.
+ * @param descriptor
+ */
 export default class Field {
+
+  // Public
+
   constructor(descriptor) {
-    this.descriptor = Object.freeze(_.cloneDeep(descriptor))
-    this.Type = new Type()
-  }
 
-  get name() {
-    return this.descriptor.name
-  }
+    // Process descriptor
+    descriptor = lodash.cloneDeep(descriptor)
+    descriptor = helpers.expandFieldDescriptor(descriptor)
 
-  get format() {
-    return this.descriptor.format || 'default'
+    // Set attributes
+    this._descriptor = descriptor
+    this._type_instance = new Type()
+
   }
 
   /**
-   * Return the `constraints` object of field.
+   * Field descriptor
+   * @returns {object}
+   */
+  get descriptor() {
+    return this._descriptor
+  }
+
+  /**
+   * Field name
+   * @returns {string}
+   */
+  get name() {
+    return this._descriptor.name
+  }
+
+  /**
+   * Field type
+   * @returns {string}
+   */
+  get type() {
+    return this._descriptor.type
+  }
+
+  /**
+   * Field format
+   * @returns {string}
+   */
+  get format() {
+    return this._descriptor.format
+  }
+
+  /**
+   * Field constraints
    * @returns {object}
    */
   get constraints() {
-    return this.descriptor.constraints || {}
+    return this._descriptor.constraints || {}
   }
 
+  /**
+   * Return true if field is required
+   * @returns {object}
+   */
   get required() {
-    return this.descriptor.constraints.required === true
-  }
-
-  get type() {
-    return this.descriptor.type || 'string'
+    return (this._descriptor.constraints || {}).required === true
   }
 
   /**
@@ -40,8 +82,8 @@ export default class Field {
    * @returns {Type}
    * @throws Error if value can't be casted
    */
-  castValue(value, skipConstraints = true) {
-    return this.Type.cast(this.descriptor, value, skipConstraints)
+  castValue(value, skipConstraints=true) {
+    return this._type_instance.cast(this._descriptor, value, skipConstraints)
   }
 
   /**
@@ -52,8 +94,8 @@ export default class Field {
    *
    * @returns {Boolean}
    */
-  testValue(value, skipConstraints = true) {
-    return this.Type.test(this.descriptor, value, skipConstraints)
+  testValue(value, skipConstraints=true) {
+    return this._type_instance.test(this._descriptor, value, skipConstraints)
   }
 
 }

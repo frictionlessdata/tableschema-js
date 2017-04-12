@@ -1,103 +1,54 @@
-/* global describe, beforeEach, it */
-import { assert } from 'chai'
-import Schema from '../src/schema'
+import {assert, should} from 'chai'
+import Field from '../src/field'
+should()
 
-let SCHEMA
+// Constants
+
+const DESCRIPTOR_MIN = {
+  name: 'height',
+  type: 'number',
+}
+
+// Tests
 
 describe('Field', () => {
-  beforeEach(done => {
-    SCHEMA = {
-      fields: [
-        {
-          name: 'id'
-          , type: 'string'
-          , constraints: { required: true }
-        }
-        , {
-          name: 'height'
-          , type: 'number'
-          , constraints: { required: false }
-        }
-        , {
-          name: 'Age'
-          , type: 'integer'
-          , constraints: { required: false }
-        }
-        , {
-          name: 'Name'
-          , type: 'string'
-          , constraints: { required: true }
-        }
-        , {
-          name: 'occupation'
-          , type: 'string'
-          , constraints: { required: false }
-        }
-      ]
-    }
-    done()
+
+  it('should get correct instance', () => {
+      const field = new Field(DESCRIPTOR_MIN)
+      assert.equal(field.name, 'height')
+      assert.equal(field.format, 'default')
+      assert.equal(field.type, 'number')
   })
 
-  it('should get correct instance', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      const Field = schema.getField('height')
-
-      assert.equal(Field.name, 'height')
-      assert.equal(Field.format, 'default')
-      assert.equal(Field.type, 'number')
-      done()
-    }, error => {
-      assert.isNull(error)
-      done()
-    })
+  it('should return true on test', () => {
+      const field = new Field(DESCRIPTOR_MIN)
+      assert.isTrue(field.testValue(1))
   })
 
-  it('should return true on test', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      const Field = schema.getField('height')
-
-      assert.isTrue(Field.testValue(1))
-      done()
-    }, error => {
-      assert.isNull(error)
-      done()
-    })
+  it('should return false on test', () => {
+      const field = new Field(DESCRIPTOR_MIN)
+      assert.isFalse(field.testValue('string'))
   })
 
-  it('should return false on test', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      const Field = schema.getField('height')
-
-      assert.isFalse(Field.testValue('string'))
-      done()
-    }, error => {
-      assert.isNull(error)
-      done()
-    })
+  it('should cast value', () => {
+      const field = new Field(DESCRIPTOR_MIN)
+      assert.equal(field.castValue(1), 1)
   })
 
-  it('should cast value', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      const Field = schema.getField('height')
-
-      assert.equal(Field.castValue(1), 1)
-      done()
-    }, error => {
-      assert.isNull(error)
-      done()
-    })
-  })
-
-  it('should fail to cast value', done => {
-    (new Schema(SCHEMA)).then(schema => {
-      const Field = schema.getField('height')
+  it('should fail to cast value', () => {
+      const field = new Field(DESCRIPTOR_MIN)
       assert.throws(() => {
-        Field.castValue('string')
+        field.castValue('string')
       }, Error)
-      done()
-    }, error => {
-      assert.isNull(error)
-      done()
-    })
   })
+
+  it('should expand descriptor by defaults', () => {
+      const field = new Field({name: 'name'})
+      field.descriptor.should.be.deep.equal({
+        name: 'name',
+        type: 'string',
+        format: 'default',
+      })
+  })
+
 })

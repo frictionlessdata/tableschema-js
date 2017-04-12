@@ -10,6 +10,9 @@ import Schema from './schema'
 import constraints from './constraints'
 import utilities from './utilities'
 
+
+// Module API
+
 /**
  * @returns Promise
  */
@@ -23,7 +26,7 @@ export default class Table {
         self.schema = schema
         resolve(self)
       } else {
-        new Schema(schema).then(model => {
+        Schema.load(schema).then(model => {
           self.schema = model
           resolve(self)
         }).catch(error => {

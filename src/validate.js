@@ -1,21 +1,24 @@
 import _ from 'lodash'
 import tv4 from 'tv4'
-import standard from '../schemas/json-table-schema.json'
+import * as helpers from './helpers'
+import profile from './profiles/table-schema.json'
 
 /**
- Validate that `schema` is a valid JSON Table Schema.
+ Validate that `schema` is a valid Table Schema.
 
  Args:
- * `schema`: a dict to check if it is valid JSON Table Schema
+ * `schema`: a dict to check if it is valid Table Schema
 
  Returns:
  * Promise. In case of success true, in error - list of errors
  */
 export default schema => {
+  schema = helpers.expandSchemaDescriptor(schema)
+
   const fieldNames = _.map(schema.fields || [], _.property('name'))
 
   return new Promise((resolve, reject) => {
-    const result = tv4.validateMultiple(schema, standard)
+    const result = tv4.validateMultiple(schema, profile)
     if (result.valid) {
       const validation = extra()
       if (validation.valid) {
@@ -126,7 +129,7 @@ export default schema => {
           }
         }
 
-        if (fk.reference.resource === 'self') {
+        if (fk.reference.resource === '') {
           if (_.isString(fk.reference.fields)) {
             if (!_.includes(fieldNames, fk.reference.fields)) {
               valid = false
