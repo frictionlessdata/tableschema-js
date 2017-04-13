@@ -32,6 +32,7 @@ describe('Table', () => {
         , {
           name: 'occupation'
           , type: 'datetime'
+          , format: 'any'
         }
       ]
     }

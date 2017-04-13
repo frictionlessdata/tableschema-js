@@ -69,7 +69,7 @@ export default class Schema {
     for (let i = 0, length = items.length; i < length; i += 1) {
       try {
         const field = this.getField(headers[i], i)
-        const value = field.castValue(items[i], skipConstraints)
+        const value = field.castValue(items[i], !skipConstraints)
 
         if (!skipConstraints) {
           // unique constraints available only from Resource
@@ -231,7 +231,7 @@ export default class Schema {
     this._caseInsensitiveHeaders = caseInsensitiveHeaders
     this._fields = []
     for (const field of descriptor.fields) {
-      this._fields.push(new Field(field))
+      this._fields.push(new Field(field, this._descriptor.missingValues))
     }
   }
 

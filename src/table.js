@@ -264,7 +264,6 @@ function cast(instance, reject, callback, errors, items, failFast
   try {
     const values = instance.schema.castRow(items, failFast,
                                            skipConstraints)
-
     if (!skipConstraints && instance.primaryHeaders) {
       // unique constraints available only from Resource
       constraints.check_unique_primary(values, instance.primaryHeaders,
