@@ -39,7 +39,7 @@ rules:
     - warn
     - smart
   no-unused-vars:
-    - warn
+    - error
   no-param-reassign:
     - off
   no-cond-assign:
@@ -67,6 +67,10 @@ rules:
   operator-assignment:
     - off
   one-var-declaration-per-line:
+    - off
+  no-continue:
+    - off
+  no-shadow:
     - off
   import/prefer-default-export:
     - off

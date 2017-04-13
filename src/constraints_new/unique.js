@@ -1,5 +1,5 @@
 // Module API
 
-export function checkUnique(constraint, value) {
+export function checkUnique() {
   return true
 }
