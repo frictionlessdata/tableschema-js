@@ -1,7 +1,6 @@
 import url from 'url'
 import 'isomorphic-fetch'
 import lodash from 'lodash'
-import utilities from './utilities'
 import * as config from './config'
 
 
@@ -14,7 +13,7 @@ export async function retrieveDescriptor(descriptor) {
   if (!lodash.isString(descriptor)) {
     return lodash.cloneDeep(descriptor)
   }
-  if (!utilities.isURL(url.parse(descriptor).protocol)) {
+  if (!isURL(url.parse(descriptor).protocol)) {
     throw [new Error('Descriptor can only be an object or a URL')]
   }
   const response = await fetch(descriptor)
@@ -47,6 +46,16 @@ export function expandFieldDescriptor(descriptor) {
     if (!descriptor.format) descriptor.format = config.DEFAULT_FIELD_FORMAT
   }
   return descriptor
+}
+
+
+/**
+ * Check if protocol is remote.
+ */
+export function isURL(protocol) {
+  const REMOTE_SCHEMES = ['http', 'https', 'ftp', 'ftps']
+  if (!protocol) return false
+  return REMOTE_SCHEMES.indexOf(protocol.replace(':', '')) !== -1
 }
 
 

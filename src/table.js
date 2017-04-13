@@ -7,8 +7,7 @@ import _ from 'lodash'
 import parse from 'csv-parse'
 import transform from 'stream-transform'
 import Schema from './schema'
-import utilities from './utilities'
-import {checkUniquePrimary} from './helpers'
+import * as helpers from './helpers'
 
 
 // Module API
@@ -232,7 +231,7 @@ function getReadStream(source) {
     } else if (_.isString(source)) {
       // probably it is some URL or local path to the file with the data
       const protocol = url.parse(source).protocol
-      if (utilities.isURL(protocol)) {
+      if (helpers.isURL(protocol)) {
         const processor = protocol.indexOf('https') !== -1 ? https : http
         // create readable stream from remote file
         processor.get(source, res => {
@@ -268,7 +267,7 @@ function cast(instance, reject, callback, errors, items, failFast
                                            skipConstraints)
     if (!skipConstraints && instance.primaryHeaders) {
       // unique constraints available only from Resource
-      checkUniquePrimary(values, instance.primaryHeaders,
+      helpers.checkUniquePrimary(values, instance.primaryHeaders,
                                        instance.uniqueness)
     }
     callback(values)
