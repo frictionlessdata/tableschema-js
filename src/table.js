@@ -7,8 +7,8 @@ import _ from 'lodash'
 import parse from 'csv-parse'
 import transform from 'stream-transform'
 import Schema from './schema'
-import constraints from './constraints'
 import utilities from './utilities'
+import {checkUniquePrimary} from './helpers'
 
 
 // Module API
@@ -64,6 +64,8 @@ export default class Table {
         this.primaryHeaders[header] = headers.indexOf(header)
       })
     }
+    // TODO: reimplement
+    // That's very wrong - this method must not update the schema
     this.uniqueness = {}
     this.schema.uniqueness = this.uniqueness
     // using for regular unique constraints for every value independently
@@ -266,7 +268,7 @@ function cast(instance, reject, callback, errors, items, failFast
                                            skipConstraints)
     if (!skipConstraints && instance.primaryHeaders) {
       // unique constraints available only from Resource
-      constraints.check_unique_primary(values, instance.primaryHeaders,
+      checkUniquePrimary(values, instance.primaryHeaders,
                                        instance.uniqueness)
     }
     callback(values)

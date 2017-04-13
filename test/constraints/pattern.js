@@ -1,24 +1,23 @@
 import {assert, should} from 'chai'
-import * as constraints from '../../src/constraints_new'
+import * as constraints from '../../src/constraints'
 should()
 
 
 // Constants
 
 const TESTS = [
-  [0, 1, true],
-  [1, 1, true],
-  [2, 1, false],
+  ['^test$', 'test', true],
+  ['^test$', 'TEST', false],
 ]
 
 // Tests
 
-describe('checkMinimum', () => {
+describe('checkPattern', () => {
 
   TESTS.forEach(test => {
     const [constraint, value, result] = test
     it(`constraint "${constraint}" should check "${value}" as "${result}"`, () => {
-        assert.deepEqual(constraints.checkMinimum(constraint, value), result)
+        assert.deepEqual(constraints.checkPattern(constraint, value), result)
     })
   })
 

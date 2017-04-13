@@ -1,23 +1,24 @@
 import {assert, should} from 'chai'
-import * as constraints from '../../src/constraints_new'
+import * as constraints from '../../src/constraints'
 should()
 
 
 // Constants
 
 const TESTS = [
-  ['^test$', 'test', true],
-  ['^test$', 'TEST', false],
+  [[1, 2], 1, true],
+  [[0, 2], 1, false],
+  [[], 1, false],
 ]
 
 // Tests
 
-describe('checkPattern', () => {
+describe('checkEnum', () => {
 
   TESTS.forEach(test => {
     const [constraint, value, result] = test
     it(`constraint "${constraint}" should check "${value}" as "${result}"`, () => {
-        assert.deepEqual(constraints.checkPattern(constraint, value), result)
+        assert.deepEqual(constraints.checkEnum(constraint, value), result)
     })
   })
 

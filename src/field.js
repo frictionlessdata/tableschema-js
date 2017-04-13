@@ -1,5 +1,5 @@
 import lodash from 'lodash'
-import * as constraints from './constraints_new'
+import * as constraints from './constraints'
 import * as helpers from './helpers'
 import * as config from './config'
 import * as types from './types_new'

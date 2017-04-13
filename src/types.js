@@ -2,7 +2,7 @@ import _ from 'lodash'
 import moment from 'moment'
 import { timeParse } from 'd3-time-format'
 import utilities from './utilities'
-import constraints from './constraints'
+import constraints from './constraints_old'
 
 class Abstract {
   constructor(field) {

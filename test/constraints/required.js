@@ -1,5 +1,5 @@
 import {assert, should} from 'chai'
-import * as constraints from '../../src/constraints_new'
+import * as constraints from '../../src/constraints'
 should()
 
 
