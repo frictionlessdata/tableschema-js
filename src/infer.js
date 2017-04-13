@@ -1,5 +1,9 @@
 import _ from 'lodash'
-import Type from './types'
+import {ERROR} from './config'
+import * as types from './types'
+
+
+// Module API
 
 /**
  * Return a descriptor from the passed headers and values.
@@ -29,7 +33,6 @@ export default (headers, values, options = {}) => {
       , primaryKey: null
       , cast: {}
     }, options)
-    , type = new Type(opts.cast)
     , descriptor = { fields: [] }
 
   if (opts.primaryKey) {
@@ -70,7 +73,7 @@ export default (headers, values, options = {}) => {
       columnValues = _.take(columnValues, opts.rowLimit)
     }
 
-    field.type = type.multiCast(columnValues)
+    field.type = _guessType(columnValues)
 
     if (opts.cast && opts.cast.hasOwnProperty.call(opts.cast, field.type)) {
       field.format = opts.cast[field.type].format
@@ -82,4 +85,52 @@ export default (headers, values, options = {}) => {
   })
 
   return descriptor
+}
+
+
+// Internal
+
+const _TYPE_ORDER = [
+  'duration',
+  'geojson',
+  'geopoint',
+  'object',
+  'array',
+  'datetime',
+  'time',
+  'date',
+  'integer',
+  'number',
+  'boolean',
+  'string',
+  'any',
+]
+
+
+function _guessType(values) {
+
+  // Get matching types
+  const matches = []
+  for (const value of values) {
+    for (const type of _TYPE_ORDER) {
+      const cast = types[`cast${_.upperFirst(type)}`]
+      const result = cast('default', value)
+      if (result !== ERROR) {
+        matches.push(type)
+        break
+      }
+    }
+  }
+
+  // Get winner type
+  let winner = 'any'
+  let count = 0
+  for (const [itemType, itemCount] of Object.entries(_.countBy(matches))) {
+    if (itemCount > count) {
+      winner = itemType
+      count = itemCount
+    }
+  }
+
+  return winner
 }

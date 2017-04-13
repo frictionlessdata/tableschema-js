@@ -4,7 +4,6 @@ import fs from 'fs'
 import validate from './validate'
 import Field from './field'
 import * as helpers from './helpers'
-import constraints from './constraints'
 
 
 // Module API
@@ -69,12 +68,15 @@ export default class Schema {
     for (let i = 0, length = items.length; i < length; i += 1) {
       try {
         const field = this.getField(headers[i], i)
-        const value = field.castValue(items[i], skipConstraints)
+        const value = field.castValue(items[i], !skipConstraints)
 
+        // TODO: reimplement
+        // That's very wrong - on schema level uniqueness doesn't make sense
+        // and it's very bad to use it for exteral (by Table) monkeypatching
         if (!skipConstraints) {
           // unique constraints available only from Resource
           if (this.uniqueness && this.uniqueHeaders) {
-            constraints.check_unique(field.name, value, this.uniqueHeaders,
+            helpers.checkUnique(field.name, value, this.uniqueHeaders,
                                      this.uniqueness)
           }
         }
@@ -231,7 +233,7 @@ export default class Schema {
     this._caseInsensitiveHeaders = caseInsensitiveHeaders
     this._fields = []
     for (const field of descriptor.fields) {
-      this._fields.push(new Field(field))
+      this._fields.push(new Field(field, this._descriptor.missingValues))
     }
   }
 

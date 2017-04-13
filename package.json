@@ -64,7 +64,7 @@
     "profiles": "wget -O src/profiles/table-schema.json https://specs.frictionlessdata.io/schemas/table-schema.json",
     "lint": "eslint scripts src",
     "pretest": "npm run lint",
-    "test": "mocha --opts .mocharc",
+    "test": "mocha",
     "coverage": "node_modules/.bin/babel-node node_modules/.bin/babel-istanbul cover node_modules/.bin/_mocha -- test/*.js"
   },
   "files": [

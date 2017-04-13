@@ -80,7 +80,8 @@ describe('Infer', () => {
     })
   })
 
-  it('respect cast parameter', done => {
+  // There is no more currency format
+  it.skip('respect cast parameter', done => {
     fs.readFile('data/data_infer_formats.csv', (err, data) => {
       assert.isNull(err)
 

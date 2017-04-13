@@ -7,8 +7,7 @@ import _ from 'lodash'
 import parse from 'csv-parse'
 import transform from 'stream-transform'
 import Schema from './schema'
-import constraints from './constraints'
-import utilities from './utilities'
+import * as helpers from './helpers'
 
 
 // Module API
@@ -64,6 +63,8 @@ export default class Table {
         this.primaryHeaders[header] = headers.indexOf(header)
       })
     }
+    // TODO: reimplement
+    // That's very wrong - this method must not update the schema
     this.uniqueness = {}
     this.schema.uniqueness = this.uniqueness
     // using for regular unique constraints for every value independently
@@ -230,7 +231,7 @@ function getReadStream(source) {
     } else if (_.isString(source)) {
       // probably it is some URL or local path to the file with the data
       const protocol = url.parse(source).protocol
-      if (utilities.isURL(protocol)) {
+      if (helpers.isURL(protocol)) {
         const processor = protocol.indexOf('https') !== -1 ? https : http
         // create readable stream from remote file
         processor.get(source, res => {
@@ -264,10 +265,9 @@ function cast(instance, reject, callback, errors, items, failFast
   try {
     const values = instance.schema.castRow(items, failFast,
                                            skipConstraints)
-
     if (!skipConstraints && instance.primaryHeaders) {
       // unique constraints available only from Resource
-      constraints.check_unique_primary(values, instance.primaryHeaders,
+      helpers.checkUniquePrimary(values, instance.primaryHeaders,
                                        instance.uniqueness)
     }
     callback(values)

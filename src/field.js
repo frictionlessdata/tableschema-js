@@ -1,6 +1,8 @@
 import lodash from 'lodash'
-import Type from './types'
+import * as constraints from './constraints'
 import * as helpers from './helpers'
+import * as config from './config'
+import * as types from './types'
 
 
 // Module API
@@ -13,7 +15,7 @@ export default class Field {
 
   // Public
 
-  constructor(descriptor) {
+  constructor(descriptor, missingValues=config.DEFAULT_MISSING_VALUES) {
 
     // Process descriptor
     descriptor = lodash.cloneDeep(descriptor)
@@ -21,7 +23,9 @@ export default class Field {
 
     // Set attributes
     this._descriptor = descriptor
-    this._type_instance = new Type()
+    this._missingValues = missingValues
+    this._castFunction = this._getCastFunction()
+    this._checkFunctions = this._getCheckFunctions()
 
   }
 
@@ -74,28 +78,105 @@ export default class Field {
   }
 
   /**
-   * Cast value to fieldName's type
+   * Cast value
    *
-   * @param value
-   * @param skipConstraints
+   * @param {any} value
+   * @param {Boolean|String[]} constraints
    *
-   * @returns {Type}
-   * @throws Error if value can't be casted
+   * @returns {any}
+   * @throws Error if value can't be cast
    */
-  castValue(value, skipConstraints=true) {
-    return this._type_instance.cast(this._descriptor, value, skipConstraints)
+  castValue(value, constraints=true) {
+
+    // Null value
+    if (this._missingValues.includes(value)) {
+      value = null
+    }
+
+    // Cast value
+    let castValue = value
+    if (value !== null) {
+      castValue = this._castFunction(value)
+      if (castValue === config.ERROR) {
+        throw Error(
+          `Field "${this.name}" can't cast value "${value}"
+          for type "${this.type}" with format "${this.format}"`
+        )
+      }
+    }
+
+    // Check value
+    if (constraints) {
+      for (const [name, check] of Object.entries(this._checkFunctions)) {
+        if (lodash.isArray(constraints)) {
+          if (!constraints.includes(name)) continue
+        }
+        const passed = check(castValue)
+        if (!passed) {
+          throw Error(
+            `Field "${this.name}" has constraint "${name}"
+            which is not satisfied for value "{value}"`
+          )
+        }
+      }
+    }
+
+    return castValue
   }
 
   /**
-   * Check if value to fieldName's type can be casted
+   * Check if value can be cast
    *
-   * @param value
-   * @param skipConstraints
+   * @param {any} value
+   * @param {Boolean|String[]} constraints
    *
    * @returns {Boolean}
    */
-  testValue(value, skipConstraints=true) {
-    return this._type_instance.test(this._descriptor, value, skipConstraints)
+  testValue(value, constraints=true) {
+    try {
+      this.castValue(value, constraints)
+    } catch (error) {
+      return false
+    }
+    return true
+  }
+
+  // Private
+
+  _getCastFunction() {
+    const options = {}
+    // Get cast options for number
+    if (this.type === 'number') {
+      for (const key of ['decimalChar', 'groupChar', 'currency']) {
+        const value = this.descriptor[key]
+        if (value !== undefined) {
+          options[key] = value
+        }
+      }
+    }
+    const func = types[`cast${lodash.upperFirst(this.type)}`]
+    const cast = lodash.partial(func, this.format, lodash, options)
+    return cast
+  }
+
+  _getCheckFunctions() {
+    const checks = {}
+    const cast = lodash.partial(this.castValue, lodash, false)
+    for (const [name, constraint] of Object.entries(this.constraints)) {
+      let castConstraint = constraint
+      // Cast enum constraint
+      if (['enum'].includes(name)) {
+        castConstraint = constraint.map(cast)
+      }
+      // Cast maximum/minimum constraint
+      if (['maximum', 'minimum'].includes(name)) {
+        castConstraint = cast(constraint)
+      }
+      const func = constraints[`check${lodash.upperFirst(name)}`]
+      const check = lodash.partial(func, castConstraint)
+      checks[name] = check
+    }
+    return checks
   }
 
 }

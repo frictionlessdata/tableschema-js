@@ -224,7 +224,7 @@ describe('Schema', () => {
     (Schema.load(SCHEMA)).then(schema => {
       const value = ['string', '10.0', '1', 'string', 'string']
         , convertedRow = schema.castRow(value)
-      assert.deepEqual(['string', '10.0', 1, 'string', 'string'], convertedRow)
+      assert.deepEqual(['string', 10, 1, 'string', 'string'], convertedRow)
       done()
     }, error => {
       assert.isNull(error)
