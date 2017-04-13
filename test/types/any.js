@@ -1,5 +1,5 @@
 import {assert, should} from 'chai'
-import * as types from '../../src/types_new'
+import * as types from '../../src/types'
 should()
 
 

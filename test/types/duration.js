@@ -1,7 +1,7 @@
 import moment from 'moment'
 import {assert, should} from 'chai'
 import {ERROR} from '../../src/config'
-import * as types from '../../src/types_new'
+import * as types from '../../src/types'
 should()
 
 

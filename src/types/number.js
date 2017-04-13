@@ -4,7 +4,7 @@ import {ERROR} from '../config'
 
 // Module API
 
-export function castNumber(format, value, options) {
+export function castNumber(format, value, options={}) {
   let percentage = false
   const currency = options.currency || false
   const decimalChar = options.decimalChar || _DEFAULT_DECIMAL_CHAR
