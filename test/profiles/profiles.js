@@ -1,6 +1,6 @@
 import axios from 'axios'
 import {should} from 'chai'
-const profile = require('../src/profiles/table-schema.json')
+const profile = require('../../src/profiles/table-schema.json')
 should()
 
 // Tests
