@@ -1,11 +1,21 @@
-/* global describe, it, require */
 import fs from 'fs'
-import parse from 'csv-parse'
 import _ from 'lodash'
+import parse from 'csv-parse'
 import { assert } from 'chai'
 import infer from '../src/infer'
 
-describe('Infer', () => {
+
+// Tests
+
+describe('infer', () => {
+
+  before(function() {
+    // Skip infer tests for browser
+    if (process.env.USER_ENV === 'browser') {
+      this.skip()
+    }
+  })
+
   it('produce schema from a generic .csv', done => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err)

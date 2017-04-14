@@ -1,13 +1,23 @@
-/* global describe, beforeEach, it */
 import { assert } from 'chai'
 import fs from 'fs'
 import Table from '../src/table'
 import Schema from '../src/schema'
 
+
+// Tests
+
 let SCHEMA
   , DATA
 
 describe('Table', () => {
+
+  before(function() {
+    // Skip infer tests for browser
+    if (process.env.USER_ENV === 'browser') {
+      this.skip()
+    }
+  })
+
   beforeEach(done => {
     SCHEMA = {
       fields: [
