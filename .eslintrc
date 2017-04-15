@@ -46,7 +46,7 @@ rules:
     - error
     - except-parens
   arrow-parens:
-    - error
+    - off
     - as-needed
   class-methods-use-this:
     - off
@@ -72,5 +72,13 @@ rules:
     - off
   no-shadow:
     - off
+  func-names:
+    - off
+  no-prototype-builtins:
+    - off
+  space-before-function-paren:
+    - off
   import/prefer-default-export:
+    - off
+  import/newline-after-import:
     - off

@@ -55,7 +55,7 @@ describe('castTime', () => {
   TESTS.forEach(test => {
     const [format, value, result] = test
     it(`format "${format}" should cast "${value}" to "${result}"`, () => {
-        assert.deepEqual(types.castTime(format, value), result)
+      assert.deepEqual(types.castTime(format, value), result)
     })
   })
 

@@ -1,3 +1,4 @@
+/* eslint quote-props: off */
 import {assert, should} from 'chai'
 import {ERROR} from '../../src/config'
 import * as types from '../../src/types'
@@ -47,7 +48,7 @@ describe('castGeopoint', () => {
   TESTS.forEach(test => {
     const [format, value, result] = test
     it(`format "${format}" should cast "${value}" to "${result}"`, () => {
-        assert.deepEqual(types.castGeopoint(format, value), result)
+      assert.deepEqual(types.castGeopoint(format, value), result)
     })
   })
 

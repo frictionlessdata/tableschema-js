@@ -1,7 +1,10 @@
 /* global describe, it, beforeEach */
 import { assert } from 'chai'
-import validate from '../src/validate'
 import fetchMock from 'fetch-mock'
+import validate from '../src/validate'
+
+
+// Tests
 
 let SCHEMA
 describe('Validate', () => {
@@ -10,29 +13,26 @@ describe('Validate', () => {
     SCHEMA = {
       fields: [
         {
-          name: 'id'
-          , type: 'string'
-          , constraints: { required: true }
+          name: 'id',
+          type: 'string',
+          constraints: { required: true }
+        },
+        {
+          name: 'height',
+          type: 'number'
+        }, {
+          name: 'age',
+          type: 'integer'
+        }, {
+          name: 'name',
+          type: 'string',
+          constraints: { required: true }
+        }, {
+          name: 'occupation',
+          type: 'string'
         }
-        , {
-          name: 'height'
-          , type: 'number'
-        }
-        , {
-          name: 'age'
-          , type: 'integer'
-        }
-        , {
-          name: 'name'
-          , type: 'string'
-          , constraints: { required: true }
-        }
-        , {
-          name: 'occupation'
-          , type: 'string'
-        }
-      ]
-      , primaryKey: ['id']
+      ],
+      primaryKey: ['id']
     }
     done()
   })
@@ -63,13 +63,15 @@ describe('Validate', () => {
 
   it('ensure schema fields has required properties', done => {
     SCHEMA = {
-      fields: [{
-        name: 'id'
-        , type: 'number'
-      }
-        , {
+      fields: [
+        {
+          name: 'id',
           type: 'number'
-        }]
+        },
+        {
+          type: 'number'
+        }
+      ]
     }
 
     validate(SCHEMA).then(valid => {
@@ -84,15 +86,17 @@ describe('Validate', () => {
 
   it('ensure schema fields constraints must be an object', done => {
     SCHEMA = {
-      fields: [{
-        name: 'id'
-        , type: 'string'
-        , constraints: 'string'
-      }
-        , {
-          name: 'height'
-          , type: 'number'
-        }]
+      fields: [
+        {
+          name: 'id',
+          type: 'string',
+          constraints: 'string'
+        },
+        {
+          name: 'height',
+          type: 'number'
+        }
+      ]
     }
 
     validate(SCHEMA).then(valid => {
@@ -108,28 +112,29 @@ describe('Validate', () => {
   it('ensure constraints properties have correct type', done => {
     SCHEMA = {
       fields: [{
-        name: 'id'
-        , type: 'string'
-        , constraints: {
-          required: 'string'
-          , unique: 'string'
-          , pattern: 1
-          , minimum: 10
-          , maximum: 20
+        name: 'id',
+        type: 'string',
+        constraints: {
+          required: 'string',
+          unique: 'string',
+          pattern: 1,
+          minimum: 10,
+          maximum: 20
+        }
+      },
+      {
+        name: 'age',
+        type: 'integer',
+        constraints: {
+          required: 'string',
+          unique: 'string',
+          minLength: true,
+          maxLength: true,
+          minimum: 'string',
+          maximum: 'string'
         }
       }
-        , {
-          name: 'age'
-          , type: 'integer'
-          , constraints: {
-            required: 'string'
-            , unique: 'string'
-            , minLength: true
-            , maxLength: true
-            , minimum: 'string'
-            , maximum: 'string'
-          }
-        }]
+      ]
     }
 
     validate(SCHEMA).then(valid => {
@@ -145,24 +150,24 @@ describe('Validate', () => {
   it('ensure constraints properties with correct type is valid', done => {
     SCHEMA = {
       fields: [{
-        name: 'id'
-        , type: 'string'
-        , constraints: {
-          required: true
-          , pattern: '/.*/'
-          , unique: true
+        name: 'id',
+        type: 'string',
+        constraints: {
+          required: true,
+          pattern: '/.*/',
+          unique: true
+        }
+      }, {
+        name: 'age',
+        type: 'integer',
+        constraints: {
+          required: true,
+          unique: true,
+          minimum: '10',
+          maximum: '20'
         }
       }
-        , {
-          name: 'age'
-          , type: 'integer'
-          , constraints: {
-            required: true
-            , unique: true
-            , minimum: '10'
-            , maximum: '20'
-          }
-        }]
+      ]
     }
 
     validate(SCHEMA).then(valid => {
@@ -246,154 +251,142 @@ describe('Validate', () => {
     })
   })
 
-  it('ensure fields exists in schema',
-     done => {
-       SCHEMA.foreignKeys = [
-         {
-           fields: ['unknown']
-           , reference: {
-           fields: ['fk_id']
-           , resource: 'resource'
-         }
-         }
-         , {
-           fields: ['id', 'unknown']
-           , reference: {
-             resource: 'the-resource'
-             , fields: ['fk_id', 'fk_name']
-           }
-         }
-       ]
-       validate(SCHEMA).then(valid => {
-         assert.isFalse(valid)
-         done()
-       }).catch(errors => {
-         assert.isArray(errors)
-         assert.equal(errors.length, 2)
-         done()
-       })
-     })
+  it('ensure fields exists in schema', done => {
+    SCHEMA.foreignKeys = [
+      {
+        fields: ['unknown'],
+        reference: {
+          fields: ['fk_id'],
+          resource: 'resource'
+        }
+      }, {
+        fields: ['id', 'unknown'],
+        reference: {
+          resource: 'the-resource',
+          fields: ['fk_id', 'fk_name']
+        }
+      }
+    ]
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 2)
+      done()
+    })
+  })
 
-  it('fields in keys a string or an array and resource key should present',
-     done => {
-       SCHEMA.foreignKeys = [
-         {
-           fields: ['id']
-           , reference: {
-           fields: [{ name: 'id' }]
-           , resource: 'resource'
-         }
-         }
-         , {
-           fields: ['id']
-           , reference: {
-             resource: 'resource'
-           }
-         }
-         , {
-           fields: ['id', 'name']
-           , reference: {
-             fields: ['fk_id', 'fk_name']
-           }
-         }
-       ]
-       validate(SCHEMA).then(valid => {
-         assert.isFalse(valid)
-         done()
-       }).catch(errors => {
-         assert.isArray(errors)
-         assert.equal(errors.length, 3)
-         done()
-       })
-     })
+  it('fields in keys a string or an array and resource key should present', done => {
+    SCHEMA.foreignKeys = [
+      {
+        fields: ['id'],
+        reference: {
+          fields: [{ name: 'id' }],
+          resource: 'resource'
+        }
+      }, {
+        fields: ['id'],
+        reference: {
+          resource: 'resource'
+        }
+      }, {
+        fields: ['id', 'name'],
+        reference: {
+          fields: ['fk_id', 'fk_name']
+        }
+      }
+    ]
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 3)
+      done()
+    })
+  })
 
-  it('reference.fields should be same type as key.fields',
-     done => {
-       SCHEMA.foreignKeys = [
-         {
-           fields: ['id']
-           , reference: {
-           fields: ['id', 'name']
-           , resource: 'resource'
-         }
-         }
-         , {
-           fields: ['id', 'name']
-           , reference: {
-             resource: 'resource'
-             , fields: ['id']
-           }
-         }
-         , {
-           fields: ['id', 'name']
-           , reference: {
-             resource: 'resource'
-             , fields: ['id']
-           }
-         }
-       ]
-       validate(SCHEMA).then(valid => {
-         assert.isFalse(valid)
-         done()
-       }).catch(errors => {
-         assert.isArray(errors)
-         assert.equal(errors.length, 3)
-         done()
-       })
-     })
+  it('reference.fields should be same type as key.fields', done => {
+    SCHEMA.foreignKeys = [
+      {
+        fields: ['id'],
+        reference: {
+          fields: ['id', 'name'],
+          resource: 'resource'
+        }
+      }, {
+        fields: ['id', 'name'],
+        reference: {
+          resource: 'resource',
+          fields: ['id']
+        }
+      }, {
+        fields: ['id', 'name'],
+        reference: {
+          resource: 'resource',
+          fields: ['id']
+        }
+      }
+    ]
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 3)
+      done()
+    })
+  })
 
-  it('ensure fields in keys a string or an array and resource key is present',
-     done => {
-       SCHEMA.foreignKeys = [
-         {
-           fields: ['id']
-           , reference: {
-           fields: ['fk_id']
-           , resource: 'resource'
-         }
-         }
-         , {
-           fields: ['id', 'name']
-           , reference: {
-             resource: 'the-resource'
-             , fields: ['fk_id', 'fk_name']
-           }
-         }
-       ]
-       validate(SCHEMA).then(valid => {
-         assert.isTrue(valid)
-         done()
-       }).catch(errors => {
-         assert.isNull(errors)
-         done()
-       })
-     })
+  it('ensure fields in keys a string or an array and resource key is present', done => {
+    SCHEMA.foreignKeys = [
+      {
+        fields: ['id'],
+        reference: {
+          fields: ['fk_id'],
+          resource: 'resource'
+        }
+      }, {
+        fields: ['id', 'name'],
+        reference: {
+          resource: 'the-resource',
+          fields: ['fk_id', 'fk_name']
+        }
+      }
+    ]
+    validate(SCHEMA).then(valid => {
+      assert.isTrue(valid)
+      done()
+    }).catch(errors => {
+      assert.isNull(errors)
+      done()
+    })
+  })
 
-  it('empty foreignKeys.reference.resource should reference to the self fields',
-     done => {
-       SCHEMA.foreignKeys = [
-         {
-           fields: ['id']
-           , reference: {
-           fields: ['fk_id']
-           , resource: ''
-         }
-         }
-         , {
-           fields: ['id', 'name']
-           , reference: {
-             fields: ['fk_id', 'fk_name']
-             , resource: ''
-           }
-         }
-       ]
-       validate(SCHEMA).then(valid => {
-         assert.isFalse(valid)
-         done()
-       }).catch(errors => {
-         assert.isArray(errors)
-         assert.equal(errors.length, 3)
-         done()
-       })
-     })
+  it('empty foreignKeys.reference.resource should reference to the self fields', done => {
+    SCHEMA.foreignKeys = [
+      {
+        fields: ['id'],
+        reference: {
+          fields: ['fk_id'],
+          resource: ''
+        }
+      }, {
+        fields: ['id', 'name'],
+        reference: {
+          fields: ['fk_id', 'fk_name'],
+          resource: ''
+        }
+      }
+    ]
+    validate(SCHEMA).then(valid => {
+      assert.isFalse(valid)
+      done()
+    }).catch(errors => {
+      assert.isArray(errors)
+      assert.equal(errors.length, 3)
+      done()
+    })
+  })
 })

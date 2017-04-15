@@ -1,3 +1,4 @@
+/* eslint quote-props: off */
 import {assert, should} from 'chai'
 import {ERROR} from '../../src/config'
 import * as types from '../../src/types'
@@ -49,7 +50,7 @@ describe('castNumber', () => {
   TESTS.forEach(test => {
     const [format, value, options, result] = test
     it(`format "${format}" should cast "${value}" to "${result}"`, () => {
-        assert.deepEqual(types.castNumber(format, value, options), result)
+      assert.deepEqual(types.castNumber(format, value, options), result)
     })
   })
 

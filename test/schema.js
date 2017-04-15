@@ -137,11 +137,11 @@ describe('Schema', () => {
   it('fields are not required by default', done => {
     const data = {
       fields: [
-        { name: 'id', constraints: { required: true } }
-        , { name: 'label' }
+        { name: 'id', constraints: { required: true } },
+        { name: 'label' }
       ]
     }
-      , model = Schema.load(data)
+    const model = Schema.load(data)
 
     model.then(schema => {
       const requiredHeaders = schema.requiredHeaders
@@ -162,7 +162,7 @@ describe('Schema', () => {
       , schemaCopy = _.extend({}, data)
       , model = Schema.load(data)
 
-    model.then(schema => {
+    model.then(() => {
       assert.deepEqual(data, schemaCopy)
       done()
     }, error => {
@@ -211,7 +211,7 @@ describe('Schema', () => {
     fetchMock.mock(url, 400)
 
     const model = Schema.load(url)
-    model.then(schema => {
+    model.then(() => {
       assert.isTrue(false, 'Shouldn\'t enter here')
       done()
     }).catch(error => {

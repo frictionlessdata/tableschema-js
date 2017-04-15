@@ -58,7 +58,7 @@ describe('Table', () => {
   })
 
   it('shouldn\'t instantiate with wrong schema', done => {
-    (new Table('wrong schema', DATA)).then(table => {
+    (new Table('wrong schema', DATA)).then(() => {
       assert.isTrue(false)
       done()
     }, error => {
@@ -67,11 +67,11 @@ describe('Table', () => {
     })
   })
 
-  it('should work with Schema instance', function (done) {
+  it('should work with Schema instance', (done) => {
     let count = 0;
     (Schema.load(SCHEMA)).then(model => {
       (new Table(model, DATA)).then(table => {
-        table.iter(items => {
+        table.iter(() => {
           count += 1
         }).then(() => {
           assert.equal(count, 5)
@@ -90,10 +90,10 @@ describe('Table', () => {
     })
   })
 
-  it('should return converted values for provided array', function (done) {
+  it('should return converted values for provided array', (done) => {
     let count = 0;
     (new Table(SCHEMA, DATA)).then(table => {
-      table.iter(items => {
+      table.iter(() => {
         count += 1
       }).then(() => {
         assert.equal(count, 5)
@@ -108,11 +108,11 @@ describe('Table', () => {
     })
   })
 
-  it('should return converted values for readable stream', function (done) {
+  it('should return converted values for readable stream', (done) => {
     let count = 0;
     (new Table(SCHEMA, fs.createReadStream('./data/data_big.csv'))).then(
       table => {
-        table.iter(items => {
+        table.iter(() => {
           count += 1
         }).then(() => {
           assert.equal(count, 100)
@@ -122,15 +122,15 @@ describe('Table', () => {
           done()
         })
       }, error => {
-        assert.isNull(error)
-        done()
-      })
+      assert.isNull(error)
+      done()
+    })
   })
 
-  it('should return converted values for local path', function (done) {
+  it('should return converted values for local path', (done) => {
     let count = 0;
     (new Table(SCHEMA, './data/data_big.csv')).then(table => {
-      table.iter(items => {
+      table.iter(() => {
         count += 1
       }).then(() => {
         assert.equal(count, 100)
@@ -155,7 +155,7 @@ describe('Table', () => {
           , origItem
         assert.equal(DATA.length, converted.length)
 
-        for (let i = 0, l1 = converted.length; i < l1; i++) {
+        for (let i = 0, l1 = converted.length; i < l1; i = i + 1) {
           convItem = converted[i]
           origItem = DATA[i]
           assert.equal(convItem[0], String(origItem[0]))
@@ -181,7 +181,7 @@ describe('Table', () => {
     DATA.push([1, '10.0', '1', 'string', '2012-06-15'])
     DATA.push([1, '10.0', '1', 'string', '2012-06-15']);
     (new Table(SCHEMA, DATA)).then(table => {
-      table.iter(items => {
+      table.iter(() => {
       }).then(() => {
         done()
       }, errors => {
@@ -199,7 +199,7 @@ describe('Table', () => {
     SCHEMA.fields[0].constraints.unique = true
     DATA.push([1, '10.0', '1', 'string', '2012-06-15']);
     (new Table(SCHEMA, DATA)).then(table => {
-      table.iter(items => {
+      table.iter(() => {
       }).then(() => {
         done()
       }, errors => {
@@ -217,7 +217,7 @@ describe('Table', () => {
     SCHEMA.fields[0].constraints.unique = true
     DATA.push([1, '10.0', '1', 'string', '2012-06-15']);
     (new Table(SCHEMA, DATA)).then(table => {
-      const callback = items => {
+      const callback = () => {
       }
       table.iter(callback, true, true).then(() => {
         assert.isTrue(true)
@@ -237,7 +237,7 @@ describe('Table', () => {
     SCHEMA.primaryKey = ['height', 'age']
     DATA.push([6, '10.0', 1, 'string', '2012-06-15']);
     (new Table(SCHEMA, DATA)).then(table => {
-      table.iter(items => {
+      table.iter(() => {
       }).then(() => {
         done()
       }, errors => {

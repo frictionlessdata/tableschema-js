@@ -8,10 +8,10 @@ const karmaConfig = (config) => {
     singleRun: true,
     browsers: ['PhantomJS'],
     frameworks: ['mocha', 'sinon-chai'],
-    files: ['karma.test.js'],
+    files: ['test/karma.opts'],
     reporters: ['spec'],
     preprocessors: {
-      'karma.test.js': ['webpack'],
+      'test/karma.opts': ['webpack'],
     },
     webpack: webpackConfig,
     webpackMiddleware: {

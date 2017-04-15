@@ -18,7 +18,7 @@ describe('checkMinLength', () => {
   TESTS.forEach(test => {
     const [constraint, value, result] = test
     it(`constraint "${constraint}" should check "${value}" as "${result}"`, () => {
-        assert.deepEqual(constraints.checkMinLength(constraint, value), result)
+      assert.deepEqual(constraints.checkMinLength(constraint, value), result)
     })
   })
 

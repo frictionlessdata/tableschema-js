@@ -18,14 +18,14 @@
     "build:dist": "webpack --progress --hide-modules",
     "build:dist-min": "NODE_ENV=production webpack --progress --hide-modules",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "lint": "eslint src",
+    "lint": "eslint src test",
     "prepublish": "npm run build",
     "prepush": "npm run test",
     "pretest": "npm run lint",
     "profiles": "wget -O src/profiles/table-schema.json https://specs.frictionlessdata.io/schemas/table-schema.json",
-    "test": "npm run test:lib && npm run test:dist",
-    "test:lib": "NODE_ENV=testing nyc mocha",
-    "test:dist": "NODE_ENV=testing karma start"
+    "test": "npm run test:node && npm run test:browser",
+    "test:node": "NODE_ENV=testing nyc mocha",
+    "test:browser": "NODE_ENV=testing karma start"
   },
   "dependencies": {
     "csv-parse": "^1.1.0",
