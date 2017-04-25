@@ -17,9 +17,11 @@ A library for working with [Table Schema](http://specs.frictionlessdata.io/table
  - `validate` function for validating schema descriptors
  - `infer` function that creates a schema based on a data sample
 
-## Getting Started
+## Getting started
 
 ### Installation
+
+> The package use semantic versioning. It means that major versions  could include breaking changes. It's highly recommended to specify `tableschema` version range in your `package.json` file e.g. `tabulator: ^1.0` which  will be added by default by `npm install --save`.
 
 #### NPM
 
@@ -553,14 +555,6 @@ In this case by limiting rows to 2, we can build schema structure with correct f
 
 `cast`: every `string` value will be casted using `email` format, `number` will be tried as a `currency` format, and `date` - as `any` format
 
-## Changelog
-
-Here described only breaking and the most important changes. The full changelog could be found in nicely formatted [commit history](https://github.com/frictionlessdata/tableschema-js/commits/master).
-
-### v1.0
-
-This version includes various big changes. A migration guide is under development and will be published here.
-
 ## Contributing
 
 The project follows the [Open Knowledge International coding standards](https://github.com/okfn/coding-standards). There are common commands to work with the project:
@@ -571,3 +565,10 @@ $ npm run test
 $ npm run build
 ```
 
+## Changelog
+
+Here described only breaking and the most important changes. The full changelog could be found in nicely formatted [commit history](https://github.com/frictionlessdata/tableschema-js/commits/master).
+
+### v1.0
+
+This version includes various big changes. A migration guide is under development and will be published here.
