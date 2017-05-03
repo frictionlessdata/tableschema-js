@@ -2,7 +2,7 @@
 import _ from 'lodash'
 import fetchMock from 'fetch-mock'
 import { assert } from 'chai'
-import Schema from '../src/schema'
+import {Schema} from '../src/schema'
 
 let SCHEMA
 const SCHEMA_MIN = {

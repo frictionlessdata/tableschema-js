@@ -11,7 +11,7 @@ import * as types from './types'
  * Field representation for Table Schema.
  * @param descriptor
  */
-export default class Field {
+export class Field {
 
   // Public
 

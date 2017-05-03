@@ -12,7 +12,7 @@ import profile from './profiles/table-schema.json'
  Returns:
  * Promise. In case of success true, in error - list of errors
  */
-export default schema => {
+export function validate(schema) {
   schema = helpers.expandSchemaDescriptor(schema)
 
   const fieldNames = _.map(schema.fields || [], _.property('name'))

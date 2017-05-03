@@ -6,7 +6,7 @@ import https from 'https'
 import _ from 'lodash'
 import parse from 'csv-parse'
 import transform from 'stream-transform'
-import Schema from './schema'
+import {Schema} from './schema'
 import * as helpers from './helpers'
 
 
@@ -15,7 +15,7 @@ import * as helpers from './helpers'
 /**
  * @returns Promise
  */
-export default class Table {
+export class Table {
   constructor(schema, data) {
     const self = this
     this.source = data

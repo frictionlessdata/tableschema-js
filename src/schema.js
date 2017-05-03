@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import 'isomorphic-fetch'
 import fs from 'fs'
-import validate from './validate'
-import Field from './field'
+import {validate} from './validate'
+import {Field} from './field'
 import * as helpers from './helpers'
 
 
@@ -17,7 +17,7 @@ import * as helpers from './helpers'
  * Use async `Schema.load(descriptor)` to instantiate this class.
  *
  */
-export default class Schema {
+export class Schema {
 
   // Public
 

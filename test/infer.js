@@ -2,7 +2,7 @@ import fs from 'fs'
 import _ from 'lodash'
 import parse from 'csv-parse'
 import { assert } from 'chai'
-import infer from '../src/infer'
+import {infer} from '../src/infer'
 
 
 // Tests

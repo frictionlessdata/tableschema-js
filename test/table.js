@@ -1,7 +1,7 @@
 import { assert } from 'chai'
 import fs from 'fs'
-import Table from '../src/table'
-import Schema from '../src/schema'
+import {Table} from '../src/table'
+import {Schema} from '../src/schema'
 
 
 // Tests

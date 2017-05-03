@@ -1,5 +1,5 @@
 import {assert, should} from 'chai'
-import Field from '../src/field'
+import {Field} from '../src/field'
 should()
 
 // Constants

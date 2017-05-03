@@ -24,7 +24,7 @@ import * as types from './types'
  *
  * @returns {object} a Table Schema as a JSON
  */
-export default (headers, values, options = {}) => {
+export function infer(headers, values, options = {}) {
   // Set up default options
   const opts = _.extend(
     {
