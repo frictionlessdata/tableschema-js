@@ -161,7 +161,7 @@ export class Field {
 
   _getCheckFunctions() {
     const checks = {}
-    const cast = lodash.partial(this.castValue, lodash, false)
+    const cast = lodash.bind(this.castValue, this, lodash, false)
     for (const [name, constraint] of Object.entries(this.constraints)) {
       let castConstraint = constraint
       // Cast enum constraint
@@ -172,6 +172,7 @@ export class Field {
       if (['maximum', 'minimum'].includes(name)) {
         castConstraint = cast(constraint)
       }
+
       const func = constraints[`check${lodash.upperFirst(name)}`]
       const check = lodash.partial(func, castConstraint)
       checks[name] = check
