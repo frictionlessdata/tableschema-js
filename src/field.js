@@ -86,7 +86,7 @@ export class Field {
    * @returns {any}
    * @throws Error if value can't be cast
    */
-  castValue(value, constraints=false) {
+  castValue(value, constraints=true) {
 
     // Null value
     if (this._missingValues.includes(value)) {
