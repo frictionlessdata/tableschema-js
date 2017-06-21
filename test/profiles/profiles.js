@@ -7,7 +7,7 @@ should()
 
 describe('profiles', () => {
 
-  it('should be up-to-date', async () => {
+  it.skip('should be up-to-date', async () => {
     const res = await axios.get('https://specs.frictionlessdata.io/schemas/table-schema.json')
     profile.should.deep.equal(res.data)
   })
