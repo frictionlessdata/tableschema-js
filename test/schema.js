@@ -284,4 +284,10 @@ describe('Schema', () => {
       done()
     })
   })
+
+  it('should allow pattern format for date', async () => {
+    const descriptor = {fields: [{name: 'year', format: '%Y', type: 'date'}]}
+    const schema = await Schema.load(descriptor)
+    assert.deepEqual(schema.castRow(['2005']), [new Date(2005, 0, 1)])
+  })
 })
