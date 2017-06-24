@@ -21,7 +21,7 @@ A library for working with [Table Schema](http://specs.frictionlessdata.io/table
 
 ### Installation
 
-> The package use semantic versioning. It means that major versions  could include breaking changes. It's highly recommended to specify `tableschema` version range in your `package.json` file e.g. `tabulator: ^1.0` which  will be added by default by `npm install --save`.
+The package use semantic versioning. It means that major versions  could include breaking changes. It's highly recommended to specify `tableschema` version range in your `package.json` file e.g. `tabulator: ^1.0` which  will be added by default by `npm install --save`.
 
 #### NPM
 
@@ -38,10 +38,10 @@ $ npm install tableschema@latest # v1.0-alpha
 
 ### Examples
 
-There are main examples and more are available in [examples](https://github.com/frictionlessdata/tableschema-js/tree/master/examples) directory.
+Code examples in this readme requires Node v8.0+ or proper modern browser . Also you have to wrap code into async function if there is await keyword used. You could see even more example in [examples](https://github.com/frictionlessdata/tableschema-js/tree/master/examples) directory.
 
 ```js
-import {Schema} from 'tableschema'
+const {Schema} = require('tableschema')
 
 const descriptor = {
   fields: [
@@ -50,19 +50,18 @@ const descriptor = {
   ]
 }
 
-Schema.load(descriptor).then(schema => {
-    schema.getField('age').castValue('21') // 21
-})
+const schema = await Schema.load(descriptor)
+schema.getField('age').castValue('21') // 21
 ```
 
 ## Documentation
 
 ### Table
 
-A javascript model of a table (data + schema).
+A javascript model to work with a table (data + schema). Data could be in-memory object, path or URL.
 
 ```js
-import {Table} from 'tableschema'
+const {Table} = require('tableschema')
 
 const data = [
   ['Alex', '21'],
@@ -79,65 +78,67 @@ const table = await Table.load(data, {schema})
 await table.read() // [['Alex', 21], ['John', 35]]
 ```
 
-#### async Table.load(source, {schema})
+This class doesn't have public constructor and should be instantiated using `Table.load` factory method.
+
+#### `async Table.load(source, {schema})`
 
 Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`.
 
-- source (String/Object) - gets data source in a form of:
+- `source (String/Object)` - data source in a form of:
   - array of objects with values, represent the rows
   - local CSV file
   - remote CSV file (URL)
   - readable stream with CSV file contents
-- schema (Object) - gets data schema in all forms supported by `Schema` class
-- (Error) - raises any error occured in table creation process
-- (Table) - returns data table class instance
+- `schema (Object)` - data schema in all forms supported by `Schema` class
+- `(Error)` - raises any error occured in table creation process
+- `(Table)` - returns data table class instance
 
-#### table.schema
+#### `table.schema`
 
-- (Schema) - returns schema class instance
+- `(Schema)` - returns schema class instance
 
-#### table.headers
+#### `table.headers`
 
-- (String[]) - returns data source headers
+- `(String[])` - returns data source headers
 
-#### async table.iter({keyed, extended, cast=true})
+#### `async table.iter({keyed, extended, cast=true})`
 
 Iter through the table data and emits rows cast based on table schema. Data casting could be disabled.
 
-- keyed (Boolean) - gets a flag to emit keyed rows
-- extended (Boolean) - gets a flag to emit extended rows
-- cast (Boolean) - gets a flag to disable data casting if false
-- (Error) - raises any error occured in this process
-- (any) - emits row by row:
-  - base - `[value1, value2]`
-  - keyed - `{header1: value1, header2: value2}`
-  - extended - `[rowNumber, [header1, header2], [value1, value2]]`
+- `keyed (Boolean)` - flag to emit keyed rows
+- `extended (Boolean)` - flag to emit extended rows
+- `cast (Boolean)` - flag to disable data casting if false
+- `(Error)` - raises any error occured in this process
+- `(any)` - emits row by row
+  - `[value1, value2]` - base
+  - `{header1: value1, header2: value2}` - keyed
+  - `[rowNumber, [header1, header2], [value1, value2]]` - extended
 
-#### async table.read({keyed, extended, cast=true, limit})
+#### `async table.read({keyed, extended, cast=true, limit})`
 
 Read the whole table and returns as array of rows. Count of rows could be limited.
 
-- keyed (Boolean) - gets a flag to emit keyed rows
-- extended (Boolean) - gets a flag to emit extended rows
-- cast (Boolean) - gets a flag to disable data casting if false
-- limit (Number) - gets a integer limit of rows to return
-- (Error) - raises any error occured in this process
-- (Array[]) - returns array of rows (see `table.iter`)
+- `keyed (Boolean)` - flag to emit keyed rows
+- `extended (Boolean)` - flag to emit extended rows
+- `cast (Boolean)` - flag to disable data casting if false
+- `limit (Number)` - integer limit of rows to return
+- `(Error)` - raises any error occured in this process
+- `(Array[])` - returns array of rows (see `table.iter`)
 
-#### async table.save(target)
+#### `async table.save(target)`
 
 Save data source to file locally in CSV format with `,` (comma) delimiter
 
-- target (String) - gets path where to save a table
-- (Error) - raises an error if there is saving problem
-- (Boolean) - returns true on success
+- `target (String)` - path where to save a table
+- `(Error)` - raises an error if there is saving problem
+- `(Boolean)` - returns true on success
 
 ### Schema
 
 A model of a schema with helpful methods for working with the schema and supported data. Schema instances can be initialized with a schema source as a url to a JSON file or a JSON object. The schema is initially validated (see [validate](#validate) below), and will raise an exception if not a valid Table Schema.
 
 ```js
-import {Schema} from 'tableschema'
+const {Schema} = require('tableschema')
 
 const descriptor = {
   fields: [
@@ -154,20 +155,19 @@ try {
 } catch (errors) {
   errors // list of validation errors
 }
-}).
 ```
 
-#### async Schema.load(descriptor, {strict=true})
+#### `async Schema.load(descriptor, {strict=true})`
 
 Factory method to instantiate `Schema` class. This method is async and it should be used with await keyword or as a `Promise`.
 
-- descriptor (String/Object) - gets schema descriptor as local path, url or object
-- strict (Boolean) - gets strict flag to alter validation behaviour:
+- `descriptor (String/Object)` - schema descriptor as local path, url or object
+- `strict (Boolean)` - flag to alter validation behaviour:
   - by default strict is true so any validation error will be raised
-  - it could be set to false to ignore and put validation errors to `schema.errors`
-- (Error) - raises error if schema can't be instantiated
-- (Error[]) - raises list of validation errors if strict is true
-- (Schema) - returns schema class instance
+  - if false error will not be raised and all error will be collected in `schema.errors`
+- `(Error)` - raises error if schema can't be instantiated
+- `(Error[])` - raises list of validation errors if strict is true
+- `(Schema)` - returns schema class instance
 
 List of actions on descriptor:
 - retrieved (if path/url)
@@ -175,65 +175,65 @@ List of actions on descriptor:
 - expanded (with profile defaults)
 - validated (against table-schema profile)
 
-#### schema.valid
+#### `schema.valid`
 
-- (Boolean) - returns validation status. It always true in strict mode.
+- `(Boolean)` - returns validation status. It always true in strict mode.
 
-#### schema.errors
+#### `schema.errors`
 
-- (Error[]) - returns validation errors. It always empty in strict mode.
+- `(Error[])` - returns validation errors. It always empty in strict mode.
 
-#### schema.descriptor
+#### `schema.descriptor`
 
-- (Object) - returns schema descriptor
+- `(Object)` - returns schema descriptor
 
-#### schema.fields
+#### `schema.fields`
 
-- (Field[]) - returns an array of `Field` instances (see below).
+- `(Field[])` - returns an array of `Field` instances (see below).
 
-#### schema.fieldNames
+#### `schema.fieldNames`
 
-- (String[]) - returns an array of field names.
+- `(String[])` - returns an array of field names.
 
-#### schema.addField(descriptor)
+#### `schema.addField(descriptor)`
 
 Add new field to schema. The schema descriptor will be validated with newly added field descriptor.
 
-- descriptor (Object) - gets field descriptor
-- (Error[]) - raises list of validation errors
-- (Error) - raises any field creation error
-- (Field/null) - returns added `Field` instance or null if not added
+- `descriptor (Object)` - field descriptor
+- `(Error[])` - raises list of validation errors
+- `(Error)` - raises any field creation error
+- `(Field/null)` - returns added `Field` instance or null if not added
 
-#### schema.getField(name)
+#### `schema.getField(name)`
 
 Get schema field by name.
 
-- name (String) - gets schema field name
-- (Field/null) - returns `Field` instance or null if not found
+- `name (String)` - schema field name
+- `(Field/null)` - returns `Field` instance or null if not found
 
-#### schema.removeField(name)
+#### `schema.removeField(name)`
 
 Remove field resource by name. The schema descriptor will be validated after field descriptor removal.
 
-- name (String) - gets schema field name
-- (Error[]) - raises list of validation errors
-- (Field/null) - returns removed `Field` instances or null if not found
+- `name (String)` - schema field name
+- `(Error[])` - raises list of validation errors
+- `(Field/null)` - returns removed `Field` instances or null if not found
 
-#### async schema.save(target)
+#### `async schema.save(target)`
 
 Save schema descriptor to target destination.
 
-- target (String) - gets path where to save a descriptor
-- (Error) - raises an error if there is saving problem
-- (Boolean) - returns true on success
+- `target (String)` - path where to save a descriptor
+- `(Error)` - raises an error if there is saving problem
+- `(Boolean)` - returns true on success
 
-#### schema.update()
+#### `schema.update()`
 
 Update schema instance if there are in-place changes in the descriptor.
 
-- (Error[]) - raises list of validation errors
-- (Error) - raises any resource creation error
-- (Boolean) - returns true on success and false if not modified
+- `(Error[])` - raises list of validation errors
+- `(Error)` - raises any resource creation error
+- `(Boolean)` - returns true on success and false if not modified
 
 ```js
 const schema = await Schema.load({
@@ -303,72 +303,72 @@ Available types, formats and resultant value of the cast:
 | year | default | Number |
 | yearmonth | default | [Number, Number] |
 
-#### new Field(descriptor, {missingValues=['']})
+#### `new Field(descriptor, {missingValues=['']})`
 
 Constructor to instantiate `Field` class.
 
-- descriptor (Object) - gets schema field descriptor
-- missingValues (String[]) - gets an array with string representing missing values
-- (Error) - raises error if field can't be instantiated
-- (Field) - returns field class instance
+- `descriptor (Object)` - schema field descriptor
+- `missingValues (String[])` - an array with string representing missing values
+- `(Error)` - raises error if field can't be instantiated
+- `(Field)` - returns field class instance
 
 List of actions on descriptor:
 - expanded (with profile defaults)
 
-#### field.name
+#### `field.name`
 
-- (String) - returns field name
+- `(String)` - returns field name
 
-#### field.type
+#### `field.type`
 
-- (String) - returns field type
+- `(String)` - returns field type
 
-#### field.format
+#### `field.format`
 
-- (String) - returns field format
+- `(String)` - returns field format
 
-#### field.required
+#### `field.required`
 
-- (Boolean) - returns true if field is required
+- `(Boolean)` - returns true if field is required
 
-#### field.constraints
+#### `field.constraints`
 
-- (Object) - returns an object with field constraints
+- `(Object)` - returns an object with field constraints
 
-#### field.descriptor
+#### `field.descriptor`
 
-- (Object) - returns field descriptor
+- `(Object)` - returns field descriptor
 
-#### field.castValue(value, {constraints=true})
+#### `field.castValue(value, {constraints=true})`
 
-Update schema instance if there are in-place changes in the descriptor.
+Cast given value according to the field type and format.
 
-- value (any) - gets value to cast against field
-- constraints (Boolean/String[]) - gets constraints configuration:
+- `value (any)` - value to cast against field
+- `constraints (Boolean/String[])` - gets constraints configuration
   - it could be set to true to disable constraint checks
   - it could be an Array of constraints to check e.g. ['minimum', 'maximum']
-- (Error) - raises cast error if happens
-- (any) - returns cast value
+- `(Error)` - raises cast error if happens
+- `(any)` - returns cast value
 
-#### field.testValue(value, {constraints=true})
+#### `field.testValue(value, {constraints=true})`
 
 Test if value is compliant to the field.
 
-- value (any) - gets value to cast against field
-- constraints (Boolean/String[]) - gets constraints configuration:
-- (Boolean) - returns if value is compliant to the field
+- `value (any)` - value to cast against field
+- `constraints (Boolean/String[])` - constraints configuration
+- `(Boolean)` - returns if value is compliant to the field
 
-### validate
+### Validate
 
 Given a schema as JSON object, `validate` returns `Promise`, which success for a valid Table Schema, or reject with array of errors.
 
-#### async validate(descriptor)
+#### `async validate(descriptor)`
 
 This funcion is async so it has to be used with `await` keyword or as a `Promise`.
 
-- descriptor (String/Object) - gets schema descriptor (local/remote path or object)
-- (Error[]) - raises list of validation errors for invalid
-- (Boolean) - returns true for valid
+- `descriptor (String/Object)` - schema descriptor (local/remote path or object)
+- `(Error[])` - raises list of validation errors for invalid
+- `(Boolean)` - returns true for valid
 
 List of actions on descriptor:
 - retrieved (if path/url)
@@ -379,8 +379,9 @@ List of actions on descriptor:
 Let's see on example:
 
 ```js
-var validate = require('tableschema').validate;
-var schema = {
+const {validate} = require('tableschema')
+
+const descriptor = {
    fields: [
      {
        name: 'id',
@@ -404,28 +405,30 @@ var schema = {
        format: 'default'
      }
    ]
-};
+}
 
-validate(schema).then(function() {
+try {
+    validate(schema)
   // do something with valid schema here
-}).catch(function(errors) {
+} catch (errors) {
   // uh oh, some validation errors in the errors array
-})
+}
+
 ```
 Note: `validate()` validates whether a **schema** is a validate Table Schema accordingly to the (specifications)[http://schemas.datapackages.org/json-table-schema.json]. It does **not** validate data against a schema.
 
-### infer
+### Infer
 
 Given headers and rows, `infer` will return a Table Schema as a JSON object based on the data values.
 
-#### async infer(source, {headers})
+#### `async infer(source, {headers})`
 
 This funcion is async so it has to be used with `await` keyword or as a `Promise`.
 
-- source (String/Array[]) - gets data source
-- headers (String[]) - gets an array of headers
-- (Error) - raises any error occured
-- (Object) - returns schema descriptor
+- `source (String/Array[])` - data source
+- `headers (String[])` - array of headers
+- `(Error)` - raises any error occured
+- `(Object)` - returns schema descriptor
 
 Given the data file, example.csv:
 
@@ -440,14 +443,14 @@ id,age,name
 Call `infer` with headers and values from the datafile:
 
 ```js
-var parse = require('csv-parse');
-var fs = require('fs');
-var infer = require('tableschema').infer;
+var fs = require('fs')
+var parse = require('csv-parse')
+var {infer} = require('tableschema')
 
 fs.readFile('/path/to/example.csv', function(err, data) {
   parse(data, function(error, values) {
-    var headers = values.shift()
-        , schema = infer(headers, values);
+    const headers = values.shift()
+    const schema = infer(headers, values)
   });
 });
 ```
@@ -482,79 +485,6 @@ The `schema` variable is now a JSON object:
 }
 ```
 
-```js
-var parse = require('csv-parse');
-var fs = require('fs');
-var infer = require('tableschema').infer;
-
-fs.readFile('/path/to/example.csv', function(err, data) {
-  parse(data, function(error, values) {
-    var headers = values.shift(),
-        options = {
-          rowLimit: 2,
-          explicit: true,
-          primaryKey: ['id', 'name'],
-          cast: {
-            string : { format : 'email' },
-            number : { format : 'currency' },
-            date: { format : 'any'}
-          }
-        },
-        schema = infer(headers, values, options);
-  });
-});
-```
-
-The `schema` variable will look as follow:
-
-```js
-{
-  fields: [
-    {
-      name: 'id',
-      title: '',
-      description: '',
-      type: 'integer',
-      format: 'default',
-      required: true
-    },
-    {
-      name: 'age',
-      title: '',
-      description: '',
-      type: 'integer',
-      format: 'default',
-      required: true
-    },
-    {
-      name: 'name',
-      title: '',
-      description: '',
-      type: 'string',
-      format: 'default',
-      required: true
-    }
-  ],
-  primaryKey: ['id', 'name']
-}
-```
-In this example:
-
-`rowLimit`: only two rows of values from `example.csv` will be proceed to set field type. It can be useful in cases when data in `CSV` file is not normalized and
-values type can be different in each row. Consider following example:
-
-```csv
-id,age,name
-1,39,Paul
-2,23,Jimmy
-3,thirty six,Jane
-four,28,Judy
-```
-
-In this case by limiting rows to 2, we can build schema structure with correct field types
-
-`cast`: every `string` value will be casted using `email` format, `number` will be tried as a `currency` format, and `date` - as `any` format
-
 ## Contributing
 
 The project follows the [Open Knowledge International coding standards](https://github.com/okfn/coding-standards). There are common commands to work with the project:
@@ -571,4 +501,8 @@ Here described only breaking and the most important changes. The full changelog 
 
 ### v1.0
 
-This version includes various big changes. A migration guide is under development and will be published here.
+This version includes various big changes. **A migration guide is under development and will be published here**.
+
+### [v0.2](https://github.com/frictionlessdata/tableschema-js/tree/v0.2.x)
+
+First stable version of the library.
