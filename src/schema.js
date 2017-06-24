@@ -75,7 +75,7 @@ export class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   addField(descriptor) {
-    throw new Error('Not Implemented')
+    throw new Error('Not Implemented', descriptor)
   }
 
   /**
@@ -83,7 +83,7 @@ export class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   removeField(descriptor) {
-    throw new Error('Not Implemented')
+    throw new Error('Not Implemented', descriptor)
   }
 
   /**

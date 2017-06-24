@@ -88,7 +88,7 @@ export class Table {
       , result = []
     return new Promise((resolve, reject) => {
       let index = 1
-      self.iter({cast, callback: items => {
+      const callback = items => {
         if (!(limit && index > limit)) {
           if (keyed) {
             result.push(lodash.zipObject(headers, items))
@@ -99,10 +99,10 @@ export class Table {
           } else {
             result.push(items)
           }
-
           index += 1
         }
-      }}).then(() => {
+      }
+      self.iter({cast, callback}).then(() => {
         resolve(result)
       }, errors => {
         reject(errors)
