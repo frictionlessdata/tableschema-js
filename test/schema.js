@@ -91,7 +91,7 @@ describe('Schema', () => {
   })
 
   it('respect caseInsensitiveHeaders option', done => {
-    (Schema.load(SCHEMA, true)).then(schema => {
+    (Schema.load(SCHEMA, {caseInsensitiveHeaders: true})).then(schema => {
       assert.isTrue(schema.hasField('NAME'))
       done()
     }, error => {

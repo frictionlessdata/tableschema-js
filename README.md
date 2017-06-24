@@ -219,6 +219,13 @@ Remove field resource by name. The schema descriptor will be validated after fie
 - `(Error[])` - raises list of validation errors
 - `(Field/null)` - returns removed `Field` instances or null if not found
 
+#### `schema.castRow(row)`
+
+Cast row based on field types and formats.
+
+- `row (any[])` - data row as an array of values
+- `(any[])` - returns cast data row
+
 #### `async schema.save(target)`
 
 Save schema descriptor to target destination.

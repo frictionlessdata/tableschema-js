@@ -263,8 +263,7 @@ function isReadStream(stream) {
 function cast(instance, reject, callback, errors, items, failFast
             , skipConstraints) {
   try {
-    const values = instance.schema.castRow(items, failFast,
-                                           skipConstraints)
+    const values = instance.schema.castRow(items, {failFast, skipConstraints})
     if (!skipConstraints && instance.primaryHeaders) {
       // unique constraints available only from Resource
       helpers.checkUniquePrimary(values, instance.primaryHeaders,

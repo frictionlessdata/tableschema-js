@@ -1,36 +1,22 @@
+import fs from 'fs'
 import _ from 'lodash'
 import 'isomorphic-fetch'
-import fs from 'fs'
-import {validate} from './validate'
 import {Field} from './field'
+import {validate} from './validate'
 import * as helpers from './helpers'
 
 
 // Module API
 
-/**
- * Model for a Table Schema.
- *
- * Providers handy helpers for ingesting, validating and outputting
- * Table Schemas: http://specs.frictionlessdata.io/table-schema/
- *
- * Use async `Schema.load(descriptor)` to instantiate this class.
- *
- */
 export class Schema {
 
   // Public
 
   /**
-   * Load `Schema` instance.
-   *
-   * @param {string|JSON} descriptor: An url or object that represents a schema
-   * @param {boolean} caseInsensitiveHeaders: if True, headers should be
-   *   considered case insensitive
-   *
-   * @returns Promise
+   * Load Schema instance.
+   * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  static load(descriptor, caseInsensitiveHeaders=false) {
+  static load(descriptor, {caseInsensitiveHeaders}={caseInsensitiveHeaders: false}) {
     return new Promise(async (resolve, reject) => {
       try {
         descriptor = await helpers.retrieveDescriptor(descriptor)
@@ -45,17 +31,10 @@ export class Schema {
   }
 
   /**
-   * Convert the arguments given to the types of the current schema. Last
-   * argument could be { failFast: true|false }.  If the option `failFast` is
-   * given, it will raise the first error it encounters, otherwise an array of
-   * errors thrown (if there are any errors occur)
-   *
-   * @param items
-   * @param failFast
-   * @param skipConstraints
-   * @returns {Array}
+   * Cast row
+   * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  castRow(items, failFast = false, skipConstraints = false) {
+  castRow(items, {failFast, skipConstraints}={failFast: false, skipConstraints: false}) {
     const headers = this.headers
       , result = []
       , errors = []
@@ -107,8 +86,7 @@ export class Schema {
 
   /**
    * Get descriptor
-   *
-   * @returns {Array}
+   * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get descriptor() {
     return this._descriptor
@@ -116,8 +94,7 @@ export class Schema {
 
   /**
    * Get fields of schema
-   *
-   * @returns {Array}
+   * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get fields() {
     return this._fields
@@ -125,37 +102,27 @@ export class Schema {
 
   /**
    * Get foregn keys of schema
-   *
-   * @returns {Array}
+   * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get foreignKeys() {
     return this._descriptor.foreignKeys
   }
 
   /**
-   * Return the `field` object for `fieldName`.
-   * `index` allows accessing a field name by position, as JTS allows duplicate
-   * field names.
-   *
-   * @param fieldName
-   * @param index - index of the field inside the fields array
-   * @returns {Object}
-   * @throws Error in case fieldName does not exists in the given schema
+   * Get field instance
+   * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  getField(fieldName, index = 0) {
+  getField(fieldName, {index}={index: 0}) {
     const name = fieldName
-
     const fields = _.filter(this._fields, field => {
       if (this._caseInsensitiveHeaders) {
         return field.name.toLowerCase === name.toLowerCase
       }
       return field.name === name
     })
-
     if (!fields.length) {
       throw new Error(`No such field name in schema: ${fieldName}`)
     }
-
     if (!index) {
       return fields[0]
     }
@@ -173,15 +140,12 @@ export class Schema {
         result.push(F.name)
       }
     })
-
     return result
   }
 
   /**
    * Check if the field exists in the schema
-   *
-   * @param fieldName
-   * @returns {boolean}
+   * https://github.com/frictionlessdata/tableschema-js#schema
    */
   hasField(fieldName) {
     try {
@@ -193,8 +157,7 @@ export class Schema {
 
   /**
    * Get names of the headers
-   *
-   * @returns {Array}
+   * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get headers() {
     return _.map(this._fields, F => F.name)
@@ -202,7 +165,7 @@ export class Schema {
 
   /**
    * Get primary key
-   * @returns {string|Array}
+   * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get primaryKey() {
     return this._descriptor.primaryKey
@@ -210,9 +173,7 @@ export class Schema {
 
   /**
    * Save descriptor of schema into local file
-   *
-   * @param path
-   * @returns {Promise}
+   * https://github.com/frictionlessdata/tableschema-js#schema
    */
   save(path) {
     return new Promise((resolve, reject) => {
