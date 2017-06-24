@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "babel": "^6.5.2",
-    "babel-cli": "^6.8.0",
+    "babel-cli": "^6.24.1",
     "babel-istanbul": "^0.8.0",
     "babel-loader": "^6.2.1",
     "babel-plugin-transform-es2015-arrow-functions": "^6.8.0",

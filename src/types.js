@@ -168,7 +168,7 @@ class StringType extends Abstract {
   }
 
   typeCheck(value) {
-    if (utilities.isNumeric(value) || typeof value !== 'string') {
+    if (typeof value !== 'string') {
       throw new Error()
     }
     return true
