@@ -1,5 +1,5 @@
-import _ from 'lodash'
 import tv4 from 'tv4'
+import lodash from 'lodash'
 import * as helpers from './helpers'
 import profile from './profiles/table-schema.json'
 
@@ -13,7 +13,7 @@ import profile from './profiles/table-schema.json'
 export function validate(schema) {
   schema = helpers.expandSchemaDescriptor(schema)
 
-  const fieldNames = _.map(schema.fields || [], _.property('name'))
+  const fieldNames = lodash.map(schema.fields || [], lodash.property('name'))
 
   return new Promise((resolve, reject) => {
     const result = tv4.validateMultiple(schema, profile)
@@ -36,7 +36,7 @@ export function validate(schema) {
    */
   function errors(values) {
     const result = []
-    _.forEach(values, error => {
+    lodash.forEach(values, error => {
       result.push(message(error))
     })
     return result
@@ -73,15 +73,15 @@ export function validate(schema) {
     if (schema.primaryKey) {
       const primaryKey = schema.primaryKey
       // Ensure that the primary key matches field names
-      if (_.isString(primaryKey)) {
-        if (!_.includes(fieldNames, primaryKey)) {
+      if (lodash.isString(primaryKey)) {
+        if (!lodash.includes(fieldNames, primaryKey)) {
           valid = false
           errs.push(
             `primary key ${primaryKey} must match schema field names`)
         }
-      } else if (_.isArray(primaryKey)) {
-        _.each(primaryKey, pk => {
-          if (!_.includes(fieldNames, pk)) {
+      } else if (lodash.isArray(primaryKey)) {
+        lodash.each(primaryKey, pk => {
+          if (!lodash.includes(fieldNames, pk)) {
             valid = false
             errs.push(
               `primary key ${pk} must match schema field names`)
@@ -95,28 +95,28 @@ export function validate(schema) {
      */
     if (schema.foreignKeys) {
       const foreignKeys = schema.foreignKeys
-      _.each(foreignKeys, fk => {
-        if (_.isString(fk.fields)) {
-          if (!_.includes(fieldNames, fk.fields)) {
+      lodash.each(foreignKeys, fk => {
+        if (lodash.isString(fk.fields)) {
+          if (!lodash.includes(fieldNames, fk.fields)) {
             valid = false
             errs.push(
               `foreign key ${fk.fields} must match schema field names`)
           }
 
-          if (!_.isString(fk.reference.fields)) {
+          if (!lodash.isString(fk.reference.fields)) {
             valid = false
             errs.push(
               `foreign key ${fk.reference.fields} must be same type as ${fk.fields}`)
           }
-        } else if (_.isArray(fk.fields)) {
-          _.each(fk.fields, field => {
-            if (!_.includes(fieldNames, field)) {
+        } else if (lodash.isArray(fk.fields)) {
+          lodash.each(fk.fields, field => {
+            if (!lodash.includes(fieldNames, field)) {
               valid = false
               errs.push(
                 `foreign key ${field} must match schema field names`)
             }
           })
-          if (!_.isArray(fk.reference.fields)) {
+          if (!lodash.isArray(fk.reference.fields)) {
             valid = false
             errs.push(
               `foreign key ${fk.reference.fields} must be same type as ${fk.fields}`)
@@ -128,15 +128,15 @@ export function validate(schema) {
         }
 
         if (fk.reference.resource === '') {
-          if (_.isString(fk.reference.fields)) {
-            if (!_.includes(fieldNames, fk.reference.fields)) {
+          if (lodash.isString(fk.reference.fields)) {
+            if (!lodash.includes(fieldNames, fk.reference.fields)) {
               valid = false
               errs.push(
                 `foreign key ${fk.fields} must be found in the schema field names`)
             }
-          } else if (_.isArray(fk.reference.fields)) {
-            _.each(fk.reference.fields, field => {
-              if (!_.includes(fieldNames, field)) {
+          } else if (lodash.isArray(fk.reference.fields)) {
+            lodash.each(fk.reference.fields, field => {
+              if (!lodash.includes(fieldNames, field)) {
                 valid = false
                 errs.push(
                   `foreign key ${field} must be found in the schema field names`)

@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import lodash from 'lodash'
 import {ERROR} from './config'
 import * as types from './types'
 
@@ -11,7 +11,7 @@ import * as types from './types'
  */
 export function infer(source, {headers}, options = {}) {
   // Set up default options
-  const opts = _.extend(
+  const opts = lodash.extend(
     {
       rowLimit: null
       , explicit: false
@@ -21,7 +21,7 @@ export function infer(source, {headers}, options = {}) {
     , descriptor = { fields: [] }
 
   if (opts.primaryKey) {
-    if (_.isString(opts.primaryKey)) {
+    if (lodash.isString(opts.primaryKey)) {
       opts.primaryKey = [opts.primaryKey]
     }
     descriptor.primaryKey = opts.primaryKey
@@ -39,11 +39,11 @@ export function infer(source, {headers}, options = {}) {
       constraints.required = true
     }
 
-    if (_.includes(opts.primaryKey, header)) {
+    if (lodash.includes(opts.primaryKey, header)) {
       constraints.unique = true
     }
 
-    if (!_.isEmpty(constraints)) {
+    if (!lodash.isEmpty(constraints)) {
       field.constraints = constraints
     }
 
@@ -51,11 +51,11 @@ export function infer(source, {headers}, options = {}) {
   })
 
   headers.forEach((header, index) => {
-    let columnValues = _.map(source, value => value[index])
+    let columnValues = lodash.map(source, value => value[index])
     const field = descriptor.fields[index]
 
     if (opts.rowLimit) {
-      columnValues = _.take(columnValues, opts.rowLimit)
+      columnValues = lodash.take(columnValues, opts.rowLimit)
     }
 
     field.type = _guessType(columnValues)
@@ -98,7 +98,7 @@ function _guessType(values) {
   const matches = []
   for (const value of values) {
     for (const type of _TYPE_ORDER) {
-      const cast = types[`cast${_.upperFirst(type)}`]
+      const cast = types[`cast${lodash.upperFirst(type)}`]
       const result = cast('default', value)
       if (result !== ERROR) {
         matches.push(type)
@@ -110,7 +110,7 @@ function _guessType(values) {
   // Get winner type
   let winner = 'any'
   let count = 0
-  for (const [itemType, itemCount] of Object.entries(_.countBy(matches))) {
+  for (const [itemType, itemCount] of Object.entries(lodash.countBy(matches))) {
     if (itemCount > count) {
       winner = itemType
       count = itemCount
