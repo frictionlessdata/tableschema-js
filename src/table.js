@@ -1,24 +1,28 @@
-import EventEmitter from 'events'
-import url from 'url'
 import fs from 'fs'
+import url from 'url'
 import http from 'http'
 import https from 'https'
-import _ from 'lodash'
+import lodash from 'lodash'
+import EventEmitter from 'events'
 import parse from 'csv-parse'
 import transform from 'stream-transform'
-import {Schema} from './schema'
 import * as helpers from './helpers'
+import {Schema} from './schema'
 
 
 // Module API
 
-/**
- * @returns Promise
- */
 export class Table {
-  constructor(schema, data) {
+
+  // Public
+
+  /**
+   * Table constructor
+   * https://github.com/frictionlessdata/tableschema-js#table
+   */
+  constructor(source, {schema}) {
     const self = this
-    this.source = data
+    this.source = source
 
     return new Promise((resolve, reject) => {
       if (schema instanceof Schema) {
@@ -36,28 +40,19 @@ export class Table {
   }
 
   /**
-   * Iter through the given dataset and create the converted dataset
-   *
-   * @param {Function} callback. Callback function to catch results of casting
-   * @param {boolean} failFast. Default is false
-   * @param {boolean} skipConstraints. Default is false
-   * @throws {Array} of errors if cast failed on some field
+   * Iter table data
+   * https://github.com/frictionlessdata/tableschema-js#table
    */
-  iter(callback, failFast = false, skipConstraints = false) {
+  iter({callback}={}) {
     const primaryKey = this.schema.primaryKey
     let uniqueHeaders = getUniqueHeaders(this.schema)
-
-    if (!_.isFunction(callback)) {
-      throw new Error('Callback function is required')
-    }
-
     if (primaryKey && primaryKey.length > 1) {
       const headers = this.schema.headers
-      uniqueHeaders = _.difference(uniqueHeaders, primaryKey)
+      uniqueHeaders = lodash.difference(uniqueHeaders, primaryKey)
       // using to check unique constraints for the row, because need to check
       // uniquness of the values combination (primary key for example)
       this.primaryHeaders = {}
-      _.forEach(primaryKey, header => {
+      lodash.forEach(primaryKey, header => {
         // need to know the index of the header, so later it possible to
         // combine correct values in the row
         this.primaryHeaders[header] = headers.indexOf(header)
@@ -69,33 +64,30 @@ export class Table {
     this.schema.uniqueness = this.uniqueness
     // using for regular unique constraints for every value independently
     this.schema.uniqueHeaders = uniqueHeaders
-
-    return proceed(this, getReadStream(this.source), callback, failFast,
-                   skipConstraints)
+    // TODO: remove callback
+    if (!callback) callback = row => row
+    const failFast = false
+    const skipConstraints = false
+    return proceed(this, getReadStream(this.source), callback, failFast, skipConstraints)
   }
 
   /**
-   * Read part or full source
-   *
-   * @param keyed {boolean} array of {key:value} object is returned
-   * @param extended {boolean} array of {number: {key:value} } extended
-   *   object is returned
-   * @param limit {integer} limit to certain amount of rows to load
-   * @returns {Promise}
+   * Read table data
+   * https://github.com/frictionlessdata/tableschema-js#table
    */
-  read(keyed = false, extended = false, limit = 0) {
+  read({keyed, extended, limit}={keyed: false, extended: false}) {
     const self = this
       , headers = this.schema.headers
       , result = []
     return new Promise((resolve, reject) => {
       let index = 1
-      self.iter(items => {
+      self.iter({callback: items => {
         if (!(limit && index > limit)) {
           if (keyed) {
-            result.push(_.zipObject(headers, items))
+            result.push(lodash.zipObject(headers, items))
           } else if (extended) {
             const object = {}
-            object[index] = _.zipObject(headers, items)
+            object[index] = lodash.zipObject(headers, items)
             result.push(object)
           } else {
             result.push(items)
@@ -103,7 +95,7 @@ export class Table {
 
           index += 1
         }
-      }).then(() => {
+      }}).then(() => {
         resolve(result)
       }, errors => {
         reject(errors)
@@ -112,10 +104,8 @@ export class Table {
   }
 
   /**
-   * Save source to file locally in CSV format with `,` (comma) delimiter
-   *
-   * @param path
-   * @returns {Promise}
+   * Save table data
+   * https://github.com/frictionlessdata/tableschema-js#table
    */
   save(path) {
     const self = this
@@ -140,6 +130,9 @@ export class Table {
     })
   }
 }
+
+
+// Internal
 
 /**
  * Convert provided data to the types of the current schema. If the option
@@ -195,7 +188,7 @@ function proceed(instance, readStream, callback, failFast = false
  */
 function getUniqueHeaders(schema) {
   const filtered = []
-  _.forEach(schema.fields, F => {
+  lodash.forEach(schema.fields, F => {
     if (F.constraints.unique === true) {
       filtered.push(F.name)
     }
@@ -220,7 +213,7 @@ function getReadStream(source) {
     if (isReadStream(source)) {
       // it can be readable stream by it self
       resolve({ stream: source })
-    } else if (_.isArray(source)) {
+    } else if (lodash.isArray(source)) {
       // provided array with raw data
       const transformer = transform(data => data)
       resolve({ stream: transformer, isArray: true })
@@ -228,7 +221,7 @@ function getReadStream(source) {
         transformer.write(item)
       })
       transformer.end()
-    } else if (_.isString(source)) {
+    } else if (lodash.isString(source)) {
       // probably it is some URL or local path to the file with the data
       const protocol = url.parse(source).protocol
       if (helpers.isURL(protocol)) {
@@ -257,7 +250,7 @@ function getReadStream(source) {
  * @returns {boolean}
  */
 function isReadStream(stream) {
-  return stream instanceof EventEmitter && _.isFunction(stream.read)
+  return stream instanceof EventEmitter && lodash.isFunction(stream.read)
 }
 
 function cast(instance, reject, callback, errors, items, failFast
@@ -275,8 +268,8 @@ function cast(instance, reject, callback, errors, items, failFast
       reject(e)
       return
     }
-    if (_.isArray(e)) {
-      _.forEach(e, error => {
+    if (lodash.isArray(e)) {
+      lodash.forEach(e, error => {
         errors.push(error)
       })
     } else {

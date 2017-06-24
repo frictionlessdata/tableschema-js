@@ -48,6 +48,8 @@ rules:
   arrow-parens:
     - off
     - as-needed
+  block-spacing:
+    - off
   class-methods-use-this:
     - off
   object-curly-spacing:

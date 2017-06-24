@@ -13,7 +13,7 @@ export class Schema {
   // Public
 
   /**
-   * Load Schema instance.
+   * Load Schema instance
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   static load(descriptor, {caseInsensitiveHeaders}={caseInsensitiveHeaders: false}) {
