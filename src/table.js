@@ -28,6 +28,24 @@ export class Table {
   }
 
   /**
+   * Table schema
+   * https://github.com/frictionlessdata/tableschema-js#table
+   */
+  get schema() {
+    return this._schema
+  }
+
+  /**
+   * Table headers
+   * https://github.com/frictionlessdata/tableschema-js#table
+   */
+  get headers() {
+    // For now we use here fieldNames from schema
+    // but it should be headers from data source
+    return this._schema.fieldNames
+  }
+
+  /**
    * Iter table data
    * https://github.com/frictionlessdata/tableschema-js#table
    */
@@ -35,7 +53,7 @@ export class Table {
     const primaryKey = this.schema.primaryKey
     let uniqueHeaders = getUniqueHeaders(this.schema)
     if (primaryKey && primaryKey.length > 1) {
-      const headers = this.schema.headers
+      const headers = this.schema.fieldNames
       uniqueHeaders = lodash.difference(uniqueHeaders, primaryKey)
       // using to check unique constraints for the row, because need to check
       // uniquness of the values combination (primary key for example)
@@ -66,7 +84,7 @@ export class Table {
    */
   read({keyed, extended, cast, limit}={keyed: false, extended: false, cast: true}) {
     const self = this
-      , headers = this.schema.headers
+      , headers = this.schema.fieldNames
       , result = []
     return new Promise((resolve, reject) => {
       let index = 1
@@ -101,7 +119,7 @@ export class Table {
     return new Promise((resolve, reject) => {
       getReadStream(self.source).then(data => {
         const writableStream = fs.createWriteStream(path, { encoding: 'utf8' })
-        writableStream.write(`${self.schema.headers.join(',')}\r\n`)
+        writableStream.write(`${self.schema.fieldNames.join(',')}\r\n`)
 
         data.stream.on('data', chunk => {
           if (data.isArray) {
@@ -123,7 +141,7 @@ export class Table {
 
   constructor(source, {schema}) {
     this.source = source
-    this.schema = schema
+    this._schema = schema
   }
 
 }

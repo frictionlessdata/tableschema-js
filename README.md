@@ -187,9 +187,13 @@ List of actions on descriptor:
 
 - `(Object)` - returns schema descriptor
 
-#### `schema.fields`
+#### `schema.primaryKey`
 
-- `(Field[])` - returns an array of `Field` instances (see below).
+- `(str[])` - returns schema primary key
+
+#### `schema.foreignKeys`
+
+- `(Object[])` - returns schema foreign keys
 
 #### `schema.fieldNames`
 

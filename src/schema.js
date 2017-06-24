@@ -31,11 +31,88 @@ export class Schema {
   }
 
   /**
+   * Get descriptor
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  get descriptor() {
+    return this._descriptor
+  }
+
+  /**
+   * Get primary key
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  get primaryKey() {
+    return this._descriptor.primaryKey
+  }
+
+  /**
+   * Get foregn keys of schema
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  get foreignKeys() {
+    return this._descriptor.foreignKeys
+  }
+
+  /**
+   * Get fields of schema
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  get fields() {
+    return this._fields
+  }
+
+  /**
+   * Get field names
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  get fieldNames() {
+    return this._fields.map(field => field.name)
+  }
+
+  /**
+   * Add field to schema
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  addField(descriptor) {
+    throw new Error('Not Implemented')
+  }
+
+  /**
+   * Remove field from schema
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  removeField(descriptor) {
+    throw new Error('Not Implemented')
+  }
+
+  /**
+   * Get field instance
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  getField(fieldName, {index}={index: 0}) {
+    const name = fieldName
+    const fields = _.filter(this._fields, field => {
+      if (this._caseInsensitiveHeaders) {
+        return field.name.toLowerCase === name.toLowerCase
+      }
+      return field.name === name
+    })
+    if (!fields.length) {
+      throw new Error(`No such field name in schema: ${fieldName}`)
+    }
+    if (!index) {
+      return fields[0]
+    }
+    return this._fields[index]
+  }
+
+  /**
    * Cast row
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   castRow(items, {failFast, skipConstraints}={failFast: false, skipConstraints: false}) {
-    const headers = this.headers
+    const headers = this.fieldNames
       , result = []
       , errors = []
 
@@ -85,93 +162,6 @@ export class Schema {
   }
 
   /**
-   * Get descriptor
-   * https://github.com/frictionlessdata/tableschema-js#schema
-   */
-  get descriptor() {
-    return this._descriptor
-  }
-
-  /**
-   * Get fields of schema
-   * https://github.com/frictionlessdata/tableschema-js#schema
-   */
-  get fields() {
-    return this._fields
-  }
-
-  /**
-   * Get foregn keys of schema
-   * https://github.com/frictionlessdata/tableschema-js#schema
-   */
-  get foreignKeys() {
-    return this._descriptor.foreignKeys
-  }
-
-  /**
-   * Get field instance
-   * https://github.com/frictionlessdata/tableschema-js#schema
-   */
-  getField(fieldName, {index}={index: 0}) {
-    const name = fieldName
-    const fields = _.filter(this._fields, field => {
-      if (this._caseInsensitiveHeaders) {
-        return field.name.toLowerCase === name.toLowerCase
-      }
-      return field.name === name
-    })
-    if (!fields.length) {
-      throw new Error(`No such field name in schema: ${fieldName}`)
-    }
-    if (!index) {
-      return fields[0]
-    }
-    return this._fields[index]
-  }
-
-  /**
-   * Get all headers with required constraints set to true
-   * @returns {Array}
-   */
-  get requiredHeaders() {
-    const result = []
-    _.forEach(this._fields, F => {
-      if (F.required) {
-        result.push(F.name)
-      }
-    })
-    return result
-  }
-
-  /**
-   * Check if the field exists in the schema
-   * https://github.com/frictionlessdata/tableschema-js#schema
-   */
-  hasField(fieldName) {
-    try {
-      return !!this.getField(fieldName)
-    } catch (e) {
-      return false
-    }
-  }
-
-  /**
-   * Get names of the headers
-   * https://github.com/frictionlessdata/tableschema-js#schema
-   */
-  get headers() {
-    return _.map(this._fields, F => F.name)
-  }
-
-  /**
-   * Get primary key
-   * https://github.com/frictionlessdata/tableschema-js#schema
-   */
-  get primaryKey() {
-    return this._descriptor.primaryKey
-  }
-
-  /**
    * Save descriptor of schema into local file
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
@@ -185,6 +175,14 @@ export class Schema {
         }
       })
     })
+  }
+
+  /**
+   * Update schema instance
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  update() {
+    throw new Error('Not Implemented')
   }
 
   // Private

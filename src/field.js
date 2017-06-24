@@ -30,14 +30,6 @@ export class Field {
   }
 
   /**
-   * Field descriptor
-   * https://github.com/frictionlessdata/tableschema-js#field
-   */
-  get descriptor() {
-    return this._descriptor
-  }
-
-  /**
    * Field name
    * https://github.com/frictionlessdata/tableschema-js#field
    */
@@ -62,6 +54,14 @@ export class Field {
   }
 
   /**
+   * Return true if field is required
+   * https://github.com/frictionlessdata/tableschema-js#field
+   */
+  get required() {
+    return (this._descriptor.constraints || {}).required === true
+  }
+
+  /**
    * Field constraints
    * https://github.com/frictionlessdata/tableschema-js#field
    */
@@ -70,11 +70,11 @@ export class Field {
   }
 
   /**
-   * Return true if field is required
+   * Field descriptor
    * https://github.com/frictionlessdata/tableschema-js#field
    */
-  get required() {
-    return (this._descriptor.constraints || {}).required === true
+  get descriptor() {
+    return this._descriptor
   }
 
   /**
