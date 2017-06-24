@@ -22,7 +22,7 @@ export class Schema {
         descriptor = await helpers.retrieveDescriptor(descriptor)
         descriptor = helpers.expandSchemaDescriptor(descriptor)
         await validate(descriptor)
-        const schema = new Schema(descriptor, caseInsensitiveHeaders)
+        const schema = new Schema(descriptor, {caseInsensitiveHeaders})
         resolve(schema)
       } catch (error) {
         reject(error)
@@ -189,7 +189,7 @@ export class Schema {
 
   // Private
 
-  constructor(descriptor, caseInsensitiveHeaders=false) {
+  constructor(descriptor, {caseInsensitiveHeaders}={caseInsensitiveHeaders: false}) {
     this._descriptor = descriptor
     this._caseInsensitiveHeaders = caseInsensitiveHeaders
     this._fields = []
