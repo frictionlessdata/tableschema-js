@@ -68,7 +68,7 @@ export class Schema {
     for (let i = 0, length = items.length; i < length; i += 1) {
       try {
         const field = this.getField(headers[i], i)
-        const value = field.castValue(items[i], !skipConstraints)
+        const value = field.castValue(items[i], {constraints: !skipConstraints})
 
         // TODO: reimplement
         // That's very wrong - on schema level uniqueness doesn't make sense
@@ -233,7 +233,7 @@ export class Schema {
     this._caseInsensitiveHeaders = caseInsensitiveHeaders
     this._fields = []
     for (const field of descriptor.fields) {
-      this._fields.push(new Field(field, this._descriptor.missingValues))
+      this._fields.push(new Field(field, {missingValues: this._descriptor.missingValues}))
     }
   }
 

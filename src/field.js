@@ -7,15 +7,15 @@ import * as types from './types'
 
 // Module API
 
-/**
- * Field representation for Table Schema.
- * @param descriptor
- */
 export class Field {
 
   // Public
 
-  constructor(descriptor, missingValues=config.DEFAULT_MISSING_VALUES) {
+  /**
+   * Construct field
+   * https://github.com/frictionlessdata/tableschema-js#field
+   */
+  constructor(descriptor, {missingValues}={missingValues: config.DEFAULT_MISSING_VALUES}) {
 
     // Process descriptor
     descriptor = lodash.cloneDeep(descriptor)
@@ -31,7 +31,7 @@ export class Field {
 
   /**
    * Field descriptor
-   * @returns {object}
+   * https://github.com/frictionlessdata/tableschema-js#field
    */
   get descriptor() {
     return this._descriptor
@@ -39,7 +39,7 @@ export class Field {
 
   /**
    * Field name
-   * @returns {string}
+   * https://github.com/frictionlessdata/tableschema-js#field
    */
   get name() {
     return this._descriptor.name
@@ -47,7 +47,7 @@ export class Field {
 
   /**
    * Field type
-   * @returns {string}
+   * https://github.com/frictionlessdata/tableschema-js#field
    */
   get type() {
     return this._descriptor.type
@@ -55,7 +55,7 @@ export class Field {
 
   /**
    * Field format
-   * @returns {string}
+   * https://github.com/frictionlessdata/tableschema-js#field
    */
   get format() {
     return this._descriptor.format
@@ -63,7 +63,7 @@ export class Field {
 
   /**
    * Field constraints
-   * @returns {object}
+   * https://github.com/frictionlessdata/tableschema-js#field
    */
   get constraints() {
     return this._descriptor.constraints || {}
@@ -71,7 +71,7 @@ export class Field {
 
   /**
    * Return true if field is required
-   * @returns {object}
+   * https://github.com/frictionlessdata/tableschema-js#field
    */
   get required() {
     return (this._descriptor.constraints || {}).required === true
@@ -79,14 +79,9 @@ export class Field {
 
   /**
    * Cast value
-   *
-   * @param {any} value
-   * @param {Boolean|String[]} constraints
-   *
-   * @returns {any}
-   * @throws Error if value can't be cast
+   * https://github.com/frictionlessdata/tableschema-js#field
    */
-  castValue(value, constraints=true) {
+  castValue(value, {constraints}={constraints: true}) {
 
     // Null value
     if (this._missingValues.includes(value)) {
@@ -126,15 +121,11 @@ export class Field {
 
   /**
    * Check if value can be cast
-   *
-   * @param {any} value
-   * @param {Boolean|String[]} constraints
-   *
-   * @returns {Boolean}
+   * https://github.com/frictionlessdata/tableschema-js#field
    */
-  testValue(value, constraints=true) {
+  testValue(value, {constraints}={constraints: true}) {
     try {
-      this.castValue(value, constraints)
+      this.castValue(value, {constraints})
     } catch (error) {
       return false
     }
@@ -161,7 +152,7 @@ export class Field {
 
   _getCheckFunctions() {
     const checks = {}
-    const cast = lodash.bind(this.castValue, this, lodash, false)
+    const cast = lodash.bind(this.castValue, this, lodash, {constraints: false})
     for (const [name, constraint] of Object.entries(this.constraints)) {
       let castConstraint = constraint
       // Cast enum constraint
@@ -172,7 +163,6 @@ export class Field {
       if (['maximum', 'minimum'].includes(name)) {
         castConstraint = cast(constraint)
       }
-
       const func = constraints[`check${lodash.upperFirst(name)}`]
       const check = lodash.partial(func, castConstraint)
       checks[name] = check
