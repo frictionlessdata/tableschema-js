@@ -184,6 +184,10 @@ describe('Types', () => {
       assert.isTrue(type.test(BASE_FIELD, value))
       done()
     })
+
+    it('cast numbers presented as strings to strings', () => {
+      assert.equal(type.cast(BASE_FIELD, '001'), '001')
+    })
   })
 
   describe('IntegerType', () => {
