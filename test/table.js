@@ -58,7 +58,7 @@ describe('Table', () => {
   })
 
   it('shouldn\'t instantiate with wrong schema', done => {
-    (new Table(DATA, {schema: 'wrong schema'})).then(() => {
+    (Table.load(DATA, {schema: 'wrong schema'})).then(() => {
       assert.isTrue(false)
       done()
     }, error => {
@@ -70,7 +70,7 @@ describe('Table', () => {
   it('should work with Schema instance', (done) => {
     let count = 0;
     (Schema.load(SCHEMA)).then(model => {
-      (new Table(DATA, {schema: model})).then(table => {
+      (Table.load(DATA, {schema: model})).then(table => {
         table.iter({callback: () => {count += 1}}).then(() => {
           assert.equal(count, 5)
           done()
@@ -90,7 +90,7 @@ describe('Table', () => {
 
   it('should return converted values for provided array', (done) => {
     let count = 0;
-    (new Table(DATA, {schema: SCHEMA})).then(table => {
+    (Table.load(DATA, {schema: SCHEMA})).then(table => {
       table.iter({callback: () => {count += 1}}).then(() => {
         assert.equal(count, 5)
         done()
@@ -106,7 +106,7 @@ describe('Table', () => {
 
   it('should return converted values for readable stream', (done) => {
     let count = 0;
-    (new Table(fs.createReadStream('./data/data_big.csv'), {schema: SCHEMA})).then(
+    (Table.load(fs.createReadStream('./data/data_big.csv'), {schema: SCHEMA})).then(
       table => {
         table.iter({callback: () => {count += 1}}).then(() => {
           assert.equal(count, 100)
@@ -123,7 +123,7 @@ describe('Table', () => {
 
   it('should return converted values for local path', (done) => {
     let count = 0;
-    (new Table('./data/data_big.csv', {schema: SCHEMA})).then(table => {
+    (Table.load('./data/data_big.csv', {schema: SCHEMA})).then(table => {
       table.iter({callback: () => {count += 1}}).then(() => {
         assert.equal(count, 100)
         done()
@@ -138,7 +138,7 @@ describe('Table', () => {
   })
 
   it('should return converted values', done => {
-    (new Table(DATA, {schema: SCHEMA})).then(table => {
+    (Table.load(DATA, {schema: SCHEMA})).then(table => {
       const converted = []
       table.iter({callback: items => {converted.push(items)}}).then(() => {
         let convItem
@@ -170,7 +170,7 @@ describe('Table', () => {
     SCHEMA.fields[0].constraints.unique = true
     DATA.push([1, '10.0', '1', 'string', '2012-06-15'])
     DATA.push([1, '10.0', '1', 'string', '2012-06-15']);
-    (new Table(DATA, {schema: SCHEMA})).then(table => {
+    (Table.load(DATA, {schema: SCHEMA})).then(table => {
       table.iter({callback: () => {}}).then(() => {
         done()
       }, errors => {
@@ -187,7 +187,7 @@ describe('Table', () => {
   it('unique constraints violation fail fast', done => {
     SCHEMA.fields[0].constraints.unique = true
     DATA.push([1, '10.0', '1', 'string', '2012-06-15']);
-    (new Table(DATA, {schema: SCHEMA})).then(table => {
+    (Table.load(DATA, {schema: SCHEMA})).then(table => {
       table.iter({callback: () => {}}).then(() => {
         done()
       }, errors => {
@@ -204,7 +204,7 @@ describe('Table', () => {
   it.skip('unique constraints violation skip constraints', done => {
     SCHEMA.fields[0].constraints.unique = true
     DATA.push([1, '10.0', '1', 'string', '2012-06-15']);
-    (new Table(DATA, {schema: SCHEMA})).then(table => {
+    (Table.load(DATA, {schema: SCHEMA})).then(table => {
       const callback = () => {
       }
       table.iter(callback, true, true).then(() => {
@@ -224,7 +224,7 @@ describe('Table', () => {
   it('unique constraints violation for primary key', done => {
     SCHEMA.primaryKey = ['height', 'age']
     DATA.push([6, '10.0', 1, 'string', '2012-06-15']);
-    (new Table(DATA, {schema: SCHEMA})).then(table => {
+    (Table.load(DATA, {schema: SCHEMA})).then(table => {
       table.iter({callback: () => {}}).then(() => {
         done()
       }, errors => {
@@ -239,7 +239,7 @@ describe('Table', () => {
   })
 
   it('should read from data with limit of rows', done => {
-    (new Table(DATA, {schema: SCHEMA})).then(table => {
+    (Table.load(DATA, {schema: SCHEMA})).then(table => {
       table.read({limit: 2}).then(data => {
         assert.isArray(data)
         assert.equal(data.length, 2)
@@ -256,7 +256,7 @@ describe('Table', () => {
   })
 
   it.skip('should read from data with limit and return keyed rows', done => {
-    (new Table(DATA, {schema: SCHEMA})).then(table => {
+    (Table.load(DATA, {schema: SCHEMA})).then(table => {
       table.read(true, false, 2).then(data => {
         assert.isArray(data)
         assert.equal(data.length, 2)
@@ -278,7 +278,7 @@ describe('Table', () => {
   })
 
   it.skip('should read from data with limit and return extended rows', done => {
-    (new Table(DATA, {schema: SCHEMA})).then(table => {
+    (Table.load(DATA, {schema: SCHEMA})).then(table => {
       table.read(false, true, 2).then(data => {
         assert.isArray(data)
         assert.equal(data.length, 2)
@@ -303,7 +303,7 @@ describe('Table', () => {
 
   it('should save source', done => {
     const path = 'test.csv';
-    (new Table(DATA, {schema: SCHEMA})).then(table => {
+    (Table.load(DATA, {schema: SCHEMA})).then(table => {
       table.save(path).then(() => {
         fs.readFile(path, 'utf8', (error, data) => {
           assert.isNull(error)
@@ -323,7 +323,7 @@ describe('Table', () => {
   })
 
   it('should iter/read with cast true', async () => {
-    const table = await new Table(DATA, {schema: SCHEMA})
+    const table = await Table.load(DATA, {schema: SCHEMA})
     const iterRows = []
     const callback = row => iterRows.push(row)
     const readRows = await table.read({cast: true})
@@ -333,7 +333,7 @@ describe('Table', () => {
   })
 
   it('should iter/read with cast false', async () => {
-    const table = await new Table(DATA, {schema: SCHEMA})
+    const table = await Table.load(DATA, {schema: SCHEMA})
     const iterRows = []
     const callback = row => iterRows.push(row)
     const readRows = await table.read({cast: false})

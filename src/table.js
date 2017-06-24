@@ -17,26 +17,14 @@ export class Table {
   // Public
 
   /**
-   * Table constructor
+   * Load table
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  constructor(source, {schema}) {
-    const self = this
-    this.source = source
-
-    return new Promise((resolve, reject) => {
-      if (schema instanceof Schema) {
-        self.schema = schema
-        resolve(self)
-      } else {
-        Schema.load(schema).then(model => {
-          self.schema = model
-          resolve(self)
-        }).catch(error => {
-          reject(error)
-        })
-      }
-    })
+  static async load(source, {schema}) {
+    if (!(schema instanceof Schema)) {
+      schema = await Schema.load(schema)
+    }
+    return new Table(source, {schema})
   }
 
   /**
@@ -130,6 +118,14 @@ export class Table {
       })
     })
   }
+
+  // Private
+
+  constructor(source, {schema}) {
+    this.source = source
+    this.schema = schema
+  }
+
 }
 
 
