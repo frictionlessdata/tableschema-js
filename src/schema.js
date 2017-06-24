@@ -1,6 +1,6 @@
 import fs from 'fs'
-import _ from 'lodash'
 import 'isomorphic-fetch'
+import lodash from 'lodash'
 import {Field} from './field'
 import {validate} from './validate'
 import * as helpers from './helpers'
@@ -16,18 +16,40 @@ export class Schema {
    * Load Schema instance
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  static load(descriptor, {caseInsensitiveHeaders}={caseInsensitiveHeaders: false}) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        descriptor = await helpers.retrieveDescriptor(descriptor)
-        descriptor = helpers.expandSchemaDescriptor(descriptor)
-        await validate(descriptor)
-        const schema = new Schema(descriptor, {caseInsensitiveHeaders})
-        resolve(schema)
-      } catch (error) {
-        reject(error)
-      }
-    })
+  static async load(descriptor, {strict, caseInsensitiveHeaders}={strict: true, caseInsensitiveHeaders: false}) {
+
+    // Process descriptor
+    descriptor = await helpers.retrieveDescriptor(descriptor)
+    descriptor = helpers.expandSchemaDescriptor(descriptor)
+
+    // Process descriptor
+    // It should be moved to constructor after writing sync validate function
+    // See proper implementation in datapackage library based on profile class
+    // Also there should be moved helpers.expandSchemaDescriptor(descriptor)
+    let errors = []
+    try {
+      await validate(descriptor)
+    } catch (err) {
+      errors = err
+    }
+
+    return new Schema(descriptor, {strict, caseInsensitiveHeaders, errors})
+  }
+
+  /**
+   * Schema valid
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  get valid() {
+    return this._errors.length === 0
+  }
+
+  /**
+   * Schema errors
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  get errors() {
+    return this._errors
   }
 
   /**
@@ -92,7 +114,7 @@ export class Schema {
    */
   getField(fieldName, {index}={index: 0}) {
     const name = fieldName
-    const fields = _.filter(this._fields, field => {
+    const fields = lodash.filter(this._fields, field => {
       if (this._caseInsensitiveHeaders) {
         return field.name.toLowerCase === name.toLowerCase
       }
@@ -182,18 +204,35 @@ export class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   update() {
+    // It should be implemented after writing sync validate function
+    // See proper implementation in datapackage library based on profile class
+    // For descriptor tracking should be used this._nextDescriptor as in datapackage
     throw new Error('Not Implemented')
   }
 
   // Private
 
-  constructor(descriptor, {caseInsensitiveHeaders}={caseInsensitiveHeaders: false}) {
+  constructor(descriptor, {strict, caseInsensitiveHeaders, errors}={strict: true, caseInsensitiveHeaders: false}) {
+
+    // Raise errors in strict mode
+    if (strict && errors.length) {
+      throw errors
+    }
+
+    // Set attributes
+    this._errors = errors
+    this._strict = strict
     this._descriptor = descriptor
     this._caseInsensitiveHeaders = caseInsensitiveHeaders
+
+    // Fill fields
     this._fields = []
-    for (const field of descriptor.fields) {
-      this._fields.push(new Field(field, {missingValues: this._descriptor.missingValues}))
+    if (this.valid) {
+      for (const field of descriptor.fields) {
+        this._fields.push(new Field(field, {missingValues: this._descriptor.missingValues}))
+      }
     }
+
   }
 
 }

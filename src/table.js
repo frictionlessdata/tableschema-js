@@ -21,9 +21,12 @@ export class Table {
    * https://github.com/frictionlessdata/tableschema-js#table
    */
   static async load(source, {schema}) {
+
+    // Load schema
     if (!(schema instanceof Schema)) {
       schema = await Schema.load(schema)
     }
+
     return new Table(source, {schema})
   }
 

@@ -18,6 +18,9 @@ rules:
   semi:
     - error
     - never
+  max-len:
+    - error
+    - 120
   comma-style:
     - off
     - first

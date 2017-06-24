@@ -17,6 +17,7 @@ const SCHEMA_MIN = {
 }
 
 describe('Schema', () => {
+
   beforeEach(done => {
     SCHEMA = {
       fields: [
@@ -290,4 +291,19 @@ describe('Schema', () => {
     const schema = await Schema.load(descriptor)
     assert.deepEqual(schema.castRow(['2005']), [new Date(2005, 0, 1)])
   })
+
+  it('should work in strict mode', async () => {
+    const descriptor = {fields: [{name: 'name', type: 'string'}]}
+    const schema = await Schema.load(descriptor)
+    assert.deepEqual(schema.valid, true)
+    assert.deepEqual(schema.errors, [])
+  })
+
+  it('should work in non-strict mode', async () => {
+    const descriptor = {fields: [{name: 'name', type: 'bad'}]}
+    const schema = await Schema.load(descriptor, {strict: false})
+    assert.deepEqual(schema.valid, false)
+    assert.deepEqual(schema.errors.length, 1)
+  })
+
 })
