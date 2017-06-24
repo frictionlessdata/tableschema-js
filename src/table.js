@@ -43,7 +43,7 @@ export class Table {
    * Iter table data
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  iter({callback}={}) {
+  iter({cast, callback}={cast: true}) {
     const primaryKey = this.schema.primaryKey
     let uniqueHeaders = getUniqueHeaders(this.schema)
     if (primaryKey && primaryKey.length > 1) {
@@ -68,20 +68,21 @@ export class Table {
     if (!callback) callback = row => row
     const failFast = false
     const skipConstraints = false
-    return proceed(this, getReadStream(this.source), callback, failFast, skipConstraints)
+    const stream = getReadStream(this.source)
+    return proceed(this, stream, callback, failFast, skipConstraints, cast)
   }
 
   /**
    * Read table data
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  read({keyed, extended, limit}={keyed: false, extended: false}) {
+  read({keyed, extended, cast, limit}={keyed: false, extended: false, cast: true}) {
     const self = this
       , headers = this.schema.headers
       , result = []
     return new Promise((resolve, reject) => {
       let index = 1
-      self.iter({callback: items => {
+      self.iter({cast, callback: items => {
         if (!(limit && index > limit)) {
           if (keyed) {
             result.push(lodash.zipObject(headers, items))
@@ -145,7 +146,7 @@ export class Table {
  * @param skipConstraints
  */
 function proceed(instance, readStream, callback, failFast = false
-               , skipConstraints = false) {
+               , skipConstraints = false, doCast = true) {
   return new Promise((resolve, reject) => {
     const parser = parse()
       , errors = []
@@ -155,7 +156,7 @@ function proceed(instance, readStream, callback, failFast = false
       if (data.isArray) {
         data.stream.on('data', items => {
           cast(instance, reject, callback, errors, items, failFast,
-               skipConstraints)
+               skipConstraints, doCast)
         }).on('end', () => {
           end(resolve, reject, errors)
         })
@@ -173,7 +174,7 @@ function proceed(instance, readStream, callback, failFast = false
           isFirst = false
         } else {
           cast(instance, reject, callback, errors, items, failFast,
-               skipConstraints)
+               skipConstraints, doCast)
         }
       }
     }).on('end', () => {
@@ -254,13 +255,16 @@ function isReadStream(stream) {
 }
 
 function cast(instance, reject, callback, errors, items, failFast
-            , skipConstraints) {
+            , skipConstraints, doCast) {
   try {
-    const values = instance.schema.castRow(items, {failFast, skipConstraints})
-    if (!skipConstraints && instance.primaryHeaders) {
-      // unique constraints available only from Resource
-      helpers.checkUniquePrimary(values, instance.primaryHeaders,
-                                       instance.uniqueness)
+    let values = items
+    if (doCast) {
+      values = instance.schema.castRow(values, {failFast, skipConstraints})
+      if (!skipConstraints && instance.primaryHeaders) {
+        // unique constraints available only from Resource
+        helpers.checkUniquePrimary(values, instance.primaryHeaders,
+                                         instance.uniqueness)
+      }
     }
     callback(values)
   } catch (e) {

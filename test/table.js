@@ -321,4 +321,24 @@ describe('Table', () => {
       done()
     })
   })
+
+  it('should iter/read with cast true', async () => {
+    const table = await new Table(DATA, {schema: SCHEMA})
+    const iterRows = []
+    const callback = row => iterRows.push(row)
+    const readRows = await table.read({cast: true})
+    await table.iter({callback, cast: true})
+    assert.deepEqual(iterRows[0], [1, 10.0, 1, 'string1', new Date(2012, 6-1, 15)])
+    assert.deepEqual(readRows[0], [1, 10.0, 1, 'string1', new Date(2012, 6-1, 15)])
+  })
+
+  it('should iter/read with cast false', async () => {
+    const table = await new Table(DATA, {schema: SCHEMA})
+    const iterRows = []
+    const callback = row => iterRows.push(row)
+    const readRows = await table.read({cast: false})
+    await table.iter({callback, cast: false})
+    assert.deepEqual(iterRows[0], [1, '10.0', 1, 'string1', '2012-06-15 00:00:00'])
+    assert.deepEqual(readRows[0], [1, '10.0', 1, 'string1', '2012-06-15 00:00:00'])
+  })
 })
