@@ -23,7 +23,7 @@ describe('infer', () => {
       parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
-          , schema = infer(headers, values)
+          , schema = infer(values, {headers})
 
         assert.property(schema, 'fields')
         assert.isArray(schema.fields)
@@ -46,7 +46,7 @@ describe('infer', () => {
       parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
-          , schema = infer(headers, values)
+          , schema = infer(values, {headers})
 
         assert.property(schema, 'fields')
         assert.isArray(schema.fields)
@@ -69,7 +69,7 @@ describe('infer', () => {
       parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
-          , schema = infer(headers, values, { rowLimit: 4 })
+          , schema = infer(values, {headers}, { rowLimit: 4 })
 
         assert.property(schema, 'fields')
         assert.isArray(schema.fields)
@@ -99,8 +99,8 @@ describe('infer', () => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
           , schema = infer(
-          headers
-          , values
+          values,
+          {headers}
           , {
             cast: {
               number: {
@@ -141,7 +141,7 @@ describe('infer', () => {
       parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
-          , schema = infer(headers, values, { primaryKey: 'id' })
+          , schema = infer(values, {headers}, { primaryKey: 'id' })
 
         assert.property(schema, 'primaryKey')
         assert.isArray(schema.primaryKey)
@@ -158,7 +158,7 @@ describe('infer', () => {
       parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
-          , schema = infer(headers, values, { primaryKey: ['id', 'age'] })
+          , schema = infer(values, {headers}, { primaryKey: ['id', 'age'] })
 
         assert.property(schema, 'primaryKey')
         assert.isArray(schema.primaryKey)
@@ -176,7 +176,7 @@ describe('infer', () => {
       parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
-          , schema = infer(headers, values, { explicit: false })
+          , schema = infer(values, {headers}, { explicit: false })
 
         for (const field of schema.fields) {
           assert.notProperty(field, 'constraints')
@@ -193,7 +193,7 @@ describe('infer', () => {
       parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
-          , schema = infer(headers, values, { explicit: true })
+          , schema = infer(values, {headers}, { explicit: true })
 
         for (const field of schema.fields) {
           assert.property(field, 'constraints')

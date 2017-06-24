@@ -3,14 +3,12 @@ import tv4 from 'tv4'
 import * as helpers from './helpers'
 import profile from './profiles/table-schema.json'
 
+
+// Module API
+
 /**
- Validate that `schema` is a valid Table Schema.
-
- Args:
- * `schema`: a dict to check if it is valid Table Schema
-
- Returns:
- * Promise. In case of success true, in error - list of errors
+ Validate Table Schema descriptor.
+ * https://github.com/frictionlessdata/tableschema-js#validate
  */
 export function validate(schema) {
   schema = helpers.expandSchemaDescriptor(schema)

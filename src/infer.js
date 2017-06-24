@@ -6,25 +6,10 @@ import * as types from './types'
 // Module API
 
 /**
- * Return a descriptor from the passed headers and values.
- *
- * @param headers {Array} - a list of header names
- * @param values {Array} - a reader over data, yielding each row as a list of
- *   values
- * @param options {Object}:
- *  - {integer} rowLimit - limit amount of rows to be proceed
- *  - {boolean} explicit - be explicit
- *  - {string} primaryKey - pass in a primary key or iterable of keys
- *  - {object} cast - object with cast instructions for types in the schema:
- *  {
- *  string : { format : 'email' },
- *  number : { format : 'currency' },
- *  date: { format : 'any'}
- *  }
- *
- * @returns {object} a Table Schema as a JSON
+ * Infer Table Schema descriptor
+ * https://github.com/frictionlessdata/tableschema-js#infer
  */
-export function infer(headers, values, options = {}) {
+export function infer(source, {headers}, options = {}) {
   // Set up default options
   const opts = _.extend(
     {
@@ -66,7 +51,7 @@ export function infer(headers, values, options = {}) {
   })
 
   headers.forEach((header, index) => {
-    let columnValues = _.map(values, value => value[index])
+    let columnValues = _.map(source, value => value[index])
     const field = descriptor.fields[index]
 
     if (opts.rowLimit) {
