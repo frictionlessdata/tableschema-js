@@ -1,63 +1,67 @@
-import EventEmitter from 'events'
-import url from 'url'
 import fs from 'fs'
+import url from 'url'
 import http from 'http'
 import https from 'https'
-import _ from 'lodash'
+import lodash from 'lodash'
+import EventEmitter from 'events'
 import parse from 'csv-parse'
 import transform from 'stream-transform'
-import {Schema} from './schema'
 import * as helpers from './helpers'
+import {Schema} from './schema'
 
 
 // Module API
 
-/**
- * @returns Promise
- */
 export class Table {
-  constructor(schema, data) {
-    const self = this
-    this.source = data
 
-    return new Promise((resolve, reject) => {
-      if (schema instanceof Schema) {
-        self.schema = schema
-        resolve(self)
-      } else {
-        Schema.load(schema).then(model => {
-          self.schema = model
-          resolve(self)
-        }).catch(error => {
-          reject(error)
-        })
-      }
-    })
+  // Public
+
+  /**
+   * Load table
+   * https://github.com/frictionlessdata/tableschema-js#table
+   */
+  static async load(source, {schema}) {
+
+    // Load schema
+    if (!(schema instanceof Schema)) {
+      schema = await Schema.load(schema)
+    }
+
+    return new Table(source, {schema})
   }
 
   /**
-   * Iter through the given dataset and create the converted dataset
-   *
-   * @param {Function} callback. Callback function to catch results of casting
-   * @param {boolean} failFast. Default is false
-   * @param {boolean} skipConstraints. Default is false
-   * @throws {Array} of errors if cast failed on some field
+   * Table schema
+   * https://github.com/frictionlessdata/tableschema-js#table
    */
-  iter(callback, failFast = false, skipConstraints = false) {
+  get schema() {
+    return this._schema
+  }
+
+  /**
+   * Table headers
+   * https://github.com/frictionlessdata/tableschema-js#table
+   */
+  get headers() {
+    // For now we use here fieldNames from schema
+    // but it should be headers from data source
+    return this._schema.fieldNames
+  }
+
+  /**
+   * Iter table data
+   * https://github.com/frictionlessdata/tableschema-js#table
+   */
+  iter({cast, callback}={cast: true}) {
     const primaryKey = this.schema.primaryKey
     let uniqueHeaders = getUniqueHeaders(this.schema)
-
-    if (!_.isFunction(callback)) {
-      throw new Error('Callback function is required')
-    }
-
     if (primaryKey && primaryKey.length > 1) {
-      const headers = this.schema.headers
-      uniqueHeaders = _.difference(uniqueHeaders, primaryKey)
+      const headers = this.schema.fieldNames
+      uniqueHeaders = lodash.difference(uniqueHeaders, primaryKey)
       // using to check unique constraints for the row, because need to check
       // uniquness of the values combination (primary key for example)
       this.primaryHeaders = {}
-      _.forEach(primaryKey, header => {
+      lodash.forEach(primaryKey, header => {
         // need to know the index of the header, so later it possible to
         // combine correct values in the row
         this.primaryHeaders[header] = headers.indexOf(header)
@@ -69,41 +73,39 @@ export class Table {
     this.schema.uniqueness = this.uniqueness
     // using for regular unique constraints for every value independently
     this.schema.uniqueHeaders = uniqueHeaders
-
-    return proceed(this, getReadStream(this.source), callback, failFast,
-                   skipConstraints)
+    // TODO: remove callback
+    if (!callback) callback = row => row
+    const failFast = false
+    const skipConstraints = false
+    const stream = getReadStream(this.source)
+    return proceed(this, stream, callback, failFast, skipConstraints, cast)
   }
 
   /**
-   * Read part or full source
-   *
-   * @param keyed {boolean} array of {key:value} object is returned
-   * @param extended {boolean} array of {number: {key:value} } extended
-   *   object is returned
-   * @param limit {integer} limit to certain amount of rows to load
-   * @returns {Promise}
+   * Read table data
+   * https://github.com/frictionlessdata/tableschema-js#table
    */
-  read(keyed = false, extended = false, limit = 0) {
+  read({keyed, extended, cast, limit}={keyed: false, extended: false, cast: true}) {
     const self = this
-      , headers = this.schema.headers
+      , headers = this.schema.fieldNames
       , result = []
     return new Promise((resolve, reject) => {
       let index = 1
-      self.iter(items => {
+      const callback = items => {
         if (!(limit && index > limit)) {
           if (keyed) {
-            result.push(_.zipObject(headers, items))
+            result.push(lodash.zipObject(headers, items))
           } else if (extended) {
             const object = {}
-            object[index] = _.zipObject(headers, items)
+            object[index] = lodash.zipObject(headers, items)
             result.push(object)
           } else {
             result.push(items)
           }
-
           index += 1
         }
-      }).then(() => {
+      }
+      self.iter({cast, callback}).then(() => {
         resolve(result)
       }, errors => {
         reject(errors)
@@ -112,17 +114,15 @@ export class Table {
   }
 
   /**
-   * Save source to file locally in CSV format with `,` (comma) delimiter
-   *
-   * @param path
-   * @returns {Promise}
+   * Save table data
+   * https://github.com/frictionlessdata/tableschema-js#table
    */
   save(path) {
     const self = this
     return new Promise((resolve, reject) => {
       getReadStream(self.source).then(data => {
         const writableStream = fs.createWriteStream(path, { encoding: 'utf8' })
-        writableStream.write(`${self.schema.headers.join(',')}\r\n`)
+        writableStream.write(`${self.schema.fieldNames.join(',')}\r\n`)
 
         data.stream.on('data', chunk => {
           if (data.isArray) {
@@ -139,7 +139,18 @@ export class Table {
       })
     })
   }
+
+  // Private
+
+  constructor(source, {schema}) {
+    this.source = source
+    this._schema = schema
+  }
+
 }
+
+
+// Internal
 
 /**
  * Convert provided data to the types of the current schema. If the option
@@ -152,7 +163,7 @@ export class Table {
  * @param skipConstraints
  */
 function proceed(instance, readStream, callback, failFast = false
-               , skipConstraints = false) {
+               , skipConstraints = false, doCast = true) {
   return new Promise((resolve, reject) => {
     const parser = parse()
       , errors = []
@@ -162,7 +173,7 @@ function proceed(instance, readStream, callback, failFast = false
       if (data.isArray) {
         data.stream.on('data', items => {
           cast(instance, reject, callback, errors, items, failFast,
-               skipConstraints)
+               skipConstraints, doCast)
         }).on('end', () => {
           end(resolve, reject, errors)
         })
@@ -180,7 +191,7 @@ function proceed(instance, readStream, callback, failFast = false
           isFirst = false
         } else {
           cast(instance, reject, callback, errors, items, failFast,
-               skipConstraints)
+               skipConstraints, doCast)
         }
       }
     }).on('end', () => {
@@ -195,7 +206,7 @@ function proceed(instance, readStream, callback, failFast = false
  */
 function getUniqueHeaders(schema) {
   const filtered = []
-  _.forEach(schema.fields, F => {
+  lodash.forEach(schema.fields, F => {
     if (F.constraints.unique === true) {
       filtered.push(F.name)
     }
@@ -220,7 +231,7 @@ function getReadStream(source) {
     if (isReadStream(source)) {
       // it can be readable stream by it self
       resolve({ stream: source })
-    } else if (_.isArray(source)) {
+    } else if (lodash.isArray(source)) {
       // provided array with raw data
       const transformer = transform(data => data)
       resolve({ stream: transformer, isArray: true })
@@ -228,7 +239,7 @@ function getReadStream(source) {
         transformer.write(item)
       })
       transformer.end()
-    } else if (_.isString(source)) {
+    } else if (lodash.isString(source)) {
       // probably it is some URL or local path to the file with the data
       const protocol = url.parse(source).protocol
       if (helpers.isURL(protocol)) {
@@ -257,18 +268,20 @@ function getReadStream(source) {
  * @returns {boolean}
  */
 function isReadStream(stream) {
-  return stream instanceof EventEmitter && _.isFunction(stream.read)
+  return stream instanceof EventEmitter && lodash.isFunction(stream.read)
 }
 
 function cast(instance, reject, callback, errors, items, failFast
-            , skipConstraints) {
+            , skipConstraints, doCast) {
   try {
-    const values = instance.schema.castRow(items, failFast,
-                                           skipConstraints)
-    if (!skipConstraints && instance.primaryHeaders) {
-      // unique constraints available only from Resource
-      helpers.checkUniquePrimary(values, instance.primaryHeaders,
-                                       instance.uniqueness)
+    let values = items
+    if (doCast) {
+      values = instance.schema.castRow(values, {failFast, skipConstraints})
+      if (!skipConstraints && instance.primaryHeaders) {
+        // unique constraints available only from Resource
+        helpers.checkUniquePrimary(values, instance.primaryHeaders,
+                                         instance.uniqueness)
+      }
     }
     callback(values)
   } catch (e) {
@@ -276,8 +289,8 @@ function cast(instance, reject, callback, errors, items, failFast
       reject(e)
       return
     }
-    if (_.isArray(e)) {
-      _.forEach(e, error => {
+    if (lodash.isArray(e)) {
+      lodash.forEach(e, error => {
         errors.push(error)
       })
     } else {

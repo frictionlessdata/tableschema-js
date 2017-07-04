@@ -18,6 +18,9 @@ rules:
   semi:
     - error
     - never
+  max-len:
+    - error
+    - 120
   comma-style:
     - off
     - first
@@ -48,6 +51,8 @@ rules:
   arrow-parens:
     - off
     - as-needed
+  block-spacing:
+    - off
   class-methods-use-this:
     - off
   object-curly-spacing:
