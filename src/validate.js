@@ -1,7 +1,7 @@
-import tv4 from 'tv4'
-import lodash from 'lodash'
-import * as helpers from './helpers'
-import profile from './profiles/table-schema.json'
+const tv4 = require('tv4')
+const lodash = require('lodash')
+const helpers = require('./helpers')
+const profile = require('./profiles/table-schema.json')
 
 
 // Module API
@@ -10,7 +10,7 @@ import profile from './profiles/table-schema.json'
  Validate Table Schema descriptor.
  * https://github.com/frictionlessdata/tableschema-js#validate
  */
-export function validate(schema) {
+function validate(schema) {
   schema = helpers.expandSchemaDescriptor(schema)
 
   const fieldNames = lodash.map(schema.fields || [], lodash.property('name'))
@@ -152,4 +152,9 @@ export function validate(schema) {
       , errors: errs
     }
   }
+}
+
+
+module.exports = {
+  validate,
 }

@@ -1,17 +1,36 @@
+const {castAny} = require('./any')
+const {castArray} = require('./array')
+const {castBoolean} = require('./boolean')
+const {castDate} = require('./date')
+const {castDatetime} = require('./datetime')
+const {castDuration} = require('./duration')
+const {castGeojson} = require('./geojson')
+const {castGeopoint} = require('./geopoint')
+const {castInteger} = require('./integer')
+const {castNumber} = require('./number')
+const {castObject} = require('./object')
+const {castString} = require('./string')
+const {castTime} = require('./time')
+const {castYear} = require('./year')
+const {castYearmonth} = require('./yearmonth')
+
+
 // Module API
 
-export {castAny} from './any'
-export {castArray} from './array'
-export {castBoolean} from './boolean'
-export {castDate} from './date'
-export {castDatetime} from './datetime'
-export {castDuration} from './duration'
-export {castGeojson} from './geojson'
-export {castGeopoint} from './geopoint'
-export {castInteger} from './integer'
-export {castNumber} from './number'
-export {castObject} from './object'
-export {castString} from './string'
-export {castTime} from './time'
-export {castYear} from './year'
-export {castYearmonth} from './yearmonth'
+module.exports = {
+  castAny,
+  castArray,
+  castBoolean,
+  castDate,
+  castDatetime,
+  castDuration,
+  castGeojson,
+  castGeopoint,
+  castInteger,
+  castNumber,
+  castObject,
+  castString,
+  castTime,
+  castYear,
+  castYearmonth,
+}

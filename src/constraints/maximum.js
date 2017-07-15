@@ -1,6 +1,6 @@
 // Module API
 
-export function checkMaximum(constraint, value) {
+function checkMaximum(constraint, value) {
   if (value === null) {
     return true
   }
@@ -8,4 +8,9 @@ export function checkMaximum(constraint, value) {
     return true
   }
   return false
+}
+
+
+module.exports = {
+  checkMaximum,
 }

@@ -1,5 +1,5 @@
-import axios from 'axios'
-import {should} from 'chai'
+const axios = require('axios')
+const {should} = require('chai')
 const profile = require('../src/profiles/table-schema.json')
 should()
 

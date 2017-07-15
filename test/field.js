@@ -1,5 +1,5 @@
-import {assert, should} from 'chai'
-import {Field} from '../src/field'
+const {assert, should} = require('chai')
+const {Field} = require('../src/field')
 should()
 
 // Constants

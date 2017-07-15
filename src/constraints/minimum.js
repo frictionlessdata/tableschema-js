@@ -1,6 +1,6 @@
 // Module API
 
-export function checkMinimum(constraint, value) {
+function checkMinimum(constraint, value) {
   if (value === null) {
     return true
   }
@@ -8,4 +8,9 @@ export function checkMinimum(constraint, value) {
     return true
   }
   return false
+}
+
+
+module.exports = {
+  checkMinimum,
 }

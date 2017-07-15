@@ -1,5 +1,10 @@
 // Module API
 
-export function castAny(format, value) {
+function castAny(format, value) {
   return value
+}
+
+
+module.exports = {
+  castAny,
 }

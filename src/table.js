@@ -1,18 +1,18 @@
-import fs from 'fs'
-import url from 'url'
-import http from 'http'
-import https from 'https'
-import lodash from 'lodash'
-import EventEmitter from 'events'
-import parse from 'csv-parse'
-import transform from 'stream-transform'
-import * as helpers from './helpers'
-import {Schema} from './schema'
+const fs = require('fs')
+const url = require('url')
+const http = require('http')
+const https = require('https')
+const lodash = require('lodash')
+const EventEmitter = require('events')
+const parse = require('csv-parse')
+const transform = require('stream-transform')
+const helpers = require('./helpers')
+const {Schema} = require('./schema')
 
 
 // Module API
 
-export class Table {
+class Table {
 
   // Public
 
@@ -147,6 +147,11 @@ export class Table {
     this._schema = schema
   }
 
+}
+
+
+module.exports = {
+  Table,
 }
 
 

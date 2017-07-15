@@ -1,14 +1,14 @@
-import fs from 'fs'
-import 'isomorphic-fetch'
-import lodash from 'lodash'
-import {Field} from './field'
-import {validate} from './validate'
-import * as helpers from './helpers'
+require('isomorphic-fetch')
+const fs = require('fs')
+const lodash = require('lodash')
+const {Field} = require('./field')
+const {validate} = require('./validate')
+const helpers = require('./helpers')
 
 
 // Module API
 
-export class Schema {
+class Schema {
 
   // Public
 
@@ -235,4 +235,9 @@ export class Schema {
 
   }
 
+}
+
+
+module.exports = {
+  Schema,
 }

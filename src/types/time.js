@@ -1,12 +1,12 @@
-import lodash from 'lodash'
-import moment from 'moment'
-import {timeParse} from 'd3-time-format'
-import {ERROR} from '../config'
+const lodash = require('lodash')
+const moment = require('moment')
+const {timeParse} = require('d3-time-format')
+const {ERROR} = require('../config')
 
 
 // Module API
 
-export function castTime(format, value) {
+function castTime(format, value) {
   if (!lodash.isDate(value)) {
     if (!lodash.isString(value)) {
       return ERROR
@@ -34,6 +34,11 @@ export function castTime(format, value) {
     }
   }
   return value
+}
+
+
+module.exports = {
+  castTime,
 }
 
 

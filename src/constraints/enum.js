@@ -1,6 +1,6 @@
 // Module API
 
-export function checkEnum(constraint, value) {
+function checkEnum(constraint, value) {
   if (value === null) {
     return true
   }
@@ -8,4 +8,9 @@ export function checkEnum(constraint, value) {
     return true
   }
   return false
+}
+
+
+module.exports = {
+  checkEnum,
 }

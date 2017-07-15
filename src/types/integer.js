@@ -1,10 +1,10 @@
-import lodash from 'lodash'
-import {ERROR} from '../config'
+const lodash = require('lodash')
+const {ERROR} = require('../config')
 
 
 // Module API
 
-export function castInteger(format, value) {
+function castInteger(format, value) {
   if (!lodash.isInteger(value)) {
     if (!lodash.isString(value)) {
       return ERROR
@@ -20,4 +20,9 @@ export function castInteger(format, value) {
     }
   }
   return value
+}
+
+
+module.exports = {
+  castInteger,
 }

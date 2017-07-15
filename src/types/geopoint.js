@@ -1,10 +1,10 @@
-import lodash from 'lodash'
-import {ERROR} from '../config'
+const lodash = require('lodash')
+const {ERROR} = require('../config')
 
 
 // Module API
 
-export function castGeopoint(format, value) {
+function castGeopoint(format, value) {
   let lon, lat
   try {
     if (format === 'default') {
@@ -39,4 +39,9 @@ export function castGeopoint(format, value) {
     return ERROR
   }
   return [lon, lat]
+}
+
+
+module.exports = {
+  castGeopoint,
 }

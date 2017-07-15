@@ -1,12 +1,12 @@
-import tv4 from 'tv4'
-import lodash from 'lodash'
-import {ERROR} from '../config'
-import profile from '../profiles/geojson.json'
+const tv4 = require('tv4')
+const lodash = require('lodash')
+const {ERROR} = require('../config')
+const profile = require('../profiles/geojson.json')
 
 
 // Module API
 
-export function castGeojson(format, value) {
+function castGeojson(format, value) {
   if (!lodash.isObject(value)) {
     if (!lodash.isString(value)) {
       return ERROR
@@ -32,4 +32,9 @@ export function castGeojson(format, value) {
     }
   }
   return value
+}
+
+
+module.exports = {
+  castGeojson,
 }

@@ -1,6 +1,6 @@
-import lodash from 'lodash'
-import {ERROR} from './config'
-import * as types from './types'
+const lodash = require('lodash')
+const {ERROR} = require('./config')
+const types = require('./types')
 
 
 // Module API
@@ -9,7 +9,7 @@ import * as types from './types'
  * Infer Table Schema descriptor
  * https://github.com/frictionlessdata/tableschema-js#infer
  */
-export function infer(source, {headers}, options = {}) {
+function infer(source, {headers}, options = {}) {
   // Set up default options
   const opts = lodash.extend(
     {
@@ -70,6 +70,11 @@ export function infer(source, {headers}, options = {}) {
   })
 
   return descriptor
+}
+
+
+module.exports = {
+  infer,
 }
 
 

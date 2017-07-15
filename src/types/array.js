@@ -1,10 +1,10 @@
-import lodash from 'lodash'
-import {ERROR} from '../config'
+const lodash = require('lodash')
+const {ERROR} = require('../config')
 
 
 // Module API
 
-export function castArray(format, value) {
+function castArray(format, value) {
   if (!lodash.isArray(value)) {
     if (!lodash.isString(value)) {
       return ERROR
@@ -19,4 +19,9 @@ export function castArray(format, value) {
     }
   }
   return value
+}
+
+
+module.exports = {
+  castArray
 }

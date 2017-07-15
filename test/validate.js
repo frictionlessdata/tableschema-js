@@ -1,7 +1,7 @@
 /* global describe, it, beforeEach */
-import { assert } from 'chai'
-import fetchMock from 'fetch-mock'
-import {validate} from '../src/validate'
+const { assert } = require('chai')
+const fetchMock = require('fetch-mock')
+const {validate} = require('../src/validate')
 
 
 // Tests

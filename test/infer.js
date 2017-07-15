@@ -1,8 +1,8 @@
-import fs from 'fs'
-import _ from 'lodash'
-import parse from 'csv-parse'
-import { assert } from 'chai'
-import {infer} from '../src/infer'
+const fs = require('fs')
+const _ = require('lodash')
+const parse = require('csv-parse')
+const { assert } = require('chai')
+const {infer} = require('../src/infer')
 
 
 // Tests

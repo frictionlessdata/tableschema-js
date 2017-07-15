@@ -1,7 +1,7 @@
-import fs from 'fs'
-import {assert} from 'chai'
-import {Table} from '../src/table'
-import {Schema} from '../src/schema'
+const fs = require('fs')
+const {assert} = require('chai')
+const {Table} = require('../src/table')
+const {Schema} = require('../src/schema')
 
 
 // Tests

@@ -1,13 +1,13 @@
-import lodash from 'lodash'
-import * as constraints from './constraints'
-import * as helpers from './helpers'
-import * as config from './config'
-import * as types from './types'
+const lodash = require('lodash')
+const constraints = require('./constraints')
+const helpers = require('./helpers')
+const config = require('./config')
+const types = require('./types')
 
 
 // Module API
 
-export class Field {
+class Field {
 
   // Public
 
@@ -170,4 +170,9 @@ export class Field {
     return checks
   }
 
+}
+
+
+module.exports = {
+  Field,
 }

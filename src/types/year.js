@@ -1,10 +1,10 @@
-import lodash from 'lodash'
-import {ERROR} from '../config'
+const lodash = require('lodash')
+const {ERROR} = require('../config')
 
 
 // Module API
 
-export function castYear(format, value) {
+function castYear(format, value) {
   if (!lodash.isInteger(value)) {
     if (!lodash.isString(value)) {
       return ERROR
@@ -26,4 +26,9 @@ export function castYear(format, value) {
     return ERROR
   }
   return value
+}
+
+
+module.exports = {
+  castYear,
 }

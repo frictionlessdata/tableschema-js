@@ -1,6 +1,6 @@
 // Module API
 
-export function checkMinLength(constraint, value) {
+function checkMinLength(constraint, value) {
   if (value === null) {
     return true
   }
@@ -8,4 +8,9 @@ export function checkMinLength(constraint, value) {
     return true
   }
   return false
+}
+
+
+module.exports = {
+  checkMinLength,
 }

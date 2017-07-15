@@ -1,7 +1,7 @@
-import url from 'url'
-import 'isomorphic-fetch'
-import lodash from 'lodash'
-import * as config from './config'
+require('isomorphic-fetch')
+const url = require('url')
+const lodash = require('lodash')
+const config = require('./config')
 
 
 // Module API
@@ -9,7 +9,7 @@ import * as config from './config'
 /**
  * Retrieve descriptor.
  */
-export async function retrieveDescriptor(descriptor) {
+async function retrieveDescriptor(descriptor) {
   if (!lodash.isString(descriptor)) {
     return lodash.cloneDeep(descriptor)
   }
@@ -28,7 +28,7 @@ export async function retrieveDescriptor(descriptor) {
 /**
  * Expand schema descriptor with spec defaults.
  */
-export function expandSchemaDescriptor(descriptor) {
+function expandSchemaDescriptor(descriptor) {
   for (const field of (descriptor.fields || [])) {
     expandFieldDescriptor(field)
   }
@@ -40,7 +40,7 @@ export function expandSchemaDescriptor(descriptor) {
 /**
  * Expand field descriptor with spec defaults.
  */
-export function expandFieldDescriptor(descriptor) {
+function expandFieldDescriptor(descriptor) {
   if (descriptor instanceof Object) {
     if (!descriptor.type) descriptor.type = config.DEFAULT_FIELD_TYPE
     if (!descriptor.format) descriptor.format = config.DEFAULT_FIELD_FORMAT
@@ -52,7 +52,7 @@ export function expandFieldDescriptor(descriptor) {
 /**
  * Check if protocol is remote.
  */
-export function isURL(protocol) {
+function isURL(protocol) {
   const REMOTE_SCHEMES = ['http', 'https', 'ftp', 'ftps']
   if (!protocol) return false
   return REMOTE_SCHEMES.indexOf(protocol.replace(':', '')) !== -1
@@ -71,7 +71,7 @@ export function isURL(protocol) {
  * @param headers
  * @param unique
  */
-export function checkUnique(fieldName, value, headers, unique) {
+function checkUnique(fieldName, value, headers, unique) {
   const _ = lodash
   if (!_.includes(headers, fieldName)) {
     return
@@ -96,7 +96,7 @@ export function checkUnique(fieldName, value, headers, unique) {
  * @param headers
  * @param unique
  */
-export function checkUniquePrimary(values, headers, unique) {
+function checkUniquePrimary(values, headers, unique) {
   const _ = lodash
   const key = _.keys(headers).join('')
     , indexes = _.values(headers)
@@ -118,10 +118,21 @@ export function checkUniquePrimary(values, headers, unique) {
 }
 
 
-export class UniqueConstraintsError extends Error {
+class UniqueConstraintsError extends Error {
   constructor(message) {
     super(message)
     this.message = message
     this.name = 'UniqueConstraintsError'
   }
+}
+
+
+module.exports = {
+  retrieveDescriptor,
+  expandSchemaDescriptor,
+  expandFieldDescriptor,
+  isURL,
+  checkUnique,
+  checkUniquePrimary,
+  UniqueConstraintsError,
 }
