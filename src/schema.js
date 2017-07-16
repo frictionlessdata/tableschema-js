@@ -102,7 +102,7 @@ class Schema {
       return field.name === name
     })
     if (!fields.length) {
-      throw new Error(`No such field name in schema: ${fieldName}`)
+      return null
     }
     if (!index) {
       return fields[0]
@@ -119,8 +119,8 @@ class Schema {
       , errors = []
 
     if (headers.length !== items.length) {
-      throw new Array('The number of items to convert does not match the ' +
-                      'number of fields given in the schema')
+      throw [new Error('The number of items to convert does not match the ' +
+                      'number of fields given in the schema')]
     }
 
     for (let i = 0, length = items.length; i < length; i += 1) {
@@ -146,8 +146,8 @@ class Schema {
             error = e.message
             break
           default:
-            error =
-              `Wrong type for header: ${headers[i]} and value: ${items[i]}`
+            error = new Error(
+              `Wrong type for header: ${headers[i]} and value: ${items[i]}`)
         }
         if (failFast === true) {
           throw new Array(error)
