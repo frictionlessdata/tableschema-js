@@ -11,15 +11,13 @@
       "name": "capital",
       "title": "",
       "description": "",
-      "type": "number",
-      "format": "currency"
+      "type": "number"
     },
     {
       "name": "url",
       "title": "",
       "description": "",
-      "type": "string",
-      "format": "uri"
+      "type": "string"
     }
   ]
 }

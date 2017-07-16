@@ -1,23 +1,31 @@
 require('isomorphic-fetch')
 const url = require('url')
 const lodash = require('lodash')
+const readFile = require('fs-readfile-promise')
 const config = require('./config')
 
 
 // Retrieve descriptor
 
 async function retrieveDescriptor(descriptor) {
-  if (!lodash.isString(descriptor)) {
-    return lodash.cloneDeep(descriptor)
+
+  // Inline
+  if (lodash.isPlainObject(descriptor)) {
+    descriptor = lodash.clone(descriptor)
+
+  // Remote
+  } else if (isRemotePath(descriptor)) {
+    const res = await fetch(descriptor)
+    if (res.status >= 400) throw new Error(`Can't load descriptor at "${descriptor}"`)
+    descriptor = await res.json()
+
+  // Local
+  } else {
+    if (config.IS_BROWSER) throw new Error('Local paths are not supported in browser')
+    const contents = await readFile(descriptor)
+    descriptor = JSON.parse(contents)
   }
-  if (!isURL(url.parse(descriptor).protocol)) {
-    throw [new Error('Descriptor can only be an object or a URL')]
-  }
-  const response = await fetch(descriptor)
-  if (response.status >= 400) {
-    throw [new Error('Failed to download file due to bad response')]
-  }
-  descriptor = await response.json()
+
   return descriptor
 }
 
