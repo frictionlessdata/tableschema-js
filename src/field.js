@@ -15,7 +15,7 @@ class Field {
    * Construct field
    * https://github.com/frictionlessdata/tableschema-js#field
    */
-  constructor(descriptor, {missingValues}={missingValues: config.DEFAULT_MISSING_VALUES}) {
+  constructor(descriptor, {missingValues=config.DEFAULT_MISSING_VALUES}={}) {
 
     // Process descriptor
     descriptor = lodash.cloneDeep(descriptor)
@@ -81,7 +81,7 @@ class Field {
    * Cast value
    * https://github.com/frictionlessdata/tableschema-js#field
    */
-  castValue(value, {constraints}={constraints: true}) {
+  castValue(value, {constraints=true}={}) {
 
     // Null value
     if (this._missingValues.includes(value)) {
@@ -123,7 +123,7 @@ class Field {
    * Check if value can be cast
    * https://github.com/frictionlessdata/tableschema-js#field
    */
-  testValue(value, {constraints}={constraints: true}) {
+  testValue(value, {constraints=true}={}) {
     try {
       this.castValue(value, {constraints})
     } catch (error) {

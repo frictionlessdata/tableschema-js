@@ -15,7 +15,7 @@ class Schema {
    * Load Schema instance
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  static async load(descriptor, {strict, caseInsensitiveHeaders}={strict: true, caseInsensitiveHeaders: false}) {
+  static async load(descriptor, {strict=true, caseInsensitiveHeaders=false}={}) {
 
     // Process descriptor
     descriptor = await helpers.retrieveDescriptor(descriptor)
@@ -112,7 +112,7 @@ class Schema {
    * Get field instance
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  getField(fieldName, {index}={index: 0}) {
+  getField(fieldName, {index=0}={}) {
     const name = fieldName
     const fields = lodash.filter(this._fields, field => {
       if (this._caseInsensitiveHeaders) {
@@ -133,7 +133,7 @@ class Schema {
    * Cast row
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  castRow(items, {failFast, skipConstraints}={failFast: false, skipConstraints: false}) {
+  castRow(items, {failFast=false, skipConstraints=false}={}) {
     const headers = this.fieldNames
       , result = []
       , errors = []
@@ -212,7 +212,7 @@ class Schema {
 
   // Private
 
-  constructor(descriptor, {strict, caseInsensitiveHeaders, errors}={strict: true, caseInsensitiveHeaders: false}) {
+  constructor(descriptor, {strict=true, caseInsensitiveHeaders=false, errors}={}) {
 
     // Raise errors in strict mode
     if (strict && errors.length) {
