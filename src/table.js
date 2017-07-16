@@ -22,7 +22,7 @@ class Table {
   static async load(source, {schema, headers=1}={}) {
 
     // Load schema
-    if (!(schema instanceof Schema)) {
+    if (schema && !(schema instanceof Schema)) {
       schema = await Schema.load(schema)
     }
 
@@ -87,6 +87,7 @@ class Table {
 
       // Form
       if (keyed) {
+        // TODO: schema.fieldNames to the mix!
         row = lodash.zipObject(this.headers, row)
       } else if (extended) {
         row = [rowNumber, this.headers, row]
@@ -125,8 +126,15 @@ class Table {
   constructor(source, {schema, headers=1}={}) {
     this._source = source
     this._schema = schema
+
+    // Headers
     this._headers = null
-    this._headersRow = headers
+    this._headersRow = null
+    if (lodash.isArray(headers)) {
+      this._headers = headers
+    } else if (lodash.isInteger(headers)) {
+      this._headersRow = headers
+    }
   }
 
 }
@@ -143,11 +151,16 @@ async function createRowStream(source) {
   const parser = csv.parse()
   let stream
 
+  // Stream factory
+  if (lodash.isFunction(source)) {
+    stream = source()
+    stream = stream.pipe(parser)
+
   // Inline source
-  if (lodash.isArray(source)) {
-      stream = new Readable({objectMode: true})
-      for (const row of source) stream.push(row)
-      stream.push(null)
+  } else if (lodash.isArray(source)) {
+    stream = new Readable({objectMode: true})
+    for (const row of source) stream.push(row)
+    stream.push(null)
 
   // Remote source
   } else if (helpers.isRemotePath(source)) {

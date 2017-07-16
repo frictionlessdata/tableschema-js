@@ -1,18 +1,17 @@
-/* global describe, beforeEach, it */
-const _ = require('lodash')
+const lodash = require('lodash')
 const fetchMock = require('fetch-mock')
-const { assert } = require('chai')
+const {assert} = require('chai')
 const {Schema} = require('../src/schema')
+const {catchError} = require('./helpers')
+
+
+// Tests
 
 let SCHEMA
 const SCHEMA_MIN = {
   fields: [
-    {
-      name: 'id'
-    }
-    , {
-      name: 'height'
-    }
+    {name: 'id'},
+    {name: 'height'},
   ]
 }
 
@@ -21,28 +20,11 @@ describe('Schema', () => {
   beforeEach(done => {
     SCHEMA = {
       fields: [
-        {
-          name: 'id'
-          , type: 'string'
-          , constraints: { required: true }
-        }
-        , {
-          name: 'height'
-          , type: 'number'
-        }
-        , {
-          name: 'age'
-          , type: 'integer'
-        }
-        , {
-          name: 'name'
-          , type: 'string'
-          , constraints: { required: true }
-        }
-        , {
-          name: 'occupation'
-          , type: 'string'
-        }
+        {name: 'id', type: 'string', constraints: {required: true}},
+        {name: 'height', type: 'number'},
+        {name: 'age', type: 'integer'},
+        {name: 'name', type: 'string', constraints: {required: true}},
+        {name: 'occupation', type: 'string'},
       ]
     }
     done()
@@ -100,14 +82,9 @@ describe('Schema', () => {
     })
   })
 
-  it('raise exception when invalid json passed as schema', done => {
-    (Schema.load('this is string')).then(schema => {
-      assert.isObject(schema)
-      assert.isTrue(false)
-    }, error => {
-      assert.isArray(error)
-      done()
-    })
+  it('raise exception when invalid json passed as schema', async () => {
+    const error = await catchError(Schema.load, 'bad descriptor')
+    assert.include(error.message, 'load descriptor')
   })
 
   it('raise exception when invalid format schema passed', done => {
@@ -122,7 +99,7 @@ describe('Schema', () => {
 
   it('set default types if not provided', done => {
     (Schema.load(SCHEMA_MIN)).then(schema => {
-      const fields = _.filter(schema.fields, F => F.type === 'string')
+      const fields = lodash.filter(schema.fields, F => F.type === 'string')
       assert.isArray(fields)
       assert.equal(fields.length, 2)
       fields.forEach(F => {
@@ -160,7 +137,7 @@ describe('Schema', () => {
 
   it('schema should not mutate', done => {
     const data = { fields: [{ name: 'id' }] }
-      , schemaCopy = _.extend({}, data)
+      , schemaCopy = lodash.extend({}, data)
       , model = Schema.load(data)
 
     model.then(() => {

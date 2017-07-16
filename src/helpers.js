@@ -22,8 +22,12 @@ async function retrieveDescriptor(descriptor) {
   // Local
   } else {
     if (config.IS_BROWSER) throw new Error('Local paths are not supported in browser')
-    const contents = await readFile(descriptor)
-    descriptor = JSON.parse(contents)
+    try {
+      const contents = await readFile(descriptor)
+      descriptor = JSON.parse(contents)
+    } catch (error) {
+      throw new Error(`Can't load descriptor at "${descriptor}"`)
+    }
   }
 
   return descriptor
