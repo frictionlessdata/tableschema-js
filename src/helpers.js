@@ -1,4 +1,4 @@
-require('isomorphic-fetch')
+const axios = require('axios')
 const lodash = require('lodash')
 const config = require('./config')
 
@@ -13,9 +13,9 @@ async function retrieveDescriptor(descriptor) {
 
   // Remote
   } else if (isRemotePath(descriptor)) {
-    const res = await fetch(descriptor)
+    const res = await axios.get(descriptor)
     if (res.status >= 400) throw new Error(`Can't load descriptor at "${descriptor}"`)
-    descriptor = await res.json()
+    descriptor = res.data
 
   // Local
   } else {

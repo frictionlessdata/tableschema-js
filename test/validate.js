@@ -1,5 +1,4 @@
 const {assert} = require('chai')
-const fetchMock = require('fetch-mock')
 const {validate} = require('../src')
 
 
@@ -8,7 +7,6 @@ const {validate} = require('../src')
 let SCHEMA
 describe('Validate', () => {
   beforeEach(done => {
-    fetchMock.restore()
     SCHEMA = {
       fields: [
         {
