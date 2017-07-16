@@ -50,7 +50,6 @@ describe('Field', () => {
     })
   })
 
-
   it('should parse descriptor with "enum" constraint', () => {
     const field = new Field({
       name: 'status',
@@ -59,7 +58,6 @@ describe('Field', () => {
         enum: ['active', 'inactive']
       }
     })
-
     assert.equal(field.testValue('active'), true)
     assert.equal(field.testValue('inactive'), true)
   })
@@ -72,7 +70,6 @@ describe('Field', () => {
         minimum: 100
       }
     })
-
     assert.equal(field.testValue(200), true)
     assert.equal(field.testValue(50), false)
   })
@@ -86,7 +83,6 @@ describe('Field', () => {
         maximum: 100
       }
     })
-
     assert.equal(field.testValue(50), true)
     assert.equal(field.testValue(200), false)
   })

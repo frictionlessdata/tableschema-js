@@ -386,4 +386,11 @@ describe('Validate', () => {
       done()
     })
   })
+
+  it('should support local descriptors', async function() {
+    if (process.env.USER_ENV === 'browser') this.skip()
+    const valid = await validate('data/schema.json')
+    assert.ok(valid)
+  })
+
 })
