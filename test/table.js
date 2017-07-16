@@ -12,7 +12,7 @@ let SCHEMA
 describe('Table', () => {
 
   before(function() {
-    // Skip infer tests for browser
+    // Skip table tests for browser
     if (process.env.USER_ENV === 'browser') {
       this.skip()
     }

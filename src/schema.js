@@ -1,4 +1,3 @@
-require('isomorphic-fetch')
 const fs = require('fs')
 const lodash = require('lodash')
 const {Field} = require('./field')
@@ -65,7 +64,8 @@ class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get primaryKey() {
-    return this._descriptor.primaryKey
+    let primaryKey = this._descriptor.primaryKey || []
+    return (lodash.isArray(primaryKey)) ? primaryKey : [primaryKey]
   }
 
   /**

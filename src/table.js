@@ -1,13 +1,13 @@
 const fs = require('fs')
-const url = require('url')
-const http = require('http')
-const https = require('https')
+const csv = require('csv')
+const axios = require('axios')
 const lodash = require('lodash')
-const EventEmitter = require('events')
-const parse = require('csv-parse')
-const transform = require('stream-transform')
-const helpers = require('./helpers')
+const {Readable} = require('stream')
+const S2A = require('stream-to-async-iterator').default
 const {Schema} = require('./schema')
+const {infer} = require('./infer')
+const helpers = require('./helpers')
+const config = require('./config')
 
 
 // Module API
@@ -17,21 +17,19 @@ class Table {
   // Public
 
   /**
-   * Load table
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  static async load(source, {schema}) {
+  static async load(source, {schema, headers=1}={}) {
 
     // Load schema
     if (!(schema instanceof Schema)) {
       schema = await Schema.load(schema)
     }
 
-    return new Table(source, {schema})
+    return new Table(source, {schema, headers})
   }
 
   /**
-   * Table schema
    * https://github.com/frictionlessdata/tableschema-js#table
    */
   get schema() {
@@ -39,112 +37,96 @@ class Table {
   }
 
   /**
-   * Table headers
    * https://github.com/frictionlessdata/tableschema-js#table
    */
   get headers() {
-    // For now we use here fieldNames from schema
-    // but it should be headers from data source
-    return this._schema.fieldNames
+    return this._headers
   }
 
-  /**
-   * Iter table data
-   * https://github.com/frictionlessdata/tableschema-js#table
-   */
-  iter({cast, callback}={cast: true}) {
-    const primaryKey = this.schema.primaryKey
-    let uniqueHeaders = getUniqueHeaders(this.schema)
-    if (primaryKey && primaryKey.length > 1) {
-      const headers = this.schema.fieldNames
-      uniqueHeaders = lodash.difference(uniqueHeaders, primaryKey)
-      // using to check unique constraints for the row, because need to check
-      // uniquness of the values combination (primary key for example)
-      this.primaryHeaders = {}
-      lodash.forEach(primaryKey, header => {
-        // need to know the index of the header, so later it possible to
-        // combine correct values in the row
-        this.primaryHeaders[header] = headers.indexOf(header)
-      })
+  async infer() {
+    if (!this.schema) {
+      const sample = await this.read({cast: false, limit: 100})
+      const descriptor = infer(sample, {headers: this.headers})
+      this._schema = await Schema.load(descriptor)
     }
-    // TODO: reimplement
-    // That's very wrong - this method must not update the schema
-    this.uniqueness = {}
-    this.schema.uniqueness = this.uniqueness
-    // using for regular unique constraints for every value independently
-    this.schema.uniqueHeaders = uniqueHeaders
-    // TODO: remove callback
-    if (!callback) callback = row => row
-    const failFast = false
-    const skipConstraints = false
-    const stream = getReadStream(this.source)
-    return proceed(this, stream, callback, failFast, skipConstraints, cast)
   }
 
   /**
-   * Read table data
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  read({keyed, extended, cast, limit}={keyed: false, extended: false, cast: true}) {
-    const self = this
-      , headers = this.schema.fieldNames
-      , result = []
-    return new Promise((resolve, reject) => {
-      let index = 1
-      const callback = items => {
-        if (!(limit && index > limit)) {
-          if (keyed) {
-            result.push(lodash.zipObject(headers, items))
-          } else if (extended) {
-            const object = {}
-            object[index] = lodash.zipObject(headers, items)
-            result.push(object)
-          } else {
-            result.push(items)
-          }
-          index += 1
+  async iter({keyed, extended, cast=true, stream}={}) {
+    let rowNumber = 0
+    const rowStream = await createRowStream(this._source)
+    const uniqueFieldsCache = this.schema ? createUniqueFieldsCache(this.schema) : {}
+    const tableRowStream = rowStream.pipe(csv.transform(row => {
+      rowNumber += 1
+
+      // Headers
+      if (rowNumber === this._headersRow) {
+        this._headers = row
+        return
+      }
+
+      // Cast
+      if (cast) {
+        if (!this.schema) {
+          throw new Error('Schema for cast is required. Provide or infer.')
+        }
+        row = this.schema.castRow(row)
+      }
+
+      // Unique
+      for (const [index, cache] of Object.entries(uniqueFieldsCache)) {
+        if (cache.has(row[index])) {
+          const fieldName = this.schema.fields[index].name
+          throw new Error(`Field "${fieldName}" duplicates in row "${rowNumber}"`)
+        } else {
+          cache.add(row[index])
         }
       }
-      self.iter({cast, callback}).then(() => {
-        resolve(result)
-      }, errors => {
-        reject(errors)
-      })
-    })
+
+      // Form
+      if (keyed) {
+        row = lodash.zipObject(this.headers, row)
+      } else if (extended) {
+        row = [rowNumber, this.headers, row]
+      }
+
+      return row
+    }))
+    return (stream) ? tableRowStream : new S2A(tableRowStream)
   }
 
   /**
-   * Save table data
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  save(path) {
-    const self = this
-    return new Promise((resolve, reject) => {
-      getReadStream(self.source).then(data => {
-        const writableStream = fs.createWriteStream(path, { encoding: 'utf8' })
-        writableStream.write(`${self.schema.fieldNames.join(',')}\r\n`)
+  async read({keyed, extended, cast=true, limit}={}) {
+    const iterator = await this.iter({keyed, extended, cast})
+    const rows = []
+    let count = 0
+    for(;;) {
+      count += 1
+      const iteration = await iterator.next()
+      if (iteration.done) break
+      rows.push(iteration.value)
+      if (limit && (count => limit)) break
+    }
+    return rows
+  }
 
-        data.stream.on('data', chunk => {
-          if (data.isArray) {
-            chunk = chunk.join(',')
-            chunk += '\r\n'
-          }
-          writableStream.write(chunk)
-        }).on('end', () => {
-          writableStream.end()
-          resolve()
-        })
-      }).catch(error => {
-        reject(error)
-      })
-    })
+  async save(target) {
+    const rowStream = await createRowStream(this._source)
+    const textStream = rowStream.pipe(csv.stringify())
+    textStream.pipe(fs.createWriteStream(target))
   }
 
   // Private
 
-  constructor(source, {schema}) {
-    this.source = source
+  constructor(source, {schema, headers=1}={}) {
+    this._source = source
     this._schema = schema
+    this._headers = null
+    this._headersRow = headers
   }
 
 }
@@ -157,157 +139,50 @@ module.exports = {
 
 // Internal
 
-/**
- * Convert provided data to the types of the current schema. If the option
- * `failFast` is given, it will raise the first error it encounters,
- * otherwise an array of errors thrown (if there are any errors occur).
- *
- * @param readStream
- * @param callback
- * @param failFast
- * @param skipConstraints
- */
-function proceed(instance, readStream, callback, failFast = false
-               , skipConstraints = false, doCast = true) {
-  return new Promise((resolve, reject) => {
-    const parser = parse()
-      , errors = []
-    let isFirst = true
+async function createRowStream(source) {
+  const parser = csv.parse()
+  let stream
 
-    readStream.then(data => {
-      if (data.isArray) {
-        data.stream.on('data', items => {
-          cast(instance, reject, callback, errors, items, failFast,
-               skipConstraints, doCast)
-        }).on('end', () => {
-          end(resolve, reject, errors)
-        })
-      } else {
-        data.stream.pipe(parser)
-      }
-    }, error => {
-      reject(error)
-    })
+  // Inline source
+  if (lodash.isArray(source)) {
+      stream = new Readable({objectMode: true})
+      for (const row of source) stream.push(row)
+      stream.push(null)
 
-    parser.on('readable', () => {
-      let items
-      while ((items = parser.read()) !== null) {
-        if (isFirst) {
-          isFirst = false
-        } else {
-          cast(instance, reject, callback, errors, items, failFast,
-               skipConstraints, doCast)
-        }
-      }
-    }).on('end', () => {
-      end(resolve, reject, errors)
-    })
-  })
-}
-
-/**
- * Get all headers with unique constraints set to true
- * @returns {Array}
- */
-function getUniqueHeaders(schema) {
-  const filtered = []
-  lodash.forEach(schema.fields, F => {
-    if (F.constraints.unique === true) {
-      filtered.push(F.name)
-    }
-  })
-  return filtered
-}
-
-/**
- * Create reabale stream accordingly to the type of the source
- *
- * @param source. Can be:
- * array
- * stream
- * path to local file
- * path to remote file
- * @param callback - receive readable stream
- *
- * @returns Promise with readable stream object on resolve
- */
-function getReadStream(source) {
-  return new Promise((resolve, reject) => {
-    if (isReadStream(source)) {
-      // it can be readable stream by it self
-      resolve({ stream: source })
-    } else if (lodash.isArray(source)) {
-      // provided array with raw data
-      const transformer = transform(data => data)
-      resolve({ stream: transformer, isArray: true })
-      source.forEach(item => {
-        transformer.write(item)
-      })
-      transformer.end()
-    } else if (lodash.isString(source)) {
-      // probably it is some URL or local path to the file with the data
-      const protocol = url.parse(source).protocol
-      if (helpers.isURL(protocol)) {
-        const processor = protocol.indexOf('https') !== -1 ? https : http
-        // create readable stream from remote file
-        processor.get(source, res => {
-          resolve({ stream: res })
-        }, error => {
-          reject(error)
-        })
-      } else {
-        // assume that it is path to local file
-        // create readable stream
-        resolve({ stream: fs.createReadStream(source) })
-      }
+  // Remote source
+  } else if (helpers.isRemotePath(source)) {
+    if (config.IS_BROWSER) {
+      const response = await axios.get(source)
+      stream = new Readable()
+      stream.push(response.data)
+      stream.push(null)
+      stream = stream.pipe(parser)
     } else {
-      reject('Unsupported format of source')
+      const response = await axios.get(source, {responseType: 'stream'})
+      stream = response.data
+      stream = stream.pipe(parser)
     }
-  })
-}
 
-/**
- * Check if provided value is readable stream
- *
- * @param stream
- * @returns {boolean}
- */
-function isReadStream(stream) {
-  return stream instanceof EventEmitter && lodash.isFunction(stream.read)
-}
-
-function cast(instance, reject, callback, errors, items, failFast
-            , skipConstraints, doCast) {
-  try {
-    let values = items
-    if (doCast) {
-      values = instance.schema.castRow(values, {failFast, skipConstraints})
-      if (!skipConstraints && instance.primaryHeaders) {
-        // unique constraints available only from Resource
-        helpers.checkUniquePrimary(values, instance.primaryHeaders,
-                                         instance.uniqueness)
-      }
-    }
-    callback(values)
-  } catch (e) {
-    if (failFast === true) {
-      reject(e)
-      return
-    }
-    if (lodash.isArray(e)) {
-      lodash.forEach(e, error => {
-        errors.push(error)
-      })
-    } else {
-      errors.push(e)
-    }
-  }
-}
-
-function end(resolve, reject, errors) {
-  if (errors.length > 0) {
-    reject(errors)
+  // Local source
   } else {
-    resolve()
+    if (config.IS_BROWSER) {
+      throw new Error('Local paths are not supported in the browser')
+    } else {
+      stream = fs.createReadStream(source)
+      stream = stream.pipe(parser)
+    }
   }
+
+  return stream
+}
+
+
+function createUniqueFieldsCache(schema) {
+  cache = {}
+  for (const [index, field] of schema.fields.entries()) {
+    if (field.constraints.unique || schema.primaryKey.includes(field.name)) {
+      cache[index] = new Set()
+    }
+  }
+  return cache
 }

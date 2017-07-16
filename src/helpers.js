@@ -4,11 +4,8 @@ const lodash = require('lodash')
 const config = require('./config')
 
 
-// Module API
+// Retrieve descriptor
 
-/**
- * Retrieve descriptor.
- */
 async function retrieveDescriptor(descriptor) {
   if (!lodash.isString(descriptor)) {
     return lodash.cloneDeep(descriptor)
@@ -25,9 +22,8 @@ async function retrieveDescriptor(descriptor) {
 }
 
 
-/**
- * Expand schema descriptor with spec defaults.
- */
+// Expand descriptor
+
 function expandSchemaDescriptor(descriptor) {
   for (const field of (descriptor.fields || [])) {
     expandFieldDescriptor(field)
@@ -37,9 +33,6 @@ function expandSchemaDescriptor(descriptor) {
 }
 
 
-/**
- * Expand field descriptor with spec defaults.
- */
 function expandFieldDescriptor(descriptor) {
   if (descriptor instanceof Object) {
     if (!descriptor.type) descriptor.type = config.DEFAULT_FIELD_TYPE
@@ -48,6 +41,16 @@ function expandFieldDescriptor(descriptor) {
   return descriptor
 }
 
+
+// Miscellaneous
+
+function isRemotePath(path) {
+  // TODO: improve implementation
+  return path.startsWith('http')
+}
+
+
+// Deprecated
 
 /**
  * Check if protocol is remote.
@@ -58,8 +61,6 @@ function isURL(protocol) {
   return REMOTE_SCHEMES.indexOf(protocol.replace(':', '')) !== -1
 }
 
-
-// Deprecated
 
 /**
  * Check unique constraints for every header and value independently.
@@ -131,6 +132,7 @@ module.exports = {
   retrieveDescriptor,
   expandSchemaDescriptor,
   expandFieldDescriptor,
+  isRemotePath,
   isURL,
   checkUnique,
   checkUniquePrimary,
