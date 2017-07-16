@@ -1,6 +1,7 @@
 const fs = require('fs')
 const lodash = require('lodash')
 const {Field} = require('./field')
+const {Profile} = require('./profile')
 const {validate} = require('./validate')
 const helpers = require('./helpers')
 
@@ -12,31 +13,15 @@ class Schema {
   // Public
 
   /**
-   * Load Schema instance
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   static async load(descriptor, {strict=false, caseInsensitiveHeaders=false}={}) {
-
     // Process descriptor
     descriptor = await helpers.retrieveDescriptor(descriptor)
-    descriptor = helpers.expandSchemaDescriptor(descriptor)
-
-    // Process descriptor
-    // It should be moved to constructor after writing sync validate function
-    // See proper implementation in datapackage library based on profile class
-    // Also there should be moved helpers.expandSchemaDescriptor(descriptor)
-    let errors = []
-    try {
-      await validate(descriptor)
-    } catch (err) {
-      errors = err
-    }
-
-    return new Schema(descriptor, {strict, caseInsensitiveHeaders, errors})
+    return new Schema(descriptor, {strict, caseInsensitiveHeaders})
   }
 
   /**
-   * Schema valid
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get valid() {
@@ -44,7 +29,6 @@ class Schema {
   }
 
   /**
-   * Schema errors
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get errors() {
@@ -52,7 +36,6 @@ class Schema {
   }
 
   /**
-   * Get descriptor
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get descriptor() {
@@ -60,7 +43,6 @@ class Schema {
   }
 
   /**
-   * Get primary key
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get primaryKey() {
@@ -69,7 +51,6 @@ class Schema {
   }
 
   /**
-   * Get foregn keys of schema
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get foreignKeys() {
@@ -77,7 +58,6 @@ class Schema {
   }
 
   /**
-   * Get fields of schema
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get fields() {
@@ -85,7 +65,6 @@ class Schema {
   }
 
   /**
-   * Get field names
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get fieldNames() {
@@ -93,7 +72,6 @@ class Schema {
   }
 
   /**
-   * Add field to schema
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   addField(descriptor) {
@@ -101,7 +79,6 @@ class Schema {
   }
 
   /**
-   * Remove field from schema
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   removeField(descriptor) {
@@ -109,7 +86,6 @@ class Schema {
   }
 
   /**
-   * Get field instance
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   getField(fieldName, {index=0}={}) {
@@ -130,7 +106,6 @@ class Schema {
   }
 
   /**
-   * Cast row
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   castRow(items, {failFast=false, skipConstraints=false}={}) {
@@ -184,7 +159,6 @@ class Schema {
   }
 
   /**
-   * Save descriptor of schema into local file
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   save(path) {
@@ -200,7 +174,6 @@ class Schema {
   }
 
   /**
-   * Update schema instance
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   update() {
@@ -212,15 +185,22 @@ class Schema {
 
   // Private
 
-  constructor(descriptor, {strict=false, caseInsensitiveHeaders=false, errors}={}) {
+  constructor(descriptor, {strict=false, caseInsensitiveHeaders=false}={}) {
 
-    // Raise errors in strict mode
-    if (strict && errors.length) {
-      throw errors
+    // Process descriptor
+    descriptor = helpers.expandSchemaDescriptor(descriptor)
+
+    // Validate descriptor
+    this._errors = []
+    this._profile = new Profile('table-schema')
+    try {
+      this._profile.validate(descriptor)
+    } catch (errors) {
+      if (strict) throw errors
+      this._errors = errors
     }
 
     // Set attributes
-    this._errors = errors
     this._strict = strict
     this._descriptor = descriptor
     this._caseInsensitiveHeaders = caseInsensitiveHeaders

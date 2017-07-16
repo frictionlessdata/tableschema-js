@@ -30,13 +30,9 @@ describe('Schema', () => {
     done()
   })
 
-  it('have a correct number of header columns', done => {
-    (Schema.load(SCHEMA)).then(schema => {
-      assert.equal(schema.fieldNames.length, 5)
-      done()
-    }, error => {
-      assert(error)
-    })
+  it('have a correct number of header columns', async () => {
+    const schema = await Schema.load(SCHEMA)
+    assert.deepEqual(schema.fieldNames.length, 5)
   })
 
   it.skip('have a correct number of header required columns', done => {
