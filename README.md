@@ -157,14 +157,14 @@ try {
 }
 ```
 
-#### `async Schema.load(descriptor, {strict=true})`
+#### `async Schema.load(descriptor, {strict=false})`
 
 Factory method to instantiate `Schema` class. This method is async and it should be used with await keyword or as a `Promise`.
 
 - `descriptor (String/Object)` - schema descriptor as local path, url or object
 - `strict (Boolean)` - flag to alter validation behaviour:
-  - by default strict is true so any validation error will be raised
   - if false error will not be raised and all error will be collected in `schema.errors`
+  - if strict is true any validation error will be raised immediately
 - `(Error)` - raises error if schema can't be instantiated
 - `(Error[])` - raises list of validation errors if strict is true
 - `(Schema)` - returns schema class instance

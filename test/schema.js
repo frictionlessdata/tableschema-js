@@ -82,8 +82,8 @@ describe('Schema', () => {
     })
   })
 
-  it('raise exception when invalid json passed as schema', async () => {
-    const error = await catchError(Schema.load, 'bad descriptor')
+  it('raise exception when invalid json passed as schema in strict mode', async () => {
+    const error = await catchError(Schema.load, 'bad descriptor', {strict: true})
     if (process.env.USER_ENV === 'browser') {
       assert.include(error.message, 'in browser')
     } else {
@@ -92,7 +92,7 @@ describe('Schema', () => {
   })
 
   it('raise exception when invalid format schema passed', done => {
-    (Schema.load({})).then(schema => {
+    (Schema.load({}, {strict: true})).then(schema => {
       assert.isObject(schema)
       assert.isTrue(false)
     }, error => {
@@ -275,14 +275,14 @@ describe('Schema', () => {
 
   it('should work in strict mode', async () => {
     const descriptor = {fields: [{name: 'name', type: 'string'}]}
-    const schema = await Schema.load(descriptor)
+    const schema = await Schema.load(descriptor, {strict: true})
     assert.deepEqual(schema.valid, true)
     assert.deepEqual(schema.errors, [])
   })
 
   it('should work in non-strict mode', async () => {
     const descriptor = {fields: [{name: 'name', type: 'bad'}]}
-    const schema = await Schema.load(descriptor, {strict: false})
+    const schema = await Schema.load(descriptor)
     assert.deepEqual(schema.valid, false)
     assert.deepEqual(schema.errors.length, 1)
   })

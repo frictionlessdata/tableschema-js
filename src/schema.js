@@ -15,7 +15,7 @@ class Schema {
    * Load Schema instance
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  static async load(descriptor, {strict=true, caseInsensitiveHeaders=false}={}) {
+  static async load(descriptor, {strict=false, caseInsensitiveHeaders=false}={}) {
 
     // Process descriptor
     descriptor = await helpers.retrieveDescriptor(descriptor)
@@ -212,7 +212,7 @@ class Schema {
 
   // Private
 
-  constructor(descriptor, {strict=true, caseInsensitiveHeaders=false, errors}={}) {
+  constructor(descriptor, {strict=false, caseInsensitiveHeaders=false, errors}={}) {
 
     // Raise errors in strict mode
     if (strict && errors.length) {

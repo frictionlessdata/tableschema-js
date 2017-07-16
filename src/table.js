@@ -19,11 +19,11 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  static async load(source, {schema, headers=1}={}) {
+  static async load(source, {schema, headers=1, strict=false}={}) {
 
     // Load schema
     if (schema && !(schema instanceof Schema)) {
-      schema = await Schema.load(schema)
+      schema = await Schema.load(schema, {strict})
     }
 
     return new Table(source, {schema, headers})
