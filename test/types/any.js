@@ -1,6 +1,5 @@
-const {assert, should} = require('chai')
+const {assert} = require('chai')
 const types = require('../../src/types')
-should()
 
 
 // Constants

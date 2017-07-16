@@ -1,6 +1,5 @@
-const {assert, should} = require('chai')
+const {assert} = require('chai')
 const {Field} = require('../src')
-should()
 
 // Constants
 
@@ -44,7 +43,7 @@ describe('Field', () => {
 
   it('should expand descriptor by defaults', () => {
     const field = new Field({name: 'name'})
-    field.descriptor.should.be.deep.equal({
+    assert.deepEqual(field.descriptor, {
       name: 'name',
       type: 'string',
       format: 'default',

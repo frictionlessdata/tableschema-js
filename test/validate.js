@@ -1,5 +1,4 @@
-/* global describe, it, beforeEach */
-const { assert } = require('chai')
+const {assert} = require('chai')
 const fetchMock = require('fetch-mock')
 const {validate} = require('../src')
 

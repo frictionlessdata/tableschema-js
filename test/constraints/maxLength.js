@@ -1,6 +1,5 @@
-const {assert, should} = require('chai')
+const {assert} = require('chai')
 const constraints = require('../../src/constraints')
-should()
 
 
 // Constants

@@ -1,8 +1,7 @@
 const moment = require('moment')
-const {assert, should} = require('chai')
+const {assert} = require('chai')
 const {ERROR} = require('../../src/config')
 const types = require('../../src/types')
-should()
 
 
 // Constants
