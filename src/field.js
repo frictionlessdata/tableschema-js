@@ -146,6 +146,7 @@ class Field {
       }
     }
     const func = types[`cast${lodash.upperFirst(this.type)}`]
+    if (!func) throw new Error(`Not supported field type "${this.type}"`)
     const cast = lodash.partial(func, this.format, lodash, options)
     return cast
   }

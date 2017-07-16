@@ -39,14 +39,15 @@ class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get descriptor() {
-    return this._descriptor
+    // Never use this.descriptor inside this class (!!!)
+    return this._nextDescriptor
   }
 
   /**
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get primaryKey() {
-    const primaryKey = this._descriptor.primaryKey || []
+    const primaryKey = this._currentDescriptor.primaryKey || []
     return (lodash.isArray(primaryKey)) ? primaryKey : [primaryKey]
   }
 
@@ -54,7 +55,7 @@ class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get foreignKeys() {
-    return this._descriptor.foreignKeys
+    return this._currentDescriptor.foreignKeys
   }
 
   /**
@@ -75,14 +76,18 @@ class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   addField(descriptor) {
-    throw new Error('Not Implemented', descriptor)
+    this._nextDescriptor.fields.push(descriptor)
+    return this.commit()
   }
 
   /**
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  removeField(descriptor) {
-    throw new Error('Not Implemented', descriptor)
+  removeField(name) {
+    this._nextDescriptor.fields = this._nextDescriptor.fields.filter(field => {
+      if (field.name !== name) return true
+    })
+    return this.commit()
   }
 
   /**
@@ -161,22 +166,21 @@ class Schema {
   /**
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  save(target) {
-    return new Promise((resolve, reject) => {
-      fs.writeFile(target, JSON.stringify(this._descriptor), error => {
-        (!error) ? resolve() : reject(error)
-      })
-    })
+  commit() {
+    if (lodash.isEqual(this._currentDescriptor, this._nextDescriptor)) return false
+    this._currentDescriptor = lodash.cloneDeep(this._nextDescriptor)
+    this._build()
+    return true
   }
 
   /**
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  update() {
-    // It should be implemented after writing sync validate function
-    // See proper implementation in datapackage library based on profile class
-    // For descriptor tracking should be used this._nextDescriptor as in datapackage
-    throw new Error('Not Implemented')
+  save(target) {
+    return new Promise((resolve, reject) => {
+      const contents = JSON.stringify(this._currentDescriptor, null, 4)
+      fs.writeFile(target, contents, error => (!error) ? resolve() : reject(error))
+    })
   }
 
   // Private
@@ -186,27 +190,41 @@ class Schema {
     // Process descriptor
     descriptor = helpers.expandSchemaDescriptor(descriptor)
 
-    // Validate descriptor
-    this._errors = []
+    // Set attributes
+    this._strict = strict
+    this._caseInsensitiveHeaders = caseInsensitiveHeaders
+    this._currentDescriptor = lodash.cloneDeep(descriptor)
+    this._nextDescriptor = lodash.cloneDeep(descriptor)
     this._profile = new Profile('table-schema')
+    this._errors = []
+    this._fields = []
+
+    // Build instance
+    this._build()
+
+  }
+
+  _build() {
+
+    // Validate descriptor
     try {
-      this._profile.validate(descriptor)
+      this._profile.validate(this._currentDescriptor)
+      this._errors = []
     } catch (errors) {
-      if (strict) throw errors
+      if (this._strict) throw errors
       this._errors = errors
     }
 
-    // Set attributes
-    this._strict = strict
-    this._descriptor = descriptor
-    this._caseInsensitiveHeaders = caseInsensitiveHeaders
-
-    // Fill fields
+    // Populate fields
     this._fields = []
-    if (this.valid) {
-      for (const field of descriptor.fields) {
-        this._fields.push(new Field(field, {missingValues: this._descriptor.missingValues}))
+    for (let field of (this._currentDescriptor.fields || [])) {
+      const missingValues = this._currentDescriptor.missingValues
+      try {
+        field = new Field(field, {missingValues})
+      } catch (error) {
+        field = false
       }
+      this._fields.push(field)
     }
 
   }

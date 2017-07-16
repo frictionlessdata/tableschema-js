@@ -49,6 +49,7 @@ class Table {
       const descriptor = infer(sample, {headers: this.headers})
       this._schema = await Schema.load(descriptor)
     }
+    return this._schema
   }
 
   /**
