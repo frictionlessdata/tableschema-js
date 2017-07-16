@@ -64,7 +64,7 @@ class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get primaryKey() {
-    let primaryKey = this._descriptor.primaryKey || []
+    const primaryKey = this._descriptor.primaryKey || []
     return (lodash.isArray(primaryKey)) ? primaryKey : [primaryKey]
   }
 

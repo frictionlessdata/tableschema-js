@@ -1,8 +1,8 @@
 const fs = require('fs')
-const _ = require('lodash')
-const parse = require('csv-parse')
-const { assert } = require('chai')
-const {infer} = require('../src/infer')
+const csv = require('csv')
+const lodash = require('lodash')
+const {assert} = require('chai')
+const {infer} = require('../src')
 
 
 // Tests
@@ -20,7 +20,7 @@ describe('infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err)
 
-      parse(data, (error, values) => {
+      csv.parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
           , schema = infer(values, {headers})
@@ -43,7 +43,7 @@ describe('infer', () => {
     fs.readFile('data/data_infer_utf8.csv', (err, data) => {
       assert.isNull(err)
 
-      parse(data, (error, values) => {
+      csv.parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
           , schema = infer(values, {headers})
@@ -66,7 +66,7 @@ describe('infer', () => {
     fs.readFile('data/data_infer_row_limit.csv', (err, data) => {
       assert.isNull(err)
 
-      parse(data, (error, values) => {
+      csv.parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
           , schema = infer(values, {headers}, { rowLimit: 4 })
@@ -82,9 +82,9 @@ describe('infer', () => {
         }
         // here need to check the type of the value, because without row limit
         // parameter the type of value can change
-        assert.equal(_.find(schema.fields, { name: 'id' }).type, 'integer')
-        assert.equal(_.find(schema.fields, { name: 'age' }).type, 'integer')
-        assert.equal(_.find(schema.fields, { name: 'name' }).type, 'string')
+        assert.equal(lodash.find(schema.fields, { name: 'id' }).type, 'integer')
+        assert.equal(lodash.find(schema.fields, { name: 'age' }).type, 'integer')
+        assert.equal(lodash.find(schema.fields, { name: 'name' }).type, 'string')
         done()
       })
     })
@@ -95,7 +95,7 @@ describe('infer', () => {
     fs.readFile('data/data_infer_formats.csv', (err, data) => {
       assert.isNull(err)
 
-      parse(data, (error, values) => {
+      csv.parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
           , schema = infer(
@@ -123,12 +123,12 @@ describe('infer', () => {
         }
         // here need to check the type of the value, because without row limit
         // parameter the type of value can change
-        assert.equal(_.find(schema.fields, { name: 'id' }).type, 'integer')
-        assert.equal(_.find(schema.fields, { name: 'capital' }).type, 'number')
-        assert.equal(_.find(schema.fields, { name: 'url' }).type, 'string')
-        assert.equal(_.find(schema.fields, { name: 'capital' }).format,
+        assert.equal(lodash.find(schema.fields, { name: 'id' }).type, 'integer')
+        assert.equal(lodash.find(schema.fields, { name: 'capital' }).type, 'number')
+        assert.equal(lodash.find(schema.fields, { name: 'url' }).type, 'string')
+        assert.equal(lodash.find(schema.fields, { name: 'capital' }).format,
                      'currency')
-        assert.equal(_.find(schema.fields, { name: 'url' }).format, 'uri')
+        assert.equal(lodash.find(schema.fields, { name: 'url' }).format, 'uri')
         done()
       })
     })
@@ -138,7 +138,7 @@ describe('infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err)
 
-      parse(data, (error, values) => {
+      csv.parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
           , schema = infer(values, {headers}, { primaryKey: 'id' })
@@ -155,7 +155,7 @@ describe('infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err)
 
-      parse(data, (error, values) => {
+      csv.parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
           , schema = infer(values, {headers}, { primaryKey: ['id', 'age'] })
@@ -173,7 +173,7 @@ describe('infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err)
 
-      parse(data, (error, values) => {
+      csv.parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
           , schema = infer(values, {headers}, { explicit: false })
@@ -190,7 +190,7 @@ describe('infer', () => {
     fs.readFile('data/data_infer.csv', (err, data) => {
       assert.isNull(err)
 
-      parse(data, (error, values) => {
+      csv.parse(data, (error, values) => {
         assert.isNull(error, 'CSV parse failed')
         const headers = values.shift()
           , schema = infer(values, {headers}, { explicit: true })

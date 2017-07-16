@@ -1,7 +1,5 @@
 require('isomorphic-fetch')
-const url = require('url')
 const lodash = require('lodash')
-const readFile = require('fs-readfile-promise')
 const config = require('./config')
 
 
@@ -23,6 +21,9 @@ async function retrieveDescriptor(descriptor) {
   } else {
     if (config.IS_BROWSER) throw new Error('Local paths are not supported in browser')
     try {
+      /* eslint-disable */
+      const readFile = require('fs-readfile-promise')
+      /* eslint-enable */
       const contents = await readFile(descriptor)
       descriptor = JSON.parse(contents)
     } catch (error) {

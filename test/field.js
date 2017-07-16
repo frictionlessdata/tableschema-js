@@ -1,5 +1,5 @@
 const {assert, should} = require('chai')
-const {Field} = require('../src/field')
+const {Field} = require('../src')
 should()
 
 // Constants

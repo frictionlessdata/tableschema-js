@@ -1,7 +1,7 @@
 const lodash = require('lodash')
 const fetchMock = require('fetch-mock')
 const {assert} = require('chai')
-const {Schema} = require('../src/schema')
+const {Schema} = require('../src')
 const {catchError} = require('./helpers')
 
 
@@ -84,7 +84,11 @@ describe('Schema', () => {
 
   it('raise exception when invalid json passed as schema', async () => {
     const error = await catchError(Schema.load, 'bad descriptor')
-    assert.include(error.message, 'load descriptor')
+    if (process.env.USER_ENV === 'browser') {
+      assert.include(error.message, 'in browser')
+    } else {
+      assert.include(error.message, 'load descriptor')
+    }
   })
 
   it('raise exception when invalid format schema passed', done => {

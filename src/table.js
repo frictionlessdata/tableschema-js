@@ -69,6 +69,7 @@ class Table {
 
       // Cast
       if (cast) {
+        // TODO: raise or good to go no cast row if no schema?
         if (!this.schema) {
           throw new Error('Schema for cast is required. Provide or infer.')
         }
@@ -104,14 +105,16 @@ class Table {
   async read({keyed, extended, cast=true, limit}={}) {
     const iterator = await this.iter({keyed, extended, cast})
     const rows = []
+    /* eslint-disable */
     let count = 0
-    for(;;) {
+    for (;;) {
       count += 1
       const iteration = await iterator.next()
       if (iteration.done) break
       rows.push(iteration.value)
       if (limit && (count => limit)) break
     }
+    /* eslint-enable */
     return rows
   }
 
@@ -191,7 +194,7 @@ async function createRowStream(source) {
 
 
 function createUniqueFieldsCache(schema) {
-  cache = {}
+  const cache = {}
   for (const [index, field] of schema.fields.entries()) {
     if (field.constraints.unique || schema.primaryKey.includes(field.name)) {
       cache[index] = new Set()

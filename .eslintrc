@@ -81,7 +81,11 @@ rules:
     - off
   no-prototype-builtins:
     - off
+  no-lonely-if:
+    - off
   space-before-function-paren:
+    - off
+  consistent-return:
     - off
   import/prefer-default-export:
     - off

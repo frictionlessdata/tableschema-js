@@ -1,3 +1,2 @@
---require babel-polyfill
 --recursive
 --timeout 10000
