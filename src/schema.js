@@ -161,14 +161,10 @@ class Schema {
   /**
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  save(path) {
+  save(target) {
     return new Promise((resolve, reject) => {
-      fs.writeFile(path, this._descriptor, e => {
-        if (e) {
-          reject(e)
-        } else {
-          resolve()
-        }
+      fs.writeFile(target, JSON.stringify(this._descriptor), error => {
+        (!error) ? resolve() : reject(error)
       })
     })
   }
