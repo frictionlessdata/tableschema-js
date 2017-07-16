@@ -69,11 +69,9 @@ class Table {
 
       // Cast
       if (cast) {
-        // TODO: raise or good to go no cast row if no schema?
-        if (!this.schema) {
-          throw new Error('Schema for cast is required. Provide or infer.')
+        if (this.schema) {
+          row = this.schema.castRow(row)
         }
-        row = this.schema.castRow(row)
       }
 
       // Unique

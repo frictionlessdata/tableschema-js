@@ -53,14 +53,14 @@ describe('Table', () => {
     if (process.env.USER_ENV === 'browser') this.skip()
     const source = () => fs.createReadStream('data/data_big.csv')
     const table = await Table.load(source)
-    const rows = await table.read({cast: false})
+    const rows = await table.read()
     assert.equal(rows.length, 100)
   })
 
   it('should work with local path', async function () {
     if (process.env.USER_ENV === 'browser') this.skip()
     const table = await Table.load('data/data_big.csv')
-    const rows = await table.read({cast: false})
+    const rows = await table.read()
     assert.equal(rows.length, 100)
   })
 
