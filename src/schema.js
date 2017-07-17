@@ -2,7 +2,6 @@ const fs = require('fs')
 const lodash = require('lodash')
 const {Field} = require('./field')
 const {Profile} = require('./profile')
-const {validate} = require('./validate')
 const helpers = require('./helpers')
 const {ERROR} = require('./config')
 const types = require('./types')
@@ -173,7 +172,7 @@ class Schema {
     // Get headers
     if (!lodash.isArray(headers)) {
       let headersRow = headers
-      for (const row of rows) {
+      for (;;) {
         headersRow -= 1
         headers = rows.shift()
         if (!headersRow) break

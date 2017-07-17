@@ -1,4 +1,3 @@
-const lodash = require('lodash')
 const {assert} = require('chai')
 const {Schema} = require('../src')
 const {catchError} = require('./helpers')

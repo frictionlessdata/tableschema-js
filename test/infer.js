@@ -1,6 +1,3 @@
-const fs = require('fs')
-const csv = require('csv')
-const lodash = require('lodash')
 const {assert} = require('chai')
 const {infer} = require('../src')
 
