@@ -160,7 +160,7 @@ If we decide to improve it even more we could update the schema file and then op
 ```javascript
 const table = await Table.load('data.csv', {scheme: 'schema.json'})
 const stream = await table.iter({stream: true})
-stream.on('data', (row) {
+stream.on('data', (row) => {
   // handle row ['london', [51.50,-0.11]] etc
   // keyed/extended/cast supported in a stream mode too
 })
