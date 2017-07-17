@@ -69,6 +69,7 @@ Let's create and read a table. We use static `Table.load` method and `table.read
 
 ```javascript
 const table = await Table.load('data.csv')
+table.headers // ['city', 'location']
 await table.read({keyed: true})
 // [
 //   {city: 'london', location: '51.50,-0.11'},
@@ -154,10 +155,15 @@ Our `data.csv` looks the same because it has been stringified back to `csv` form
 
 ```
 
-If we decide to improve it even more we could update the schema file and then open it again. But now providing a schema path:
+If we decide to improve it even more we could update the schema file and then open it again. But now providing a schema path and iterating thru the data using Node Streams:
 
 ```javascript
 const table = await Table.load('data.csv', {scheme: 'schema.json'})
+const stream = await table.iter({stream: true})
+stream.on('data', (row) {
+  // handle row ['london', [51.50,-0.11]] etc
+  // keyed/extended/cast supported in a stream mode too
+})
 ```
 
 It was onle basic introduction to the `Table` class. To learn more let's take a look on `Table` class API reference.
