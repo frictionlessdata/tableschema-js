@@ -532,7 +532,7 @@ const descriptor = await infer('data.csv')
 
 The `descriptor` variable is now a JSON object:
 
-```json
+```javascript
 {
   fields: [
     {
