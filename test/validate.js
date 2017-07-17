@@ -6,7 +6,7 @@ const {catchError} = require('./helpers')
 
 // Fixtures
 
-SCHEMA = {
+const SCHEMA = {
   fields: [
     {name: 'id', type: 'string', constraints: { required: true }},
     {name: 'height', type: 'number'},

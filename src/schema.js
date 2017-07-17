@@ -4,6 +4,8 @@ const {Field} = require('./field')
 const {Profile} = require('./profile')
 const {validate} = require('./validate')
 const helpers = require('./helpers')
+const {ERROR} = require('./config')
+const types = require('./types')
 
 
 // Module API
@@ -15,7 +17,7 @@ class Schema {
   /**
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  static async load(descriptor, {strict=false, caseInsensitiveHeaders=false}={}) {
+  static async load(descriptor={}, {strict=false, caseInsensitiveHeaders=false}={}) {
     // Process descriptor
     descriptor = await helpers.retrieveDescriptor(descriptor)
     return new Schema(descriptor, {strict, caseInsensitiveHeaders})
@@ -166,6 +168,38 @@ class Schema {
   /**
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
+  infer(rows, {headers=1}) {
+
+    // Get headers
+    if (!lodash.isArray(headers)) {
+      let headersRow = headers
+      for (const row of rows) {
+        headersRow -= 1
+        headers = rows.shift()
+        if (!headersRow) break
+      }
+    }
+
+    // Get descriptor
+    const descriptor = {fields: []}
+    for (const [index, header] of headers.entries()) {
+      // This approach is not effective, we should go row by row
+      const columnValues = lodash.map(rows, row => row[index])
+      const type = _guessType(columnValues)
+      const field = {name: header, type}
+      descriptor.fields.push(field)
+    }
+
+    // Commit descriptor
+    this._nextDescriptor = descriptor
+    this.commit()
+
+    return descriptor
+  }
+
+  /**
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
   commit() {
     if (lodash.isEqual(this._currentDescriptor, this._nextDescriptor)) return false
     this._currentDescriptor = lodash.cloneDeep(this._nextDescriptor)
@@ -185,10 +219,7 @@ class Schema {
 
   // Private
 
-  constructor(descriptor, {strict=false, caseInsensitiveHeaders=false}={}) {
-
-    // Process descriptor
-    descriptor = helpers.expandSchemaDescriptor(descriptor)
+  constructor(descriptor={}, {strict=false, caseInsensitiveHeaders=false}={}) {
 
     // Set attributes
     this._strict = strict
@@ -205,6 +236,10 @@ class Schema {
   }
 
   _build() {
+
+    // Process descriptor
+    this._currentDescriptor = helpers.expandSchemaDescriptor(this._currentDescriptor)
+    this._nextDescriptor = lodash.cloneDeep(this._currentDescriptor)
 
     // Validate descriptor
     try {
@@ -234,4 +269,52 @@ class Schema {
 
 module.exports = {
   Schema,
+}
+
+
+// Internal
+
+const _GUESS_TYPE_ORDER = [
+  'duration',
+  'geojson',
+  'geopoint',
+  'object',
+  'array',
+  'datetime',
+  'time',
+  'date',
+  'integer',
+  'number',
+  'boolean',
+  'string',
+  'any',
+]
+
+
+function _guessType(row) {
+
+  // Get matching types
+  const matches = []
+  for (const value of row) {
+    for (const type of _GUESS_TYPE_ORDER) {
+      const cast = types[`cast${lodash.upperFirst(type)}`]
+      const result = cast('default', value)
+      if (result !== ERROR) {
+        matches.push(type)
+        break
+      }
+    }
+  }
+
+  // Get winner type
+  let winner = 'any'
+  let count = 0
+  for (const [itemType, itemCount] of Object.entries(lodash.countBy(matches))) {
+    if (itemCount > count) {
+      winner = itemType
+      count = itemCount
+    }
+  }
+
+  return winner
 }

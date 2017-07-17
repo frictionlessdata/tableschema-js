@@ -74,7 +74,8 @@ describe('Schema', () => {
     assert.deepEqual(schema.getField('non-existent'), null)
   })
 
-  it('should load local json file', async () => {
+  it('should load local json file', async function() {
+    if (process.env.USER_ENV === 'browser') this.skip()
     const descriptor = 'data/schema.json'
     const schema = await Schema.load(descriptor)
     assert.deepEqual(schema.fieldNames, ['id', 'capital', 'url'])
@@ -132,6 +133,15 @@ describe('Schema', () => {
     const schema = await Schema.load(descriptor)
     assert.deepEqual(schema.valid, false)
     assert.deepEqual(schema.errors.length, 1)
+  })
+
+  it('sould infer itself from given rows', async () => {
+    const schema = new Schema()
+    schema.infer([['Alex', 21], ['Joe', 38]], {headers: ['name', 'age']})
+    assert.deepEqual(schema.valid, true)
+    assert.deepEqual(schema.fieldNames, ['name', 'age'])
+    assert.deepEqual(schema.getField('name').type, 'string')
+    assert.deepEqual(schema.getField('age').type, 'integer')
   })
 
 })

@@ -5,7 +5,6 @@ const lodash = require('lodash')
 const {Readable} = require('stream')
 const S2A = require('stream-to-async-iterator').default
 const {Schema} = require('./schema')
-const {infer} = require('./infer')
 const helpers = require('./helpers')
 const config = require('./config')
 
@@ -41,15 +40,6 @@ class Table {
    */
   get headers() {
     return this._headers
-  }
-
-  async infer() {
-    if (!this.schema) {
-      const sample = await this.read({cast: false, limit: 100})
-      const descriptor = infer(sample, {headers: this.headers})
-      this._schema = await Schema.load(descriptor)
-    }
-    return this._schema
   }
 
   /**
@@ -117,6 +107,22 @@ class Table {
     return rows
   }
 
+  /**
+   * https://github.com/frictionlessdata/tableschema-js#table
+   */
+  async infer({limit=100}={}) {
+    if (!this.schema) {
+      const schema = new Schema()
+      const sample = await this.read({limit})
+      schema.infer(sample, {headers: this.headers})
+      this._schema = schema
+    }
+    return this._schema
+  }
+
+  /**
+   * https://github.com/frictionlessdata/tableschema-js#table
+   */
   async save(target) {
     const rowStream = await createRowStream(this._source)
     const textStream = rowStream.pipe(csv.stringify())
