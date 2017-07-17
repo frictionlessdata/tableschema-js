@@ -25,7 +25,7 @@ class Table {
       schema = await Schema.load(schema, {strict})
     }
 
-    return new Table(source, {schema, headers})
+    return new Table(source, {schema, headers, strict})
   }
 
   /**
@@ -45,7 +45,7 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  async iter({keyed, extended, cast=true, stream}={}) {
+  async iter({keyed, extended, cast=true, stream=false}={}) {
     let rowNumber = 0
     const rowStream = await createRowStream(this._source)
     const uniqueFieldsCache = this.schema ? createUniqueFieldsCache(this.schema) : {}
@@ -115,7 +115,7 @@ class Table {
       const schema = new Schema()
       const sample = await this.read({limit})
       schema.infer(sample, {headers: this.headers})
-      this._schema = schema
+      this._schema = new Schema(schema.descriptor, {strict: this._strict})
     }
     return this._schema
   }
@@ -131,9 +131,10 @@ class Table {
 
   // Private
 
-  constructor(source, {schema, headers=1}={}) {
+  constructor(source, {schema, headers=1, strict=false}={}) {
     this._source = source
     this._schema = schema
+    this._strict = strict
 
     // Headers
     this._headers = null
