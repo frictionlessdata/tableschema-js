@@ -17,6 +17,11 @@ const karmaConfig = (config) => {
     webpackMiddleware: {
       noInfo: true
     },
+    client: {
+      mocha: {
+        opts: 'test/mocha.opts'
+      }
+    }
   })
 }
 

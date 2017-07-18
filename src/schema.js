@@ -1,43 +1,28 @@
-import fs from 'fs'
-import 'isomorphic-fetch'
-import lodash from 'lodash'
-import {Field} from './field'
-import {validate} from './validate'
-import * as helpers from './helpers'
+const fs = require('fs')
+const lodash = require('lodash')
+const {Field} = require('./field')
+const {Profile} = require('./profile')
+const helpers = require('./helpers')
+const {ERROR} = require('./config')
+const types = require('./types')
 
 
 // Module API
 
-export class Schema {
+class Schema {
 
   // Public
 
   /**
-   * Load Schema instance
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  static async load(descriptor, {strict, caseInsensitiveHeaders}={strict: true, caseInsensitiveHeaders: false}) {
-
+  static async load(descriptor={}, {strict=false, caseInsensitiveHeaders=false}={}) {
     // Process descriptor
     descriptor = await helpers.retrieveDescriptor(descriptor)
-    descriptor = helpers.expandSchemaDescriptor(descriptor)
-
-    // Process descriptor
-    // It should be moved to constructor after writing sync validate function
-    // See proper implementation in datapackage library based on profile class
-    // Also there should be moved helpers.expandSchemaDescriptor(descriptor)
-    let errors = []
-    try {
-      await validate(descriptor)
-    } catch (err) {
-      errors = err
-    }
-
-    return new Schema(descriptor, {strict, caseInsensitiveHeaders, errors})
+    return new Schema(descriptor, {strict, caseInsensitiveHeaders})
   }
 
   /**
-   * Schema valid
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get valid() {
@@ -45,7 +30,6 @@ export class Schema {
   }
 
   /**
-   * Schema errors
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get errors() {
@@ -53,31 +37,29 @@ export class Schema {
   }
 
   /**
-   * Get descriptor
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get descriptor() {
-    return this._descriptor
+    // Never use this.descriptor inside this class (!!!)
+    return this._nextDescriptor
   }
 
   /**
-   * Get primary key
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get primaryKey() {
-    return this._descriptor.primaryKey
+    const primaryKey = this._currentDescriptor.primaryKey || []
+    return (lodash.isArray(primaryKey)) ? primaryKey : [primaryKey]
   }
 
   /**
-   * Get foregn keys of schema
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get foreignKeys() {
-    return this._descriptor.foreignKeys
+    return this._currentDescriptor.foreignKeys
   }
 
   /**
-   * Get fields of schema
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get fields() {
@@ -85,7 +67,6 @@ export class Schema {
   }
 
   /**
-   * Get field names
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get fieldNames() {
@@ -93,26 +74,27 @@ export class Schema {
   }
 
   /**
-   * Add field to schema
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   addField(descriptor) {
-    throw new Error('Not Implemented', descriptor)
+    this._nextDescriptor.fields.push(descriptor)
+    return this.commit()
   }
 
   /**
-   * Remove field from schema
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  removeField(descriptor) {
-    throw new Error('Not Implemented', descriptor)
+  removeField(name) {
+    this._nextDescriptor.fields = this._nextDescriptor.fields.filter(field => {
+      if (field.name !== name) return true
+    })
+    return this.commit()
   }
 
   /**
-   * Get field instance
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  getField(fieldName, {index}={index: 0}) {
+  getField(fieldName, {index=0}={}) {
     const name = fieldName
     const fields = lodash.filter(this._fields, field => {
       if (this._caseInsensitiveHeaders) {
@@ -121,7 +103,7 @@ export class Schema {
       return field.name === name
     })
     if (!fields.length) {
-      throw new Error(`No such field name in schema: ${fieldName}`)
+      return null
     }
     if (!index) {
       return fields[0]
@@ -130,17 +112,16 @@ export class Schema {
   }
 
   /**
-   * Cast row
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  castRow(items, {failFast, skipConstraints}={failFast: false, skipConstraints: false}) {
+  castRow(items, {failFast=false, skipConstraints=false}={}) {
     const headers = this.fieldNames
       , result = []
       , errors = []
 
     if (headers.length !== items.length) {
-      throw new Array('The number of items to convert does not match the ' +
-                      'number of fields given in the schema')
+      throw [new Error('The number of items to convert does not match the ' +
+                      'number of fields given in the schema')]
     }
 
     for (let i = 0, length = items.length; i < length; i += 1) {
@@ -166,8 +147,8 @@ export class Schema {
             error = e.message
             break
           default:
-            error =
-              `Wrong type for header: ${headers[i]} and value: ${items[i]}`
+            error = new Error(
+              `Wrong type for header: ${headers[i]} and value: ${items[i]}`)
         }
         if (failFast === true) {
           throw new Array(error)
@@ -184,55 +165,155 @@ export class Schema {
   }
 
   /**
-   * Save descriptor of schema into local file
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  save(path) {
-    return new Promise((resolve, reject) => {
-      fs.writeFile(path, this._descriptor, e => {
-        if (e) {
-          reject(e)
-        } else {
-          resolve()
-        }
-      })
-    })
+  infer(rows, {headers=1}) {
+
+    // Get headers
+    if (!lodash.isArray(headers)) {
+      let headersRow = headers
+      for (;;) {
+        headersRow -= 1
+        headers = rows.shift()
+        if (!headersRow) break
+      }
+    }
+
+    // Get descriptor
+    const descriptor = {fields: []}
+    for (const [index, header] of headers.entries()) {
+      // This approach is not effective, we should go row by row
+      const columnValues = lodash.map(rows, row => row[index])
+      const type = _guessType(columnValues)
+      const field = {name: header, type}
+      descriptor.fields.push(field)
+    }
+
+    // Commit descriptor
+    this._nextDescriptor = descriptor
+    this.commit()
+
+    return descriptor
   }
 
   /**
-   * Update schema instance
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  update() {
-    // It should be implemented after writing sync validate function
-    // See proper implementation in datapackage library based on profile class
-    // For descriptor tracking should be used this._nextDescriptor as in datapackage
-    throw new Error('Not Implemented')
+  commit() {
+    if (lodash.isEqual(this._currentDescriptor, this._nextDescriptor)) return false
+    this._currentDescriptor = lodash.cloneDeep(this._nextDescriptor)
+    this._build()
+    return true
+  }
+
+  /**
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  save(target) {
+    return new Promise((resolve, reject) => {
+      const contents = JSON.stringify(this._currentDescriptor, null, 4)
+      fs.writeFile(target, contents, error => (!error) ? resolve() : reject(error))
+    })
   }
 
   // Private
 
-  constructor(descriptor, {strict, caseInsensitiveHeaders, errors}={strict: true, caseInsensitiveHeaders: false}) {
-
-    // Raise errors in strict mode
-    if (strict && errors.length) {
-      throw errors
-    }
+  constructor(descriptor={}, {strict=false, caseInsensitiveHeaders=false}={}) {
 
     // Set attributes
-    this._errors = errors
     this._strict = strict
-    this._descriptor = descriptor
     this._caseInsensitiveHeaders = caseInsensitiveHeaders
-
-    // Fill fields
+    this._currentDescriptor = lodash.cloneDeep(descriptor)
+    this._nextDescriptor = lodash.cloneDeep(descriptor)
+    this._profile = new Profile('table-schema')
+    this._errors = []
     this._fields = []
-    if (this.valid) {
-      for (const field of descriptor.fields) {
-        this._fields.push(new Field(field, {missingValues: this._descriptor.missingValues}))
+
+    // Build instance
+    this._build()
+
+  }
+
+  _build() {
+
+    // Process descriptor
+    this._currentDescriptor = helpers.expandSchemaDescriptor(this._currentDescriptor)
+    this._nextDescriptor = lodash.cloneDeep(this._currentDescriptor)
+
+    // Validate descriptor
+    try {
+      this._profile.validate(this._currentDescriptor)
+      this._errors = []
+    } catch (errors) {
+      if (this._strict) throw errors
+      this._errors = errors
+    }
+
+    // Populate fields
+    this._fields = []
+    for (let field of (this._currentDescriptor.fields || [])) {
+      const missingValues = this._currentDescriptor.missingValues
+      try {
+        field = new Field(field, {missingValues})
+      } catch (error) {
+        field = false
       }
+      this._fields.push(field)
     }
 
   }
 
+}
+
+
+module.exports = {
+  Schema,
+}
+
+
+// Internal
+
+const _GUESS_TYPE_ORDER = [
+  'duration',
+  'geojson',
+  'geopoint',
+  'object',
+  'array',
+  'datetime',
+  'time',
+  'date',
+  'integer',
+  'number',
+  'boolean',
+  'string',
+  'any',
+]
+
+
+function _guessType(row) {
+
+  // Get matching types
+  const matches = []
+  for (const value of row) {
+    for (const type of _GUESS_TYPE_ORDER) {
+      const cast = types[`cast${lodash.upperFirst(type)}`]
+      const result = cast('default', value)
+      if (result !== ERROR) {
+        matches.push(type)
+        break
+      }
+    }
+  }
+
+  // Get winner type
+  let winner = 'any'
+  let count = 0
+  for (const [itemType, itemCount] of Object.entries(lodash.countBy(matches))) {
+    if (itemCount > count) {
+      winner = itemType
+      count = itemCount
+    }
+  }
+
+  return winner
 }

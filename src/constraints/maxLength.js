@@ -1,6 +1,6 @@
 // Module API
 
-export function checkMaxLength(constraint, value) {
+function checkMaxLength(constraint, value) {
   if (value === null) {
     return true
   }
@@ -8,4 +8,9 @@ export function checkMaxLength(constraint, value) {
     return true
   }
   return false
+}
+
+
+module.exports = {
+  checkMaxLength,
 }

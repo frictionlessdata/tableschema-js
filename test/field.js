@@ -1,6 +1,5 @@
-import {assert, should} from 'chai'
-import {Field} from '../src/field'
-should()
+const {assert} = require('chai')
+const {Field} = require('../src')
 
 // Constants
 
@@ -44,13 +43,12 @@ describe('Field', () => {
 
   it('should expand descriptor by defaults', () => {
     const field = new Field({name: 'name'})
-    field.descriptor.should.be.deep.equal({
+    assert.deepEqual(field.descriptor, {
       name: 'name',
       type: 'string',
       format: 'default',
     })
   })
-
 
   it('should parse descriptor with "enum" constraint', () => {
     const field = new Field({
@@ -60,7 +58,6 @@ describe('Field', () => {
         enum: ['active', 'inactive']
       }
     })
-
     assert.equal(field.testValue('active'), true)
     assert.equal(field.testValue('inactive'), true)
   })
@@ -73,7 +70,6 @@ describe('Field', () => {
         minimum: 100
       }
     })
-
     assert.equal(field.testValue(200), true)
     assert.equal(field.testValue(50), false)
   })
@@ -87,7 +83,6 @@ describe('Field', () => {
         maximum: 100
       }
     })
-
     assert.equal(field.testValue(50), true)
     assert.equal(field.testValue(200), false)
   })

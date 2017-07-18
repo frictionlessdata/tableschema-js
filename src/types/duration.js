@@ -1,11 +1,11 @@
-import lodash from 'lodash'
-import moment from 'moment'
-import {ERROR} from '../config'
+const lodash = require('lodash')
+const moment = require('moment')
+const {ERROR} = require('../config')
 
 
 // Module API
 
-export function castDuration(format, value) {
+function castDuration(format, value) {
   if (!moment.isDuration(value)) {
     if (!lodash.isString(value)) {
       return ERROR
@@ -20,4 +20,9 @@ export function castDuration(format, value) {
     }
   }
   return value
+}
+
+
+module.exports = {
+  castDuration,
 }

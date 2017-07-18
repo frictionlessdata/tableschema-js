@@ -1,5 +1,10 @@
 // Module API
 
-export function checkUnique() {
+function checkUnique() {
   return true
+}
+
+
+module.exports = {
+  checkUnique,
 }

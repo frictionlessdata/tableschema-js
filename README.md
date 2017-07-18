@@ -40,56 +40,148 @@ $ npm install tableschema@latest # v1.0-alpha
 
 Code examples in this readme requires Node v8.0+ or proper modern browser . Also you have to wrap code into async function if there is await keyword used. You could see even more example in [examples](https://github.com/frictionlessdata/tableschema-js/tree/master/examples) directory.
 
-```js
-const {Schema} = require('tableschema')
+```javascript
+const {Table} = require('tableschema')
 
-const descriptor = {
-  fields: [
-    {name: 'name', type: 'string'},
-    {name: 'age', type: 'integer'},
-  ]
-}
-
-const schema = await Schema.load(descriptor)
-schema.getField('age').castValue('21') // 21
+const table = await Table.load('data.csv')
+await table.infer() // infer a schema
+await table.read({keyed: true}) // read the data
+await table.schema.save() // save the schema
+await table.save() // save the data
 ```
 
 ## Documentation
 
 ### Table
 
-A javascript model to work with a table (data + schema). Data could be in-memory object, path or URL.
+A table is a core concept in a tabular data world. It represents a data with a metadata (Table Schema). Let's see how we could use it in practice.
 
-```js
-const {Table} = require('tableschema')
+Consider we have some local csv file. It could be inline data or remote link - all supported by `Table` class (except local files for in-brower usage of course). But say it's `data.csv` for now:
 
-const data = [
-  ['Alex', '21'],
-  ['John', '35'],
-]
-const schema = {
-  fields: [
-    {name: 'name', type: 'string'},
-    {name: 'age', type: 'integer'},
-  ]
-}
-
-const table = await Table.load(data, {schema})
-await table.read() // [['Alex', 21], ['John', 35]]
+```csv
+city,location
+london,"51.50,-0.11"
+paris,"48.85,2.30"
+rome,N/A
 ```
 
-This class doesn't have public constructor and should be instantiated using `Table.load` factory method.
+Let's create and read a table. We use static `Table.load` method and `table.read` method with a `keyed` option to get array of keyed rows:
 
-#### `async Table.load(source, {schema})`
+```javascript
+const table = await Table.load('data.csv')
+table.headers // ['city', 'location']
+await table.read({keyed: true})
+// [
+//   {city: 'london', location: '51.50,-0.11'},
+//   {city: 'paris', location: '48.85,2.30'},
+//   {city: 'rome', location: 'N/A'},
+// ]
+```
+
+As we could see our locations are just a strings. But it should be geopoints. Also Rome's location is not available but it's also just a `N/A` string instead of JavaScript `null`.
+
+Let's fix not available location first. There is a `missingValues` property in Table Schema specification. As a first try we set `missingValues` to `N/A` in `table.schema.descriptor`. Schema descriptor could be changed in-place but all changes sould be commited by `table.schema.commit()`:
+
+```javascript
+table.schema.descriptor['missingValues'] = 'N/A'
+table.schema.commit()
+table.schema.valid // false
+table.schema.errors
+// Error: Descriptor validation error:
+//   Invalid type: string (expected array)
+//    at "/missingValues" in descriptor and
+//    at "/properties/missingValues/type" in profile
+```
+
+As a good citiziens we've decided to check out schema descriptor validity. And it's not valid! We sould use an array for `missingValues` property. Also don't forget to have an empty string as a missing value:
+
+```javascript
+table.schema.descriptor['missingValues'] = ['', 'N/A']
+table.schema.commit()
+table.schema.valid // true
+```
+
+This time it's good enough. Now we want to make our locations to be geopoints. Based on our experience it will be better also to check for validation errors:
+
+```javascript
+table.schema.descriptor['fields'][1]['type'] = 'geopoint'
+table.schema.commit()
+table.schema.valid // true
+```
+
+All good. It looks like we're ready to read our data again:
+
+```javascript
+await table.read({keyed: true})
+// [
+//   {city: 'london', location: [51.50,-0.11]},
+//   {city: 'paris', location: [48.85,2.30]},
+//   {city: 'rome', location: null},
+// ]
+```
+
+Now we see that:
+- locations are arrays with numeric lattide and longitude
+- Rome's location is a native JavaScript `null`
+
+And because there are no errors on data reading we could be sure that our data is valid againt our schema. Let's save it:
+
+```javascript
+await table.schema.save('schema.json')
+await table.save('data.csv')
+```
+
+Our `data.csv` looks the same because it has been stringified back to `csv` format. But now we have `schema.json`:
+
+```json
+{
+    "fields": [
+        {
+            "name": "city",
+            "type": "string",
+            "format": "default"
+        },
+        {
+            "name": "location",
+            "type": "geopoint",
+            "format": "default"
+        }
+    ],
+    "missingValues": [
+        "",
+        "N/A"
+    ]
+}
+
+```
+
+If we decide to improve it even more we could update the schema file and then open it again. But now providing a schema path and iterating thru the data using Node Streams:
+
+```javascript
+const table = await Table.load('data.csv', {scheme: 'schema.json'})
+const stream = await table.iter({stream: true})
+stream.on('data', (row) => {
+  // handle row ['london', [51.50,-0.11]] etc
+  // keyed/extended/cast supported in a stream mode too
+})
+```
+
+It was onle basic introduction to the `Table` class. To learn more let's take a look on `Table` class API reference.
+
+#### `async Table.load(source, {schema, headers=1, strict=false})`
 
 Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`.
 
-- `source (String/Object)` - data source in a form of:
-  - array of objects with values, represent the rows
-  - local CSV file
-  - remote CSV file (URL)
-  - readable stream with CSV file contents
+- `source (String/Array[]/Function)` - data source (one of):
+  - local CSV file (path)
+  - remote CSV file (url)
+  - array of arrays representing the rows
+  - function returning readable stream with CSV file contents
 - `schema (Object)` - data schema in all forms supported by `Schema` class
+- `headers (Integer/String[])` - data source headers (one of):
+  - row number containing headers (`source` should contain headers rows)
+  - array of headers (`source` should NOT contain headers rows)
+- `strict (Boolean)` - strictness option to pass to `Schema` constructor
 - `(Error)` - raises any error occured in table creation process
 - `(Table)` - returns data table class instance
 
@@ -101,15 +193,16 @@ Factory method to instantiate `Table` class. This method is async and it should 
 
 - `(String[])` - returns data source headers
 
-#### `async table.iter({keyed, extended, cast=true})`
+#### `async table.iter({keyed, extended, cast=true, stream=false})`
 
-Iter through the table data and emits rows cast based on table schema. Data casting could be disabled.
+Iter through the table data and emits rows cast based on table schema (async for loop). With a `stream` flag instead of async iterator a Node stream will be returned. Data casting could be disabled.
 
-- `keyed (Boolean)` - flag to emit keyed rows
-- `extended (Boolean)` - flag to emit extended rows
-- `cast (Boolean)` - flag to disable data casting if false
+- `keyed (Boolean)` - iter keyed rows
+- `extended (Boolean)` - iter extended rows
+- `cast (Boolean)` - disable data casting if false
+- `stream (Boolean)` - return Node Readable Stream of table rows
 - `(Error)` - raises any error occured in this process
-- `(any)` - emits row by row
+- `(AsyncIterator/Stream)` - async iterator/stream of rows:
   - `[value1, value2]` - base
   - `{header1: value1, header2: value2}` - keyed
   - `[rowNumber, [header1, header2], [value1, value2]]` - extended
@@ -125,11 +218,18 @@ Read the whole table and returns as array of rows. Count of rows could be limite
 - `(Error)` - raises any error occured in this process
 - `(Array[])` - returns array of rows (see `table.iter`)
 
+#### `async table.infer({limit=100})`
+
+Infer a schema for the table. It will infer and set Table Schema to `table.schema` based on table data.
+
+- `limit (Number)` - limit rows samle size
+- `(Schema)` - returns `Schema` instance
+
 #### `async table.save(target)`
 
 Save data source to file locally in CSV format with `,` (comma) delimiter
 
-- `target (String)` - path where to save a table
+- `target (String)` - path where to save a table data
 - `(Error)` - raises an error if there is saving problem
 - `(Boolean)` - returns true on success
 
@@ -157,23 +257,25 @@ try {
 }
 ```
 
-#### `async Schema.load(descriptor, {strict=true})`
+#### `async Schema.load(descriptor, {strict=false})`
 
 Factory method to instantiate `Schema` class. This method is async and it should be used with await keyword or as a `Promise`.
 
-- `descriptor (String/Object)` - schema descriptor as local path, url or object
+- `descriptor (String/Object)` - schema descriptor:
+  -  local path
+  -  remote url
+  -  object
 - `strict (Boolean)` - flag to alter validation behaviour:
-  - by default strict is true so any validation error will be raised
   - if false error will not be raised and all error will be collected in `schema.errors`
+  - if strict is true any validation error will be raised immediately
 - `(Error)` - raises error if schema can't be instantiated
 - `(Error[])` - raises list of validation errors if strict is true
 - `(Schema)` - returns schema class instance
 
 List of actions on descriptor:
 - retrieved (if path/url)
-- dereferenced (schema/dialect)
 - expanded (with profile defaults)
-- validated (against table-schema profile)
+- validated (against `table-schema` profile)
 
 #### `schema.valid`
 
@@ -230,15 +332,17 @@ Cast row based on field types and formats.
 - `row (any[])` - data row as an array of values
 - `(any[])` - returns cast data row
 
-#### `async schema.save(target)`
+#### `schema.infer(rows, {headers=1})`
 
-Save schema descriptor to target destination.
+Infer and set `schema.descriptor` based on data sample.
 
-- `target (String)` - path where to save a descriptor
-- `(Error)` - raises an error if there is saving problem
-- `(Boolean)` - returns true on success
+- `rows (Array[])` - array of arrays representing rows.
+- `headers (Integer/String[])` - data sample headers (one of):
+  - row number containing headers (`rows` should contain headers rows)
+  - array of headers (`rows` should NOT contain headers rows)
+- `{Object}` - returns Table Schema descriptor
 
-#### `schema.update()`
+#### `schema.commit()`
 
 Update schema instance if there are in-place changes in the descriptor.
 
@@ -247,16 +351,23 @@ Update schema instance if there are in-place changes in the descriptor.
 - `(Boolean)` - returns true on success and false if not modified
 
 ```js
-const schema = await Schema.load({
-    fields: [{name: 'field', type: 'string'}]
-})
+const descriptor = {fields: [{name: 'field', type: 'string'}]}
+const schema = await Schema.load(descriptor)
 
 schema.getField('name').type // string
 schema.descriptor.fields[0].type = 'number'
 schema.getField('name').type // string
-schema.update()
+schema.commit()
 schema.getField('name').type // number
 ```
+
+#### `async schema.save(target)`
+
+Save schema descriptor to target destination.
+
+- `target (String)` - path where to save a descriptor
+- `(Error)` - raises an error if there is saving problem
+- `(Boolean)` - returns true on success
 
 ### Field
 
@@ -371,75 +482,43 @@ Test if value is compliant to the field.
 
 ### Validate
 
-Given a schema as JSON object, `validate` returns `Promise`, which success for a valid Table Schema, or reject with array of errors.
+> `validate()` validates whether a **schema** is a validate Table Schema accordingly to the [specifications](http://schemas.datapackages.org/json-table-schema.json). It does **not** validate data against a schema.
 
-#### `async validate(descriptor)`
-
-This funcion is async so it has to be used with `await` keyword or as a `Promise`.
-
-- `descriptor (String/Object)` - schema descriptor (local/remote path or object)
-- `(Error[])` - raises list of validation errors for invalid
-- `(Boolean)` - returns true for valid
-
-List of actions on descriptor:
-- retrieved (if path/url)
-- dereferenced (schema/dialect)
-- expanded (with profile defaults)
-- validated (against table-schema profile)
-
-Let's see on example:
+Given a schema descriptor `validate` returns `Promise`, which success for a valid Table Schema, or reject with array of errors:
 
 ```js
 const {validate} = require('tableschema')
 
-const descriptor = {
-   fields: [
-     {
-       name: 'id',
-       title: '',
-       description: '',
-       type: 'integer',
-       format: 'default'
-     },
-     {
-       name: 'age',
-       title: '',
-       description: '',
-       type: 'integer',
-       format: 'default'
-     },
-     {
-       name: 'name',
-       title: '',
-       description: '',
-       type: 'string',
-       format: 'default'
-     }
-   ]
-}
-
 try {
-    validate(schema)
-  // do something with valid schema here
+    validate('schema.json')
 } catch (errors) {
   // uh oh, some validation errors in the errors array
 }
 
 ```
-Note: `validate()` validates whether a **schema** is a validate Table Schema accordingly to the (specifications)[http://schemas.datapackages.org/json-table-schema.json]. It does **not** validate data against a schema.
 
-### Infer
 
-Given headers and rows, `infer` will return a Table Schema as a JSON object based on the data values.
-
-#### `async infer(source, {headers})`
+#### `async validate(descriptor)`
 
 This funcion is async so it has to be used with `await` keyword or as a `Promise`.
 
-- `source (String/Array[])` - data source
-- `headers (String[])` - array of headers
-- `(Error)` - raises any error occured
-- `(Object)` - returns schema descriptor
+- `descriptor (String/Object)` - schema descriptor (one of):
+  - local path
+  - remote url
+  - object
+- `(Error[])` - raises list of validation errors for invalid
+- `(Boolean)` - returns true for valid
+
+List of actions on descriptor:
+- retrieved (if path/url)
+- expanded (with profile defaults)
+- validated (against table-schema profile)
+
+
+
+### Infer
+
+Given data source and headers `infer` will return a Table Schema as a JSON object based on the data values.
 
 Given the data file, example.csv:
 
@@ -454,21 +533,12 @@ id,age,name
 Call `infer` with headers and values from the datafile:
 
 ```js
-var fs = require('fs')
-var parse = require('csv-parse')
-var {infer} = require('tableschema')
-
-fs.readFile('/path/to/example.csv', function(err, data) {
-  parse(data, function(error, values) {
-    const headers = values.shift()
-    const schema = infer(headers, values)
-  });
-});
+const descriptor = await infer('data.csv')
 ```
 
-The `schema` variable is now a JSON object:
+The `descriptor` variable is now a JSON object:
 
-```js
+```javascript
 {
   fields: [
     {
@@ -495,6 +565,15 @@ The `schema` variable is now a JSON object:
   ]
 }
 ```
+
+#### `async infer(source, {headers=1})`
+
+This funcion is async so it has to be used with `await` keyword or as a `Promise`.
+
+- `source (String/Array[])` - data source
+- `headers (String[])` - array of headers
+- `(Error)` - raises any error occured
+- `(Object)` - returns schema descriptor
 
 ## Contributing
 

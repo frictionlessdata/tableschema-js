@@ -1,15 +1,22 @@
-import axios from 'axios'
-import {should} from 'chai'
-const profile = require('../src/profiles/table-schema.json')
-should()
+require('babel-polyfill')
+const axios = require('axios')
+const {assert} = require('chai')
+const {Profile} = require('../src/profile')
+
 
 // Tests
 
 describe('profile', () => {
 
-  it('should be up-to-date', async () => {
+  it('table-schema is up-to-date', async () => {
     const res = await axios.get('https://specs.frictionlessdata.io/schemas/table-schema.json')
-    profile.should.deep.equal(res.data)
+    const profile = await Profile.load('table-schema')
+    assert.deepEqual(res.data, profile.jsonschema)
+  })
+
+  it('geo-json is available', async () => {
+    const profile = await Profile.load('geojson')
+    assert.ok(profile.jsonschema)
   })
 
 })

@@ -1,7 +1,6 @@
-import {assert, should} from 'chai'
-import {ERROR} from '../../src/config'
-import * as types from '../../src/types'
-should()
+const {assert} = require('chai')
+const {ERROR} = require('../../src/config')
+const types = require('../../src/types')
 
 
 // Helpers

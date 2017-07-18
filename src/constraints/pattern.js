@@ -1,6 +1,6 @@
 // Module API
 
-export function checkPattern(constraint, value) {
+function checkPattern(constraint, value) {
   if (value === null) {
     return true
   }
@@ -10,4 +10,9 @@ export function checkPattern(constraint, value) {
     return true
   }
   return false
+}
+
+
+module.exports = {
+  checkPattern
 }

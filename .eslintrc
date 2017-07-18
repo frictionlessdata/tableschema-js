@@ -81,7 +81,17 @@ rules:
     - off
   no-prototype-builtins:
     - off
+  no-lonely-if:
+    - off
+  no-else-return:
+    - off
+  no-confusing-arrow:
+    - off
+  array-callback-return:
+    - off
   space-before-function-paren:
+    - off
+  consistent-return:
     - off
   import/prefer-default-export:
     - off

@@ -1,15 +1,8 @@
 {
   "presets": [
-    "es2015"
-  ],
-  "plugins": [
-    "transform-es2015-modules-commonjs",
-    "transform-es2017-object-entries",
-    "transform-async-to-generator",
-    "transform-object-rest-spread",
-    "transform-decorators-legacy",
-    "transform-export-extensions",
-    "transform-class-properties"
+    "es2015",
+    "es2016",
+    "es2017"
   ],
   "env": {
     "testing": {

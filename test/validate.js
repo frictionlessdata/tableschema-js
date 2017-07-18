@@ -1,127 +1,51 @@
-/* global describe, it, beforeEach */
-import { assert } from 'chai'
-import fetchMock from 'fetch-mock'
-import {validate} from '../src/validate'
+const lodash = require('lodash')
+const {assert} = require('chai')
+const {validate} = require('../src')
+const {catchError} = require('./helpers')
+
+
+// Fixtures
+
+const SCHEMA = {
+  fields: [
+    {name: 'id', type: 'string', constraints: { required: true }},
+    {name: 'height', type: 'number'},
+    {name: 'age', type: 'integer'},
+    {name: 'name', type: 'string', constraints: {required: true}},
+    {name: 'occupation', type: 'string'},
+  ],
+  primaryKey: ['id']
+}
 
 
 // Tests
 
-let SCHEMA
-describe('Validate', () => {
-  beforeEach(done => {
-    fetchMock.restore()
-    SCHEMA = {
-      fields: [
-        {
-          name: 'id',
-          type: 'string',
-          constraints: { required: true }
-        },
-        {
-          name: 'height',
-          type: 'number'
-        }, {
-          name: 'age',
-          type: 'integer'
-        }, {
-          name: 'name',
-          type: 'string',
-          constraints: { required: true }
-        }, {
-          name: 'occupation',
-          type: 'string'
-        }
-      ],
-      primaryKey: ['id']
-    }
-    done()
+describe('validate', () => {
+
+  it('ensure schema has fields', async () => {
+    const errors = await catchError(validate, {})
+    assert.deepEqual(errors.length, 1)
   })
 
-  it('ensure schema has fields', done => {
-    SCHEMA = {}
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 1)
-      done()
-    })
+  it('ensure schema has fields and fields are array', async () => {
+    const errors = await catchError(validate, {fields: ['1', '2']})
+    assert.deepEqual(errors.length, 2)
   })
 
-  it('ensure schema has fields and fields are array', done => {
-    SCHEMA = { fields: ['1', '2'] }
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 2)
-      done()
-    })
+  it('ensure schema fields has required properties', async () => {
+    const descriptor = {fields: [{name: 'id'}, {type: 'number'}]}
+    const errors = await catchError(validate, descriptor)
+    assert.deepEqual(errors.length, 1)
   })
 
-  it('ensure schema fields has required properties', done => {
-    SCHEMA = {
-      fields: [
-        {
-          name: 'id',
-          type: 'number'
-        },
-        {
-          type: 'number'
-        }
-      ]
-    }
-
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 1)
-      done()
-    })
+  it('ensure schema fields constraints must be an object', async () => {
+    const descriptor = {fields: [{name: 'id', constraints: 'string'}]}
+    const errors = await catchError(validate, descriptor)
+    assert.deepEqual(errors.length, 1)
   })
 
-  it('ensure schema fields constraints must be an object', done => {
-    SCHEMA = {
-      fields: [
-        {
-          name: 'id',
-          type: 'string',
-          constraints: 'string'
-        },
-        {
-          name: 'height',
-          type: 'number'
-        }
-      ]
-    }
-
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 1)
-      done()
-    })
-  })
-
-  it('ensure constraints properties have correct type', done => {
-    SCHEMA = {
-      fields: [{
-        name: 'id',
-        type: 'string',
-        constraints: {
-          required: 'string',
-          unique: 'string',
-          pattern: 1,
-          minimum: 10,
-          maximum: 20
-        }
-      },
+  it('ensure constraints properties have correct type', async () => {
+    const descriptor = {fields: [
       {
         name: 'age',
         type: 'integer',
@@ -134,259 +58,146 @@ describe('Validate', () => {
           maximum: 'string'
         }
       }
-      ]
-    }
-
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      // assert.equal(errors.length, 7)
-      done()
-    })
+    ]}
+    const errors = await catchError(validate, descriptor)
+    assert.deepEqual(errors.length, 1)
   })
 
-  it('ensure constraints properties with correct type is valid', done => {
-    SCHEMA = {
-      fields: [{
-        name: 'id',
-        type: 'string',
-        constraints: {
-          required: true,
-          pattern: '/.*/',
-          unique: true
-        }
-      }, {
-        name: 'age',
-        type: 'integer',
-        constraints: {
-          required: true,
-          unique: true,
-          minimum: '10',
-          maximum: '20'
-        }
+  it('ensure constraints properties with correct type is valid', async () => {
+    const descriptor = {fields: [{
+      name: 'id',
+      type: 'string',
+      constraints: {
+        required: true,
+        pattern: '/.*/',
+        unique: true
       }
-      ]
-    }
-
-    validate(SCHEMA).then(valid => {
-      assert.isTrue(valid)
-      done()
-    }).catch(errors => {
-      assert.isNull(errors)
-      done()
-    })
+    }, {
+      name: 'age',
+      type: 'integer',
+      constraints: {
+        required: true,
+        unique: true,
+        minimum: '10',
+        maximum: '20'
+      }
+    }]}
+    const valid = await validate(descriptor)
+    assert.ok(valid)
   })
 
-  it('primary key should be by type one of the allowed by schema', done => {
-    SCHEMA.primaryKey = { some: 'thing' }
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 1)
-      done()
-    })
+  it('primary key should be by type one of the allowed by schema', async () => {
+    const descriptor = lodash.clone(SCHEMA)
+    descriptor.primaryKey = {some: 'thing'}
+    const errors = await catchError(validate, descriptor)
+    assert.deepEqual(errors.length, 1)
   })
 
-  it('primary key should match field names', done => {
-    SCHEMA.primaryKey = ['unknown']
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 1)
-      done()
-    })
+  it('primary key should match field names', async () => {
+    const descriptor = lodash.clone(SCHEMA)
+    descriptor.primaryKey = ['unknown']
+    const errors = await catchError(validate, descriptor)
+    assert.deepEqual(errors.length, 1)
   })
 
-  it('ensure primary key as array match field names', done => {
-    SCHEMA.primaryKey = ['id', 'unknown']
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 1)
-      done()
-    })
+  it('ensure primary key as array match field names', async () => {
+    const descriptor = lodash.clone(SCHEMA)
+    descriptor.primaryKey = ['id', 'unknown']
+    const errors = await catchError(validate, descriptor)
+    assert.deepEqual(errors.length, 1)
   })
 
-  it('ensure foreign keys is an array', done => {
-    SCHEMA.foreignKeys = 'keys'
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 1)
-      done()
-    })
+  it('ensure foreign keys is an array', async () => {
+    const descriptor = lodash.clone(SCHEMA)
+    descriptor.foreignKeys = 'keys'
+    const errors = await catchError(validate, descriptor)
+    assert.deepEqual(errors.length, 1)
   })
 
-  it('ensure every foreign key has fields', done => {
-    SCHEMA.foreignKeys = ['key1', 'key2']
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 2)
-      done()
-    })
+  it('ensure every foreign key has fields', async () => {
+    const descriptor = lodash.clone(SCHEMA)
+    descriptor.foreignKeys = ['key1', 'key2']
+    const errors = await catchError(validate, descriptor)
+    assert.deepEqual(errors.length, 2)
   })
 
-  it.skip('ensure fields in keys a string or an array', done => {
-    SCHEMA.foreignKeys = [{ fields: { name: 'id' } }]
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 2)
-      done()
-    })
+  it('ensure fields in keys a string or an array', async () => {
+    const descriptor = lodash.clone(SCHEMA)
+    descriptor.foreignKeys = [{fields: {name: 'id'}}]
+    const errors = await catchError(validate, descriptor)
+    assert.deepEqual(errors.length, 1)
   })
 
-  it('ensure fields exists in schema', done => {
-    SCHEMA.foreignKeys = [
+  it('ensure fields exists in schema', async () => {
+    const descriptor = lodash.clone(SCHEMA)
+    descriptor.foreignKeys = [
       {
         fields: ['unknown'],
-        reference: {
-          fields: ['fk_id'],
-          resource: 'resource'
-        }
-      }, {
+        reference: {fields: ['fk_id'], resource: 'resource'},
+      },
+      {
         fields: ['id', 'unknown'],
-        reference: {
-          resource: 'the-resource',
-          fields: ['fk_id', 'fk_name']
-        }
+        reference: {resource: 'the-resource', fields: ['fk_id', 'fk_name']},
       }
     ]
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 2)
-      done()
-    })
+    const errors = await catchError(validate, descriptor)
+    assert.deepEqual(errors.length, 2)
   })
 
-  it.skip('fields in keys a string or an array and resource key should present', done => {
-    SCHEMA.foreignKeys = [
+  it('reference.fields should be same type as key.fields', async () => {
+    const descriptor = lodash.clone(SCHEMA)
+    descriptor.foreignKeys = [
       {
         fields: ['id'],
-        reference: {
-          fields: [{ name: 'id' }],
-          resource: 'resource'
-        }
-      }, {
-        fields: ['id'],
-        reference: {
-          resource: 'resource'
-        }
-      }, {
+        reference: {fields: ['id', 'name'], resource: 'resource'},
+      },
+      {
         fields: ['id', 'name'],
-        reference: {
-          fields: ['fk_id', 'fk_name']
-        }
+        reference: {resource: 'resource', fields: ['id']},
+      },
+      {
+        fields: ['id', 'name'],
+        reference: {resource: 'resource', fields: ['id']},
       }
     ]
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 3)
-      done()
-    })
+    const errors = await catchError(validate, descriptor)
+    assert.deepEqual(errors.length, 3)
   })
 
-  it('reference.fields should be same type as key.fields', done => {
-    SCHEMA.foreignKeys = [
+  it('fields in keys a string or an array and resource is present', async () => {
+    const descriptor = lodash.clone(SCHEMA)
+    descriptor.foreignKeys = [
       {
         fields: ['id'],
-        reference: {
-          fields: ['id', 'name'],
-          resource: 'resource'
-        }
+        reference: {fields: ['fk_id'], resource: 'resource'},
       }, {
         fields: ['id', 'name'],
-        reference: {
-          resource: 'resource',
-          fields: ['id']
-        }
-      }, {
-        fields: ['id', 'name'],
-        reference: {
-          resource: 'resource',
-          fields: ['id']
-        }
+        reference: {resource: 'the-resource', fields: ['fk_id', 'fk_name']},
       }
     ]
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 3)
-      done()
-    })
+    const valid = await validate(descriptor)
+    assert.ok(valid)
   })
 
-  it('ensure fields in keys a string or an array and resource key is present', done => {
-    SCHEMA.foreignKeys = [
+  it('empty resource should reference to the self fields', async () => {
+    const descriptor = lodash.clone(SCHEMA)
+    descriptor.foreignKeys = [
       {
         fields: ['id'],
-        reference: {
-          fields: ['fk_id'],
-          resource: 'resource'
-        }
+        reference: {fields: ['fk_id'], resource: ''},
       }, {
         fields: ['id', 'name'],
-        reference: {
-          resource: 'the-resource',
-          fields: ['fk_id', 'fk_name']
-        }
+        reference: {fields: ['fk_id', 'fk_name'], resource: ''},
       }
     ]
-    validate(SCHEMA).then(valid => {
-      assert.isTrue(valid)
-      done()
-    }).catch(errors => {
-      assert.isNull(errors)
-      done()
-    })
+    const errors = await catchError(validate, descriptor)
+    assert.deepEqual(errors.length, 3)
   })
 
-  it('empty foreignKeys.reference.resource should reference to the self fields', done => {
-    SCHEMA.foreignKeys = [
-      {
-        fields: ['id'],
-        reference: {
-          fields: ['fk_id'],
-          resource: ''
-        }
-      }, {
-        fields: ['id', 'name'],
-        reference: {
-          fields: ['fk_id', 'fk_name'],
-          resource: ''
-        }
-      }
-    ]
-    validate(SCHEMA).then(valid => {
-      assert.isFalse(valid)
-      done()
-    }).catch(errors => {
-      assert.isArray(errors)
-      assert.equal(errors.length, 3)
-      done()
-    })
+  it('should support local descriptors', async function() {
+    if (process.env.USER_ENV === 'browser') this.skip()
+    const valid = await validate('data/schema.json')
+    assert.ok(valid)
   })
+
 })

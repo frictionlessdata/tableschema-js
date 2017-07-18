@@ -1,10 +1,10 @@
-import lodash from 'lodash'
-import {ERROR} from '../config'
+const lodash = require('lodash')
+const {ERROR} = require('../config')
 
 
 // Module API
 
-export function castBoolean(format, value) {
+function castBoolean(format, value) {
   if (!lodash.isBoolean(value)) {
     if (!lodash.isString(value)) {
       return ERROR
@@ -19,6 +19,11 @@ export function castBoolean(format, value) {
     }
   }
   return value
+}
+
+
+module.exports = {
+  castBoolean,
 }
 
 

@@ -1,13 +1,13 @@
-import lodash from 'lodash'
-import * as constraints from './constraints'
-import * as helpers from './helpers'
-import * as config from './config'
-import * as types from './types'
+const lodash = require('lodash')
+const constraints = require('./constraints')
+const helpers = require('./helpers')
+const config = require('./config')
+const types = require('./types')
 
 
 // Module API
 
-export class Field {
+class Field {
 
   // Public
 
@@ -15,7 +15,7 @@ export class Field {
    * Construct field
    * https://github.com/frictionlessdata/tableschema-js#field
    */
-  constructor(descriptor, {missingValues}={missingValues: config.DEFAULT_MISSING_VALUES}) {
+  constructor(descriptor, {missingValues=config.DEFAULT_MISSING_VALUES}={}) {
 
     // Process descriptor
     descriptor = lodash.cloneDeep(descriptor)
@@ -81,7 +81,7 @@ export class Field {
    * Cast value
    * https://github.com/frictionlessdata/tableschema-js#field
    */
-  castValue(value, {constraints}={constraints: true}) {
+  castValue(value, {constraints=true}={}) {
 
     // Null value
     if (this._missingValues.includes(value)) {
@@ -123,7 +123,7 @@ export class Field {
    * Check if value can be cast
    * https://github.com/frictionlessdata/tableschema-js#field
    */
-  testValue(value, {constraints}={constraints: true}) {
+  testValue(value, {constraints=true}={}) {
     try {
       this.castValue(value, {constraints})
     } catch (error) {
@@ -146,6 +146,7 @@ export class Field {
       }
     }
     const func = types[`cast${lodash.upperFirst(this.type)}`]
+    if (!func) throw new Error(`Not supported field type "${this.type}"`)
     const cast = lodash.partial(func, this.format, lodash, options)
     return cast
   }
@@ -170,4 +171,9 @@ export class Field {
     return checks
   }
 
+}
+
+
+module.exports = {
+  Field,
 }

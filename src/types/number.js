@@ -1,10 +1,10 @@
-import lodash from 'lodash'
-import {ERROR} from '../config'
+const lodash = require('lodash')
+const {ERROR} = require('../config')
 
 
 // Module API
 
-export function castNumber(format, value, options={}) {
+function castNumber(format, value, options={}) {
   let percentage = false
   const currency = options.currency || false
   const decimalChar = options.decimalChar || _DEFAULT_DECIMAL_CHAR
@@ -41,6 +41,12 @@ export function castNumber(format, value, options={}) {
   }
   return value
 }
+
+
+module.exports = {
+  castNumber,
+}
+
 
 // Internal
 

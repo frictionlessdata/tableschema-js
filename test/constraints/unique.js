@@ -1,6 +1,5 @@
-import {assert, should} from 'chai'
-import * as constraints from '../../src/constraints'
-should()
+const {assert} = require('chai')
+const constraints = require('../../src/constraints')
 
 
 // Constants

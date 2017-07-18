@@ -1,10 +1,10 @@
-import lodash from 'lodash'
-import {ERROR} from '../config'
+const lodash = require('lodash')
+const {ERROR} = require('../config')
 
 
 // Module API
 
-export function castObject(format, value) {
+function castObject(format, value) {
   if (!lodash.isObject(value)) {
     if (!lodash.isString(value)) {
       return ERROR
@@ -19,4 +19,9 @@ export function castObject(format, value) {
     }
   }
   return value
+}
+
+
+module.exports = {
+  castObject,
 }

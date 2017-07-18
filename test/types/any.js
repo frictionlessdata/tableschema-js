@@ -1,6 +1,5 @@
-import {assert, should} from 'chai'
-import * as types from '../../src/types'
-should()
+const {assert} = require('chai')
+const types = require('../../src/types')
 
 
 // Constants
