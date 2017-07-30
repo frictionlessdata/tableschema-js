@@ -157,7 +157,10 @@ module.exports = {
 // Internal
 
 async function createRowStream(source) {
-  const parser = csv.parse()
+  const parseOptions = {
+    ltrim: true
+  }
+  const parser = csv.parse(parseOptions)
   let stream
 
   // Stream factory
