@@ -125,7 +125,7 @@ describe('validate', () => {
     const descriptor = lodash.clone(SCHEMA)
     descriptor.foreignKeys = [{fields: {name: 'id'}}]
     const errors = await catchError(validate, descriptor)
-    assert.deepEqual(errors.length, 1)
+    assert.deepEqual(errors.length, 2)
   })
 
   it('ensure fields exists in schema', async () => {
