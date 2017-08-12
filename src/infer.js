@@ -8,8 +8,8 @@ const {Table} = require('./table')
  */
 async function infer(source, options={}) {
   const table = await Table.load(source, options)
-  const schema = await table.infer({limit: options.limit})
-  return schema.descriptor
+  const descriptor = await table.infer({limit: options.limit})
+  return descriptor
 }
 
 

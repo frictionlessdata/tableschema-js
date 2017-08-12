@@ -78,9 +78,20 @@ await table.read({keyed: true})
 // ]
 ```
 
-As we could see our locations are just a strings. But it should be geopoints. Also Rome's location is not available but it's also just a `N/A` string instead of JavaScript `null`.
+As we could see our locations are just a strings. But it should be geopoints. Also Rome's location is not available but it's also just a `N/A` string instead of JavaScript `null`. First we have to infer Table Schema:
 
-Let's fix not available location first. There is a `missingValues` property in Table Schema specification. As a first try we set `missingValues` to `N/A` in `table.schema.descriptor`. Schema descriptor could be changed in-place but all changes sould be commited by `table.schema.commit()`:
+```javascript
+await table.infer()
+table.schema.descriptor
+// { fields:
+//   [ { name: 'city', type: 'string', format: 'default' },
+//     { name: 'location', type: 'geopoint', format: 'default' } ],
+//  missingValues: [ '' ] }
+await table.read({keyed: true})
+// Fails with a data validation error
+```
+
+Let's fix not available location. There is a `missingValues` property in Table Schema specification. As a first try we set `missingValues` to `N/A` in `table.schema.descriptor`. Schema descriptor could be changed in-place but all changes sould be commited by `table.schema.commit()`:
 
 ```javascript
 table.schema.descriptor['missingValues'] = 'N/A'
@@ -97,14 +108,6 @@ As a good citiziens we've decided to check out schema descriptor validity. And i
 
 ```javascript
 table.schema.descriptor['missingValues'] = ['', 'N/A']
-table.schema.commit()
-table.schema.valid // true
-```
-
-This time it's good enough. Now we want to make our locations to be geopoints. Based on our experience it will be better also to check for validation errors:
-
-```javascript
-table.schema.descriptor['fields'][1]['type'] = 'geopoint'
 table.schema.commit()
 table.schema.valid // true
 ```
@@ -223,7 +226,7 @@ Read the whole table and returns as array of rows. Count of rows could be limite
 Infer a schema for the table. It will infer and set Table Schema to `table.schema` based on table data.
 
 - `limit (Number)` - limit rows samle size
-- `(Schema)` - returns `Schema` instance
+- `(Object)` - returns Table Schema descriptor
 
 #### `async table.save(target)`
 

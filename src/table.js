@@ -117,7 +117,7 @@ class Table {
       schema.infer(sample, {headers: this.headers})
       this._schema = new Schema(schema.descriptor, {strict: this._strict})
     }
-    return this._schema
+    return this._schema.descriptor
   }
 
   /**
