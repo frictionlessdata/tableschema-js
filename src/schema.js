@@ -76,24 +76,6 @@ class Schema {
   /**
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  addField(descriptor) {
-    this._nextDescriptor.fields.push(descriptor)
-    return this.commit()
-  }
-
-  /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
-   */
-  removeField(name) {
-    this._nextDescriptor.fields = this._nextDescriptor.fields.filter(field => {
-      if (field.name !== name) return true
-    })
-    return this.commit()
-  }
-
-  /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
-   */
   getField(fieldName, {index=0}={}) {
     const name = fieldName
     const fields = lodash.filter(this._fields, field => {
@@ -109,6 +91,24 @@ class Schema {
       return fields[0]
     }
     return this._fields[index]
+  }
+
+  /**
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  addField(descriptor) {
+    this._nextDescriptor.fields.push(descriptor)
+    return this.commit()
+  }
+
+  /**
+   * https://github.com/frictionlessdata/tableschema-js#schema
+   */
+  removeField(name) {
+    this._nextDescriptor.fields = this._nextDescriptor.fields.filter(field => {
+      if (field.name !== name) return true
+    })
+    return this.commit()
   }
 
   /**

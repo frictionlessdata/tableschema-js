@@ -18,21 +18,14 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  static async load(source, {schema, headers=1, strict=false}={}) {
+  static async load(source, {schema, strict=false, headers=1}={}) {
 
     // Load schema
     if (schema && !(schema instanceof Schema)) {
       schema = await Schema.load(schema, {strict})
     }
 
-    return new Table(source, {schema, headers, strict})
-  }
-
-  /**
-   * https://github.com/frictionlessdata/tableschema-js#table
-   */
-  get schema() {
-    return this._schema
+    return new Table(source, {schema, strict, headers})
   }
 
   /**
@@ -40,6 +33,13 @@ class Table {
    */
   get headers() {
     return this._headers
+  }
+
+  /**
+   * https://github.com/frictionlessdata/tableschema-js#table
+   */
+  get schema() {
+    return this._schema
   }
 
   /**
@@ -131,7 +131,7 @@ class Table {
 
   // Private
 
-  constructor(source, {schema, headers=1, strict=false}={}) {
+  constructor(source, {schema, strict=false, headers=1}={}) {
     this._source = source
     this._schema = schema
     this._strict = strict

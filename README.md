@@ -171,7 +171,7 @@ stream.on('data', (row) => {
 
 It was onle basic introduction to the `Table` class. To learn more let's take a look on `Table` class API reference.
 
-#### `async Table.load(source, {schema, headers=1, strict=false})`
+#### `async Table.load(source, {schema, strict=false, headers=1})`
 
 Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`.
 
@@ -188,13 +188,13 @@ Factory method to instantiate `Table` class. This method is async and it should 
 - `(Error)` - raises any error occured in table creation process
 - `(Table)` - returns data table class instance
 
-#### `table.schema`
-
-- `(Schema)` - returns schema class instance
-
 #### `table.headers`
 
 - `(String[])` - returns data source headers
+
+#### `table.schema`
+
+- `(Schema)` - returns schema class instance
 
 #### `async table.iter({keyed, extended, cast=true, stream=false})`
 
@@ -275,11 +275,6 @@ Factory method to instantiate `Schema` class. This method is async and it should
 - `(Error[])` - raises list of validation errors if strict is true
 - `(Schema)` - returns schema class instance
 
-List of actions on descriptor:
-- retrieved (if path/url)
-- expanded (with profile defaults)
-- validated (against `table-schema` profile)
-
 #### `schema.valid`
 
 - `(Boolean)` - returns validation status. It always true in strict mode.
@@ -304,6 +299,13 @@ List of actions on descriptor:
 
 - `(String[])` - returns an array of field names.
 
+#### `schema.getField(name)`
+
+Get schema field by name.
+
+- `name (String)` - schema field name
+- `(Field/null)` - returns `Field` instance or null if not found
+
 #### `schema.addField(descriptor)`
 
 Add new field to schema. The schema descriptor will be validated with newly added field descriptor.
@@ -312,13 +314,6 @@ Add new field to schema. The schema descriptor will be validated with newly adde
 - `(Error[])` - raises list of validation errors
 - `(Error)` - raises any field creation error
 - `(Field/null)` - returns added `Field` instance or null if not added
-
-#### `schema.getField(name)`
-
-Get schema field by name.
-
-- `name (String)` - schema field name
-- `(Field/null)` - returns `Field` instance or null if not found
 
 #### `schema.removeField(name)`
 
@@ -501,7 +496,6 @@ try {
 
 ```
 
-
 #### `async validate(descriptor)`
 
 This funcion is async so it has to be used with `await` keyword or as a `Promise`.
@@ -512,13 +506,6 @@ This funcion is async so it has to be used with `await` keyword or as a `Promise
   - object
 - `(Error[])` - raises list of validation errors for invalid
 - `(Boolean)` - returns true for valid
-
-List of actions on descriptor:
-- retrieved (if path/url)
-- expanded (with profile defaults)
-- validated (against table-schema profile)
-
-
 
 ### Infer
 
