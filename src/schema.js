@@ -267,11 +267,6 @@ class Schema {
 }
 
 
-module.exports = {
-  Schema,
-}
-
-
 // Internal
 
 const _GUESS_TYPE_ORDER = [
@@ -317,4 +312,11 @@ function _guessType(row) {
   }
 
   return winner
+}
+
+
+// System
+
+module.exports = {
+  Schema,
 }

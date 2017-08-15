@@ -7,6 +7,8 @@ const DEFAULT_MISSING_VALUES = ['']
 const IS_BROWSER = (typeof window !== 'undefined')
 
 
+// System
+
 module.exports = {
   ERROR,
   DEFAULT_FIELD_TYPE,

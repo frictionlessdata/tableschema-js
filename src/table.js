@@ -149,11 +149,6 @@ class Table {
 }
 
 
-module.exports = {
-  Table,
-}
-
-
 // Internal
 
 async function createRowStream(source) {
@@ -210,4 +205,11 @@ function createUniqueFieldsCache(schema) {
     }
   }
   return cache
+}
+
+
+// System
+
+module.exports = {
+  Table,
 }

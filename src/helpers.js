@@ -65,6 +65,8 @@ function isRemotePath(path) {
 }
 
 
+// System
+
 module.exports = {
   retrieveDescriptor,
   expandSchemaDescriptor,

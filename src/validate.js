@@ -31,11 +31,6 @@ async function validate(descriptor) {
 }
 
 
-module.exports = {
-  validate,
-}
-
-
 // Internal
 
 /**
@@ -162,4 +157,11 @@ function extra(schema, fieldNames) {
     valid
     , errors: errs
   }
+}
+
+
+// System
+
+module.exports = {
+  validate,
 }
