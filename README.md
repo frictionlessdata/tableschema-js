@@ -238,27 +238,65 @@ Save data source to file locally in CSV format with `,` (comma) delimiter
 
 ### Schema
 
-A model of a schema with helpful methods for working with the schema and supported data. Schema instances can be initialized with a schema source as a url to a JSON file or a JSON object. The schema is initially validated (see [validate](#validate) below), and will raise an exception if not a valid Table Schema.
+A model of a schema with helpful methods for working with the schema and supported data. Schema instances can be initialized with a schema source as a url to a JSON file or a JSON object. The schema is initially validated (see [validate](#validate) below). By default validation errors will be stored in `schema.errors` but in a strict mode it will be instantly raised.
 
-```js
-const {Schema} = require('tableschema')
+Let's create a blank schema. It's not valid because `descriptor.fields` property is required by the [Table Schema](http://specs.frictionlessdata.io/table-schema/) specification:
 
-const descriptor = {
-  fields: [
-    {name: 'name', type: 'string'},
-    {name: 'age', type: 'integer'},
-  ]
-}
-
-try {
-  const schema = await Schema.load(descriptor)
-  schema.valid // true
-  schema.errors // []
-  schema.descriptor // {fields: [...]}
-} catch (errors) {
-  errors // list of validation errors
-}
+```javascript
+const schema = await Schema.load({})
+schema.valid // false
+schema.errors
+// Error: Descriptor validation error:
+//         Missing required property: fields
+//         at "" in descriptor and
+//         at "/required/0" in profile
 ```
+
+To do not create a schema descriptor by hands we will use a `schema.infer` method to infer the descriptor from given data:
+
+```javascript
+schema.infer([
+  ['id', 'age', 'name'],
+  ['1','39','Paul'],
+  ['2','23','Jimmy'],
+  ['3','36','Jane'],
+  ['4','28','Judy'],
+])
+schema.valid // true
+schema.descriptor
+//{ fields:
+//   [ { name: 'id', type: 'integer', format: 'default' },
+//     { name: 'age', type: 'integer', format: 'default' },
+//     { name: 'name', type: 'string', format: 'default' } ],
+//  missingValues: [ '' ] }
+```
+
+Now we have an inferred schema and it's valid. We could cast data row against our schema. We provide a string input by an output will be cast correspondingly:
+
+```javascript
+schema.castRow(['5', '66', 'Sam'])
+// [ 5, 66, 'Sam' ]
+```
+
+But if we try provide some missing value to `age` field cast will fail because for now only one possible missing value is an empty string. Let's update our schema:
+
+```javascript
+schema.castRow(['6', 'N/A', 'Walt'])
+// Cast error
+schema.descriptor.missingValues = ['', 'N/A']
+schema.commit()
+schema.castRow(['6', 'N/A', 'Walt'])
+// [ 6, null, 'Walt' ]
+```
+
+We could save the schema to a local file. And we could continue the work in any time just loading it from the local file:
+
+```javascript
+await schema.save('schema.json')
+const schema = await Schema.load('schema.json')
+```
+
+It was onle basic introduction to the `Schema` class. To learn more let's take a look on `Schema` class API reference.
 
 #### `async Schema.load(descriptor, {strict=false})`
 

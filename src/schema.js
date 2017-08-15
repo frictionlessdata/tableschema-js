@@ -167,7 +167,7 @@ class Schema {
   /**
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  infer(rows, {headers=1}) {
+  infer(rows, {headers=1}={}) {
 
     // Get headers
     if (!lodash.isArray(headers)) {
