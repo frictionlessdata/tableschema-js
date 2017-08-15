@@ -38,7 +38,7 @@ $ npm install tableschema@latest # v1.0-alpha
 
 ### Examples
 
-Code examples in this readme requires Node v8.0+ or proper modern browser . Also you have to wrap code into async function if there is await keyword used. You could see even more example in [examples](https://github.com/frictionlessdata/tableschema-js/tree/master/examples) directory.
+Code examples in this readme requires Node v8.3+ or proper modern browser . Also you have to wrap code into async function if there is await keyword used. You could see even more example in [examples](https://github.com/frictionlessdata/tableschema-js/tree/master/examples) directory.
 
 ```javascript
 const {Table} = require('tableschema')
@@ -591,12 +591,12 @@ $ npm run build
 
 ## Changelog
 
-Here described only breaking and the most important changes. The full changelog could be found in nicely formatted [commit history](https://github.com/frictionlessdata/tableschema-js/commits/master).
+Here described only breaking and the most important changes. The full changelog and documentation for all released versions could be found in nicely formatted [commit history](https://github.com/frictionlessdata/tableschema-js/commits/master).
 
 ### v1.0
 
 This version includes various big changes. **A migration guide is under development and will be published here**.
 
-### [v0.2](https://github.com/frictionlessdata/tableschema-js/tree/v0.2.x)
+### v0.2
 
 First stable version of the library.
