@@ -345,10 +345,11 @@ Infer and set `schema.descriptor` based on data sample.
   - array of headers (`rows` should NOT contain headers rows)
 - `{Object}` - returns Table Schema descriptor
 
-#### `schema.commit()`
+#### `schema.commit({strict})`
 
 Update schema instance if there are in-place changes in the descriptor.
 
+- `strict (Boolean)` - alter `strict` mode for further work
 - `(Error[])` - raises list of validation errors
 - `(Error)` - raises any resource creation error
 - `(Boolean)` - returns true on success and false if not modified

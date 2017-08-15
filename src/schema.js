@@ -199,8 +199,9 @@ class Schema {
   /**
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  commit() {
-    if (lodash.isEqual(this._currentDescriptor, this._nextDescriptor)) return false
+  commit({strict}={}) {
+    if (lodash.isBoolean(strict)) this._strict = strict
+    else if (lodash.isEqual(this._currentDescriptor, this._nextDescriptor)) return false
     this._currentDescriptor = lodash.cloneDeep(this._nextDescriptor)
     this._build()
     return true
