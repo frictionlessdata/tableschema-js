@@ -1,3 +1,4 @@
+const fs = require('fs')
 const axios = require('axios')
 const lodash = require('lodash')
 const config = require('./config')
@@ -21,11 +22,12 @@ async function retrieveDescriptor(descriptor) {
   } else {
     if (config.IS_BROWSER) throw new Error('Local paths are not supported in browser')
     try {
-      /* eslint-disable */
-      const readFile = require('fs-readfile-promise')
-      /* eslint-enable */
-      const contents = await readFile(descriptor)
-      descriptor = JSON.parse(contents)
+      descriptor = await new Promise((resolve, reject) => {
+        fs.readFile(descriptor, 'utf-8', (error, data) => {
+          if (error) reject(error)
+          try {resolve(JSON.parse(data))} catch (error) {reject(error)}
+        })
+      })
     } catch (error) {
       throw new Error(`Can't load descriptor at "${descriptor}"`)
     }
