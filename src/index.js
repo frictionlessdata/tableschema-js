@@ -9,4 +9,11 @@ const errors = require('./errors')
 
 // Module API
 
-module.exports = {Table, Schema, Field, validate, infer, errors}
+module.exports = {
+  Table,
+  Schema,
+  Field,
+  validate,
+  infer,
+  errors,
+}
