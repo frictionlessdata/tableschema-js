@@ -185,7 +185,7 @@ Factory method to instantiate `Table` class. This method is async and it should 
   - row number containing headers (`source` should contain headers rows)
   - array of headers (`source` should NOT contain headers rows)
 - `strict (Boolean)` - strictness option to pass to `Schema` constructor
-- `(TableSchemaError)` - raises any error occured in table creation process
+- `(errors.TableSchemaError)` - raises any error occured in table creation process
 - `(Table)` - returns data table class instance
 
 #### `table.headers`
@@ -204,7 +204,7 @@ Iter through the table data and emits rows cast based on table schema (async for
 - `extended (Boolean)` - iter extended rows
 - `cast (Boolean)` - disable data casting if false
 - `stream (Boolean)` - return Node Readable Stream of table rows
-- `(TableSchemaError)` - raises any error occured in this process
+- `(errors.TableSchemaError)` - raises any error occured in this process
 - `(AsyncIterator/Stream)` - async iterator/stream of rows:
   - `[value1, value2]` - base
   - `{header1: value1, header2: value2}` - keyed
@@ -218,7 +218,7 @@ Read the whole table and returns as array of rows. Count of rows could be limite
 - `extended (Boolean)` - flag to emit extended rows
 - `cast (Boolean)` - flag to disable data casting if false
 - `limit (Number)` - integer limit of rows to return
-- `(TableSchemaError)` - raises any error occured in this process
+- `(errors.TableSchemaError)` - raises any error occured in this process
 - `(Array[])` - returns array of rows (see `table.iter`)
 
 #### `async table.infer({limit=100})`
@@ -233,7 +233,7 @@ Infer a schema for the table. It will infer and set Table Schema to `table.schem
 Save data source to file locally in CSV format with `,` (comma) delimiter
 
 - `target (String)` - path where to save a table data
-- `(TableSchemaError)` - raises an error if there is saving problem
+- `(errors.TableSchemaError)` - raises an error if there is saving problem
 - `(Boolean)` - returns true on success
 
 ### Schema
@@ -309,7 +309,7 @@ Factory method to instantiate `Schema` class. This method is async and it should
 - `strict (Boolean)` - flag to alter validation behaviour:
   - if false error will not be raised and all error will be collected in `schema.errors`
   - if strict is true any validation error will be raised immediately
-- `(TableSchemaError)` - raises any error occured in the process
+- `(errors.TableSchemaError)` - raises any error occured in the process
 - `(Schema)` - returns schema class instance
 
 #### `schema.valid`
@@ -348,7 +348,7 @@ Get schema field by name.
 Add new field to schema. The schema descriptor will be validated with newly added field descriptor.
 
 - `descriptor (Object)` - field descriptor
-- `(TableSchemaError)` - raises any error occured in the process
+- `(errors.TableSchemaError)` - raises any error occured in the process
 - `(Field/null)` - returns added `Field` instance or null if not added
 
 #### `schema.removeField(name)`
@@ -356,7 +356,7 @@ Add new field to schema. The schema descriptor will be validated with newly adde
 Remove field resource by name. The schema descriptor will be validated after field descriptor removal.
 
 - `name (String)` - schema field name
-- `(TableSchemaError)` - raises any error occured in the process
+- `(errors.TableSchemaError)` - raises any error occured in the process
 - `(Field/null)` - returns removed `Field` instances or null if not found
 
 #### `schema.castRow(row)`
@@ -381,7 +381,7 @@ Infer and set `schema.descriptor` based on data sample.
 Update schema instance if there are in-place changes in the descriptor.
 
 - `strict (Boolean)` - alter `strict` mode for further work
-- `(TableSchemaError)` - raises any error occured in the process
+- `(errors.TableSchemaError)` - raises any error occured in the process
 - `(Boolean)` - returns true on success and false if not modified
 
 ```javascript
@@ -400,7 +400,7 @@ schema.getField('name').type // number
 Save schema descriptor to target destination.
 
 - `target (String)` - path where to save a descriptor
-- `(TableSchemaError)` - raises any error occured in the process
+- `(errors.TableSchemaError)` - raises any error occured in the process
 - `(Boolean)` - returns true on success
 
 ### Field
@@ -465,7 +465,7 @@ Constructor to instantiate `Field` class.
 
 - `descriptor (Object)` - schema field descriptor
 - `missingValues (String[])` - an array with string representing missing values
-- `(TableSchemaError)` - raises any error occured in the process
+- `(errors.TableSchemaError)` - raises any error occured in the process
 - `(Field)` - returns field class instance
 
 List of actions on descriptor:
@@ -503,7 +503,7 @@ Cast given value according to the field type and format.
 - `constraints (Boolean/String[])` - gets constraints configuration
   - it could be set to true to disable constraint checks
   - it could be an Array of constraints to check e.g. ['minimum', 'maximum']
-- `(TableSchemaError)` - raises any error occured in the process
+- `(errors.TableSchemaError)` - raises any error occured in the process
 - `(any)` - returns cast value
 
 #### `field.testValue(value, {constraints=true})`
@@ -595,8 +595,27 @@ This funcion is async so it has to be used with `await` keyword or as a `Promise
 
 - `source (String/Array[])` - data source
 - `headers (String[])` - array of headers
-- `(TableSchemaError)` - raises any error occured in the process
+- `(errors.TableSchemaError)` - raises any error occured in the process
 - `(Object)` - returns schema descriptor
+
+### Errors
+
+`errors.TableSchemaError`
+
+Base class for the all library errors. If there are more than one error you could get an additional information from the error object:
+
+```javascript
+try {
+  // some lib action
+} catch (error) {
+  console.log(error) // you have N cast errors (see error.errors)
+  if (error.multiple) {
+    for (const error of error.errors) {
+        console.log(error) // cast error M is ...
+    }
+  }
+}
+```
 
 ## Contributing
 
