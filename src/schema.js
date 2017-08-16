@@ -242,12 +242,11 @@ class Schema {
     this._nextDescriptor = lodash.cloneDeep(this._currentDescriptor)
 
     // Validate descriptor
-    try {
-      this._profile.validate(this._currentDescriptor)
-      this._errors = []
-    } catch (errors) {
-      if (this._strict) throw errors
-      this._errors = errors
+    this._errors = []
+    const validation = this._profile.validate(this._currentDescriptor)
+    if (!validation.valid) {
+      this._errors = validation.errors
+      if (this._strict) throw validation.errors
     }
 
     // Populate fields

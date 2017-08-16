@@ -49,12 +49,10 @@ class Profile {
 
     }
 
-    // Throw errors
-    if (errors.length) {
-      throw errors
+    return {
+      valid: !errors.length,
+      errors,
     }
-
-    return true
   }
 
   // Private
