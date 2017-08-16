@@ -11,6 +11,6 @@
     "lcov",
     "text"
   ],
-  "sourceMap": false,
-  "instrument": false
+  "sourceMap": true,
+  "instrument": true
 }
