@@ -1,5 +1,6 @@
 const tv4 = require('tv4')
 const lodash = require('lodash')
+const {TableSchemaError} = require('./errors')
 
 
 // Module API
@@ -49,12 +50,10 @@ class Profile {
 
     }
 
-    // Throw errors
-    if (errors.length) {
-      throw errors
+    return {
+      valid: !errors.length,
+      errors,
     }
-
-    return true
   }
 
   // Private
@@ -64,7 +63,7 @@ class Profile {
     try {
       this._jsonschema = require(`./profiles/${profile}.json`) // eslint-disable-line
     } catch (error) {
-      throw new Error(`Can't load profile "${profile}"`)
+      throw new TableSchemaError(`Can't load profile "${profile}"`)
     }
   }
 

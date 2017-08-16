@@ -4,6 +4,7 @@ const axios = require('axios')
 const lodash = require('lodash')
 const {Readable} = require('stream')
 const S2A = require('stream-to-async-iterator').default
+const {TableSchemaError} = require('./errors')
 const {Schema} = require('./schema')
 const helpers = require('./helpers')
 const config = require('./config')
@@ -69,7 +70,8 @@ class Table {
       for (const [index, cache] of Object.entries(uniqueFieldsCache)) {
         if (cache.has(row[index])) {
           const fieldName = this.schema.fields[index].name
-          throw new Error(`Field "${fieldName}" duplicates in row "${rowNumber}"`)
+          const message = `Field "${fieldName}" duplicates in row "${rowNumber}"`
+          throw new TableSchemaError(message)
         } else {
           cache.add(row[index])
         }
@@ -186,7 +188,7 @@ async function createRowStream(source) {
   // Local source
   } else {
     if (config.IS_BROWSER) {
-      throw new Error('Local paths are not supported in the browser')
+      throw new TableSchemaError('Local paths are not supported in the browser')
     } else {
       stream = fs.createReadStream(source)
       stream = stream.pipe(parser)

@@ -46,8 +46,9 @@ describe('Schema', () => {
   })
 
   it('raise exception when invalid format schema passed', async () => {
-    const errors = await catchError(Schema.load, {}, {strict: true})
-    assert.include(errors[0].message, 'fields')
+    const error = await catchError(Schema.load, {}, {strict: true})
+    assert.include(error.message, 'validation errors')
+    assert.include(error.errors[0].message, 'fields')
   })
 
   it('set default types if not provided', async () => {
@@ -89,29 +90,30 @@ describe('Schema', () => {
   it('shouldn\'t convert row with less items than fields count', async () => {
     const schema = await Schema.load(SCHEMA)
     const row = ['string', '10.0', '1', 'string']
-    const errors = await catchError(schema.castRow.bind(schema), row)
-    assert.include(errors[0].message, 'number of items')
+    const error = await catchError(schema.castRow.bind(schema), row)
+    assert.include(error.message, 'fields dimension')
   })
 
   it('shouldn\'t convert row with too many items', async () => {
     const schema = await Schema.load(SCHEMA)
     const row = ['string', '10.0', '1', 'string', 'string', 'string']
-    const errors = await catchError(schema.castRow.bind(schema), row)
-    assert.include(errors[0].message, 'number of items')
+    const error = await catchError(schema.castRow.bind(schema), row)
+    assert.include(error.message, 'fields dimension')
   })
 
   it('shouldn\'t convert row with wrong type (fail fast)', async () => {
     const schema = await Schema.load(SCHEMA)
     const row = ['string', 'notdecimal', '10.6', 'string', 'string']
-    const errors = await catchError(schema.castRow.bind(schema), row, {failFast: true})
-    assert.include(errors[0].message, 'type')
+    const error = await catchError(schema.castRow.bind(schema), row, {failFast: true})
+    assert.include(error.message, 'type')
   })
 
   it('shouldn\'t convert row with wrong type multiple errors', async () => {
     const schema = await Schema.load(SCHEMA)
     const row = ['string', 'notdecimal', '10.6', 'string', 'string']
-    const errors = await catchError(schema.castRow.bind(schema), row)
-    assert.include(errors[0].message, 'type')
+    const error = await catchError(schema.castRow.bind(schema), row)
+    assert.include(error.message, 'cast errors')
+    assert.include(error.errors[0].message, 'type')
   })
 
   it('should allow pattern format for date', async () => {

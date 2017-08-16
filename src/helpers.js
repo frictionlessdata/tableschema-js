@@ -1,6 +1,7 @@
 const fs = require('fs')
 const axios = require('axios')
 const lodash = require('lodash')
+const {TableSchemaError} = require('./errors')
 const config = require('./config')
 
 
@@ -15,12 +16,22 @@ async function retrieveDescriptor(descriptor) {
   // Remote
   } else if (isRemotePath(descriptor)) {
     const res = await axios.get(descriptor)
-    if (res.status >= 400) throw new Error(`Can't load descriptor at "${descriptor}"`)
     descriptor = res.data
+
+    // Loading error
+    if (res.status >= 400) {
+      throw new TableSchemaError(`Can't load descriptor at "${descriptor}"`)
+    }
 
   // Local
   } else {
-    if (config.IS_BROWSER) throw new Error('Local paths are not supported in browser')
+
+    // Browser error
+    if (config.IS_BROWSER) {
+      throw new TableSchemaError('Local paths are not supported in browser')
+    }
+
+    // Load/parse data
     try {
       descriptor = await new Promise((resolve, reject) => {
         fs.readFile(descriptor, 'utf-8', (error, data) => {
@@ -28,9 +39,12 @@ async function retrieveDescriptor(descriptor) {
           try {resolve(JSON.parse(data))} catch (error) {reject(error)}
         })
       })
+
+    // Load/parse erorr
     } catch (error) {
-      throw new Error(`Can't load descriptor at "${descriptor}"`)
+      throw new TableSchemaError(`Can't load descriptor at "${descriptor}"`)
     }
+
   }
 
   return descriptor

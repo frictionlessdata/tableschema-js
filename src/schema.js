@@ -1,9 +1,10 @@
 const fs = require('fs')
 const lodash = require('lodash')
-const {Field} = require('./field')
+const {TableSchemaError} = require('./errors')
 const {Profile} = require('./profile')
 const helpers = require('./helpers')
 const {ERROR} = require('./config')
+const {Field} = require('./field')
 const types = require('./types')
 
 
@@ -115,13 +116,14 @@ class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   castRow(items, {failFast=false, skipConstraints=false}={}) {
+    // TODO: this method has to be rewritten
     const headers = this.fieldNames
-      , result = []
-      , errors = []
+    const result = []
+    const errors = []
 
     if (headers.length !== items.length) {
-      throw [new Error('The number of items to convert does not match the ' +
-                      'number of fields given in the schema')]
+      const message = 'Row dimension doesn\'t match schema\'s fields dimension'
+      throw new TableSchemaError(message)
     }
 
     for (let i = 0, length = items.length; i < length; i += 1) {
@@ -144,14 +146,14 @@ class Schema {
         let error
         switch (e.name) {
           case 'UniqueConstraintsError':
-            error = e.message
+            error = new TableSchemaError(e.message)
             break
           default:
-            error = new Error(
+            error = new TableSchemaError(
               `Wrong type for header: ${headers[i]} and value: ${items[i]}`)
         }
         if (failFast === true) {
-          throw new Array(error)
+          throw error
         } else {
           errors.push(error)
         }
@@ -159,8 +161,10 @@ class Schema {
     }
 
     if (errors.length > 0) {
-      throw errors
+      const message = `There are ${errors.length} cast errors (see 'error.errors')`
+      throw new TableSchemaError(message, errors)
     }
+
     return result
   }
 
@@ -242,12 +246,14 @@ class Schema {
     this._nextDescriptor = lodash.cloneDeep(this._currentDescriptor)
 
     // Validate descriptor
-    try {
-      this._profile.validate(this._currentDescriptor)
-      this._errors = []
-    } catch (errors) {
-      if (this._strict) throw errors
+    this._errors = []
+    const {valid, errors} = this._profile.validate(this._currentDescriptor)
+    if (!valid) {
       this._errors = errors
+      if (this._strict) {
+        const message = `There are ${errors.length} validation errors (see 'error.errors')`
+        throw new TableSchemaError(message, errors)
+      }
     }
 
     // Populate fields
