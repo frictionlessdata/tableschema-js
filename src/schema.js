@@ -247,13 +247,12 @@ class Schema {
 
     // Validate descriptor
     this._errors = []
-    const validation = this._profile.validate(this._currentDescriptor)
-    if (!validation.valid) {
-      this._errors = validation.errors
+    const {valid, errors} = this._profile.validate(this._currentDescriptor)
+    if (!valid) {
+      this._errors = errors
       if (this._strict) {
-        const errorCount = validation.errors.length
-        const message = `There are ${errorCount} validation errors (see 'error.errors')`
-        throw new TableSchemaError(message, validation.errors)
+        const message = `There are ${errors.length} validation errors (see 'error.errors')`
+        throw new TableSchemaError(message, errors)
       }
     }
 

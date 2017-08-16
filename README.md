@@ -185,7 +185,7 @@ Factory method to instantiate `Table` class. This method is async and it should 
   - row number containing headers (`source` should contain headers rows)
   - array of headers (`source` should NOT contain headers rows)
 - `strict (Boolean)` - strictness option to pass to `Schema` constructor
-- `(Error)` - raises any error occured in table creation process
+- `(TableSchemaError)` - raises any error occured in table creation process
 - `(Table)` - returns data table class instance
 
 #### `table.headers`
@@ -204,7 +204,7 @@ Iter through the table data and emits rows cast based on table schema (async for
 - `extended (Boolean)` - iter extended rows
 - `cast (Boolean)` - disable data casting if false
 - `stream (Boolean)` - return Node Readable Stream of table rows
-- `(Error)` - raises any error occured in this process
+- `(TableSchemaError)` - raises any error occured in this process
 - `(AsyncIterator/Stream)` - async iterator/stream of rows:
   - `[value1, value2]` - base
   - `{header1: value1, header2: value2}` - keyed
@@ -218,7 +218,7 @@ Read the whole table and returns as array of rows. Count of rows could be limite
 - `extended (Boolean)` - flag to emit extended rows
 - `cast (Boolean)` - flag to disable data casting if false
 - `limit (Number)` - integer limit of rows to return
-- `(Error)` - raises any error occured in this process
+- `(TableSchemaError)` - raises any error occured in this process
 - `(Array[])` - returns array of rows (see `table.iter`)
 
 #### `async table.infer({limit=100})`
@@ -233,7 +233,7 @@ Infer a schema for the table. It will infer and set Table Schema to `table.schem
 Save data source to file locally in CSV format with `,` (comma) delimiter
 
 - `target (String)` - path where to save a table data
-- `(Error)` - raises an error if there is saving problem
+- `(TableSchemaError)` - raises an error if there is saving problem
 - `(Boolean)` - returns true on success
 
 ### Schema
@@ -309,8 +309,7 @@ Factory method to instantiate `Schema` class. This method is async and it should
 - `strict (Boolean)` - flag to alter validation behaviour:
   - if false error will not be raised and all error will be collected in `schema.errors`
   - if strict is true any validation error will be raised immediately
-- `(Error)` - raises error if schema can't be instantiated
-- `(Error[])` - raises list of validation errors if strict is true
+- `(TableSchemaError)` - raises any error occured in the process
 - `(Schema)` - returns schema class instance
 
 #### `schema.valid`
@@ -349,8 +348,7 @@ Get schema field by name.
 Add new field to schema. The schema descriptor will be validated with newly added field descriptor.
 
 - `descriptor (Object)` - field descriptor
-- `(Error[])` - raises list of validation errors
-- `(Error)` - raises any field creation error
+- `(TableSchemaError)` - raises any error occured in the process
 - `(Field/null)` - returns added `Field` instance or null if not added
 
 #### `schema.removeField(name)`
@@ -358,7 +356,7 @@ Add new field to schema. The schema descriptor will be validated with newly adde
 Remove field resource by name. The schema descriptor will be validated after field descriptor removal.
 
 - `name (String)` - schema field name
-- `(Error[])` - raises list of validation errors
+- `(TableSchemaError)` - raises any error occured in the process
 - `(Field/null)` - returns removed `Field` instances or null if not found
 
 #### `schema.castRow(row)`
@@ -383,11 +381,10 @@ Infer and set `schema.descriptor` based on data sample.
 Update schema instance if there are in-place changes in the descriptor.
 
 - `strict (Boolean)` - alter `strict` mode for further work
-- `(Error[])` - raises list of validation errors
-- `(Error)` - raises any resource creation error
+- `(TableSchemaError)` - raises any error occured in the process
 - `(Boolean)` - returns true on success and false if not modified
 
-```js
+```javascript
 const descriptor = {fields: [{name: 'field', type: 'string'}]}
 const schema = await Schema.load(descriptor)
 
@@ -403,7 +400,7 @@ schema.getField('name').type // number
 Save schema descriptor to target destination.
 
 - `target (String)` - path where to save a descriptor
-- `(Error)` - raises an error if there is saving problem
+- `(TableSchemaError)` - raises any error occured in the process
 - `(Boolean)` - returns true on success
 
 ### Field
@@ -412,7 +409,7 @@ Class represents field in the schema.
 
 Data values can be cast to native Javascript types. Casting a value will check the value is of the expected type, is in the correct format, and complies with any constraints imposed by a schema.
 
-```js
+```javascript
 {
     'name': 'birthday',
     'type': 'date',
@@ -425,13 +422,13 @@ Data values can be cast to native Javascript types. Casting a value will check t
 ```
 Following code will not raise the exception, despite the fact our date is less than minimum constraints in the field, because we do not check constraints of the field descriptor
 
-```js
+```javascript
 var dateType = field.castValue('2014-05-29')
 ```
 
 And following example will raise exception, because we set flag 'skip constraints' to `false`, and our date is less than allowed by `minimum` constraints of the field. Exception will be raised as well in situation of trying to cast non-date format values, or empty values
 
-```js
+```javascript
 try {
     var dateType = field.castValue('2014-05-29', false)
 } catch(e) {
@@ -468,7 +465,7 @@ Constructor to instantiate `Field` class.
 
 - `descriptor (Object)` - schema field descriptor
 - `missingValues (String[])` - an array with string representing missing values
-- `(Error)` - raises error if field can't be instantiated
+- `(TableSchemaError)` - raises any error occured in the process
 - `(Field)` - returns field class instance
 
 List of actions on descriptor:
@@ -506,7 +503,7 @@ Cast given value according to the field type and format.
 - `constraints (Boolean/String[])` - gets constraints configuration
   - it could be set to true to disable constraint checks
   - it could be an Array of constraints to check e.g. ['minimum', 'maximum']
-- `(Error)` - raises cast error if happens
+- `(TableSchemaError)` - raises any error occured in the process
 - `(any)` - returns cast value
 
 #### `field.testValue(value, {constraints=true})`
@@ -521,17 +518,15 @@ Test if value is compliant to the field.
 
 > `validate()` validates whether a **schema** is a validate Table Schema accordingly to the [specifications](http://schemas.datapackages.org/json-table-schema.json). It does **not** validate data against a schema.
 
-Given a schema descriptor `validate` returns `Promise`, which success for a valid Table Schema, or reject with array of errors:
+Given a schema descriptor `validate` returns `Promise` with a validation object:
 
-```js
+```javascript
 const {validate} = require('tableschema')
 
-try {
-    validate('schema.json')
-} catch (errors) {
-  // uh oh, some validation errors in the errors array
+const {valid, errors} = await validate('schema.json')
+for (const error of errors) {
+  // inspect Error objects
 }
-
 ```
 
 #### `async validate(descriptor)`
@@ -542,8 +537,7 @@ This funcion is async so it has to be used with `await` keyword or as a `Promise
   - local path
   - remote url
   - object
-- `(Error[])` - raises list of validation errors for invalid
-- `(Boolean)` - returns true for valid
+- `(Object)` - returns `{valid, errors}` object
 
 ### Infer
 
@@ -601,7 +595,7 @@ This funcion is async so it has to be used with `await` keyword or as a `Promise
 
 - `source (String/Array[])` - data source
 - `headers (String[])` - array of headers
-- `(Error)` - raises any error occured
+- `(TableSchemaError)` - raises any error occured in the process
 - `(Object)` - returns schema descriptor
 
 ## Contributing
