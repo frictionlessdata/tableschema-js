@@ -33,6 +33,7 @@
     "babel-polyfill": "^6.23.0",
     "csv": "^1.1.1",
     "d3-time-format": "^0.3.2",
+    "es6-error": "^4.0.2",
     "lodash": "^4.13.1",
     "moment": "^2.13.0",
     "stream-to-async-iterator": "^0.2.0",

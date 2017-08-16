@@ -11,6 +11,8 @@ async function catchError(func, ...args) {
 }
 
 
+// System
+
 module.exports = {
   catchError,
 }

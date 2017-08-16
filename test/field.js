@@ -1,12 +1,14 @@
 const {assert} = require('chai')
 const {Field} = require('../src')
 
+
 // Constants
 
 const DESCRIPTOR_MIN = {
   name: 'height',
   type: 'number',
 }
+
 
 // Tests
 
