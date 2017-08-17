@@ -98,8 +98,10 @@ class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   addField(descriptor) {
+    if (!this._nextDescriptor.fields) this._nextDescriptor.fields = []
     this._nextDescriptor.fields.push(descriptor)
-    return this.commit()
+    this.commit()
+    return this._fields[this._fields.length - 1]
   }
 
   /**
