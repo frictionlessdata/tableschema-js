@@ -332,6 +332,10 @@ Factory method to instantiate `Schema` class. This method is async and it should
 
 - `(Object[])` - returns schema foreign keys
 
+#### `schema.fields`
+
+- `(Field[])` - returns an array of `Field` instances.
+
 #### `schema.fieldNames`
 
 - `(String[])` - returns an array of field names.

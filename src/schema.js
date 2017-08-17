@@ -18,8 +18,10 @@ class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   static async load(descriptor={}, {strict=false, caseInsensitiveHeaders=false}={}) {
+
     // Process descriptor
     descriptor = await helpers.retrieveDescriptor(descriptor)
+
     return new Schema(descriptor, {strict, caseInsensitiveHeaders})
   }
 
