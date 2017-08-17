@@ -468,9 +468,6 @@ Constructor to instantiate `Field` class.
 - `(errors.TableSchemaError)` - raises any error occured in the process
 - `(Field)` - returns field class instance
 
-List of actions on descriptor:
-- expanded (with profile defaults)
-
 #### `field.name`
 
 - `(String)` - returns field name
