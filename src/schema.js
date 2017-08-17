@@ -106,10 +106,13 @@ class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   removeField(name) {
-    this._nextDescriptor.fields = this._nextDescriptor.fields.filter(field => {
-      if (field.name !== name) return true
-    })
-    return this.commit()
+    const field = this.getField(name)
+    if (field) {
+      const predicat = field => field.name !== name
+      this._nextDescriptor.fields = this._nextDescriptor.fields.filter(predicat)
+      this.commit()
+    }
+    return field
   }
 
   /**
