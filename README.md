@@ -161,7 +161,7 @@ Our `data.csv` looks the same because it has been stringified back to `csv` form
 If we decide to improve it even more we could update the schema file and then open it again. But now providing a schema path and iterating thru the data using Node Streams:
 
 ```javascript
-const table = await Table.load('data.csv', {scheme: 'schema.json'})
+const table = await Table.load('data.csv', {schema: 'schema.json'})
 const stream = await table.iter({stream: true})
 stream.on('data', (row) => {
   // handle row ['london', [51.50,-0.11]] etc
