@@ -145,4 +145,38 @@ describe('Schema', () => {
     assert.deepEqual(schema.getField('age').type, 'integer')
   })
 
+  it('sould work with primary/foreign keys as arrays', async () => {
+    const descriptor = {
+      fields: [{name: 'name'}],
+      primaryKey: ['name'],
+      foreignKeys: [{
+        fields: ['parent_id'],
+        reference: {resource: 'resource', fields: ['id']}
+      }]
+    }
+    const schema = await Schema.load(descriptor)
+    assert.deepEqual(schema.primaryKey, ['name'])
+    assert.deepEqual(schema.foreignKeys, [{
+      fields: ['parent_id'],
+      reference: {resource: 'resource', fields: ['id']}
+    }])
+  })
+
+  it('sould work with primary/foreign keys as string', async () => {
+    const descriptor = {
+      fields: [{name: 'name'}],
+      primaryKey: 'name',
+      foreignKeys: [{
+        fields: 'parent_id',
+        reference: {resource: 'resource', fields: 'id'}
+      }]
+    }
+    const schema = await Schema.load(descriptor)
+    assert.deepEqual(schema.primaryKey, ['name'])
+    assert.deepEqual(schema.foreignKeys, [{
+      fields: ['parent_id'],
+      reference: {resource: 'resource', fields: ['id']}
+    }])
+  })
+
 })

@@ -59,7 +59,20 @@ class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   get foreignKeys() {
-    return this._currentDescriptor.foreignKeys
+    const foreignKeys = this._currentDescriptor.foreignKeys || []
+    for (const key of foreignKeys) {
+      key.fields = key.fields || []
+      key.reference = key.reference || {}
+      key.reference.resource = key.reference.resource || ''
+      key.reference.fields = key.reference.fields || []
+      if (!lodash.isArray(key.fields)) {
+        key.fields = [key.fields]
+      }
+      if (!lodash.isArray(key.reference.fields)) {
+        key.reference.fields = [key.reference.fields]
+      }
+    }
+    return foreignKeys
   }
 
   /**

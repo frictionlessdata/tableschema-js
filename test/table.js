@@ -117,7 +117,8 @@ describe('Table', () => {
         [1, 10.0, 1, 'string1', new Date(2012, 6-1, 15)]])
   })
 
-  it('should infer headers and schema', async () => {
+  it('should infer headers and schema', async function() {
+    if (process.env.USER_ENV === 'browser') this.skip()
     const table = await Table.load('data/data_infer.csv')
     await table.infer()
     assert.deepEqual(table.headers, ['id', 'age', 'name'])
