@@ -117,4 +117,11 @@ describe('Table', () => {
         [1, 10.0, 1, 'string1', new Date(2012, 6-1, 15)]])
   })
 
+  it('should infer headers and schema', async () => {
+    const table = await Table.load('data/data_infer.csv')
+    await table.infer()
+    assert.deepEqual(table.headers, ['id', 'age', 'name'])
+    assert.deepEqual(table.schema.fields.length, 3)
+  })
+
 })
