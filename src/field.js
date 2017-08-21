@@ -137,13 +137,11 @@ class Field {
 
   _getCastFunction() {
     const options = {}
-    // Get cast options for number
-    if (this.type === 'number') {
-      for (const key of ['decimalChar', 'groupChar', 'currency']) {
-        const value = this.descriptor[key]
-        if (value !== undefined) {
-          options[key] = value
-        }
+    // Get cast options
+    for (const key of ['decimalChar', 'groupChar', 'bareNumber', 'trueValues', 'falseValues']) {
+      const value = this.descriptor[key]
+      if (value !== undefined) {
+        options[key] = value
       }
     }
     const func = types[`cast${lodash.upperFirst(this.type)}`]
