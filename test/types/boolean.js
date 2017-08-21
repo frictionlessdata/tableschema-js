@@ -7,21 +7,27 @@ const types = require('../../src/types')
 
 const TESTS = [
   ['default', true, true],
-  ['default', 'yes', true],
-  ['default', 'y', true],
   ['default', 'true', true],
-  ['default', 't', true],
+  ['default', 'True', true],
+  ['default', 'TRUE', true],
   ['default', '1', true],
-  ['default', 'YES', true],
-  ['default', 'Yes', true],
+  ['default', 'yes', true, {trueValues: ['yes']}],
   ['default', false, false],
-  ['default', 'no', false],
-  ['default', 'n', false],
   ['default', 'false', false],
-  ['default', 'f', false],
+  ['default', 'False', false],
+  ['default', 'FALSE', false],
   ['default', '0', false],
-  ['default', 'NO', false],
-  ['default', 'No', false],
+  ['default', 'no', false, {falseValues: ['no']}],
+  ['default', 'YES', ERROR],
+  ['default', 'Yes', ERROR],
+  ['default', 'yes', ERROR],
+  ['default', 'y', ERROR],
+  ['default', 't', ERROR],
+  ['default', 'f', ERROR],
+  ['default', 'no', ERROR],
+  ['default', 'n', ERROR],
+  ['default', 'NO', ERROR],
+  ['default', 'No', ERROR],
   ['default', 0, ERROR],
   ['default', 1, ERROR],
   ['default', '3.14', ERROR],
@@ -33,9 +39,9 @@ const TESTS = [
 describe('castBoolean', () => {
 
   TESTS.forEach(test => {
-    const [format, value, result] = test
+    const [format, value, result, options] = test
     it(`format "${format}" should cast "${value}" to "${result}"`, () => {
-      assert.deepEqual(types.castBoolean(format, value), result)
+      assert.deepEqual(types.castBoolean(format, value, options), result)
     })
   })
 

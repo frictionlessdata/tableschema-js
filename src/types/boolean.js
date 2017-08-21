@@ -4,15 +4,15 @@ const {ERROR} = require('../config')
 
 // Module API
 
-function castBoolean(format, value) {
+function castBoolean(format, value, options={}) {
   if (!lodash.isBoolean(value)) {
     if (!lodash.isString(value)) {
       return ERROR
     }
     value = value.trim().toLowerCase()
-    if (_TRUE_VALUES.includes(value)) {
+    if ((options.trueValues || _TRUE_VALUES).includes(value)) {
       value = true
-    } else if (_FALSE_VALUES.includes(value)) {
+    } else if ((options.falseValues || _FALSE_VALUES).includes(value)) {
       value = false
     } else {
       return ERROR
@@ -29,5 +29,5 @@ module.exports = {
 
 // Internal
 
-const _TRUE_VALUES = ['yes', 'y', 'true', 't', '1']
-const _FALSE_VALUES = ['no', 'n', 'false', 'f', '0']
+const _TRUE_VALUES = ['true', 'True', 'TRUE', '1']
+const _FALSE_VALUES = ['false', 'False', 'FALSE', '0']
