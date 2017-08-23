@@ -1,4 +1,4 @@
-require('babel-polyfill')
+require('regenerator-runtime/runtime')
 const axios = require('axios')
 const {assert} = require('chai')
 const {Profile} = require('../src/profile')

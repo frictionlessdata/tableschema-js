@@ -30,12 +30,12 @@
   },
   "dependencies": {
     "axios": "^0.16.1",
-    "babel-polyfill": "^6.23.0",
     "csv": "^1.1.1",
     "d3-time-format": "^0.3.2",
     "es6-error": "^4.0.2",
     "lodash": "^4.13.1",
     "moment": "^2.13.0",
+    "regenerator-runtime": "^0.11.0",
     "stream-to-async-iterator": "^0.2.0",
     "tv4": "^1.2.7"
   },
@@ -72,6 +72,7 @@
     "sinon-chai": "^2.9.0",
     "superagent-mock": "^1.1.0",
     "webpack": "^2.2.0",
+    "webpack-bundle-size-analyzer": "^2.7.0",
     "webpack-dev-server": "^2.2.0",
     "webpack-merge": "^4.1.0"
   },

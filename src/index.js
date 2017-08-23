@@ -1,4 +1,4 @@
-require('babel-polyfill')
+require('regenerator-runtime/runtime')
 const {Table} = require('./table')
 const {Schema} = require('./schema')
 const {Field} = require('./field')
