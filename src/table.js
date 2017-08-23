@@ -5,6 +5,7 @@ const {Readable} = require('stream')
 const zip = require('lodash/zip')
 const find = require('lodash/find')
 const pick = require('lodash/pick')
+const isEqual = require('lodash/isEqual')
 const isArray = require('lodash/isArray')
 const isEmpty = require('lodash/isEmpty')
 const isMatch = require('lodash/isMatch')
@@ -65,6 +66,14 @@ class Table {
       if (rowNumber === this._headersRow) {
         this._headers = row
         return
+      }
+
+      // Check headers
+      if (this.schema && this.headers) {
+        if (!isEqual(this.headers, this.schema.fieldNames)) {
+          const message = 'Table headers don\'t match schema field names'
+          throw new TableSchemaError(message)
+        }
       }
 
       // Cast row
@@ -135,11 +144,21 @@ class Table {
    * https://github.com/frictionlessdata/tableschema-js#table
    */
   async infer({limit=100}={}) {
-    if (!this.schema) {
-      const schema = new Schema()
+    if (!this._schema || !this._headers) {
+
+      // Headers
+      const schema = this._schema
+      this._schema = null // skip schema checks on read
       const sample = await this.read({limit})
-      schema.infer(sample, {headers: this.headers})
-      this._schema = new Schema(schema.descriptor, {strict: this._strict})
+      this._schema = schema
+
+      // Schema
+      if (!this.schema) {
+        const schema = new Schema()
+        schema.infer(sample, {headers: this.headers})
+        this._schema = new Schema(schema.descriptor, {strict: this._strict})
+      }
+
     }
     return this._schema.descriptor
   }

@@ -124,6 +124,16 @@ describe('Table', () => {
       assert.deepEqual(table.schema.fields.length, 3)
     })
 
+    it('should throw on read for headers/fieldNames missmatch', async () => {
+      const source = [
+        ['id', 'bad', 'age', 'name', 'occupation'],
+        [1, '10.0', 1, 'string1', '2012-06-15 00:00:00'],
+      ]
+      const table = await Table.load(source, {schema: SCHEMA})
+      const error = await catchError(table.read.bind(table))
+      assert.include(error.message, 'match schema field names')
+    })
+
   })
 
   describe('#foreignKeys', () => {
@@ -162,8 +172,8 @@ describe('Table', () => {
 
     it('should read rows if multi field foreign keys is valid', async () => {
       const schema = cloneDeep(SCHEMA)
-      schema.foreignKeys[0].fields = ['name' ,'surname']
-      schema.foreignKeys[0].reference.fields = ['name' ,'surname']
+      schema.foreignKeys[0].fields = ['name', 'surname']
+      schema.foreignKeys[0].reference.fields = ['name', 'surname']
       const table = await Table.load(SOURCE, {schema})
       const rows = await table.read({references: REFERENCES})
       assert.deepEqual(rows.length, 3)
@@ -179,8 +189,8 @@ describe('Table', () => {
 
     it('should throw on read if multi field foreign keys is invalid', async () => {
       const schema = cloneDeep(SCHEMA)
-      schema.foreignKeys[0].fields = ['name' ,'surname']
-      schema.foreignKeys[0].reference.fields = ['name' ,'surname']
+      schema.foreignKeys[0].fields = ['name', 'surname']
+      schema.foreignKeys[0].reference.fields = ['name', 'surname']
       const references = cloneDeep(REFERENCES)
       delete references[0][2]
       const table = await Table.load(SOURCE, {schema})
