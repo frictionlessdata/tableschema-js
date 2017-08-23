@@ -2,7 +2,12 @@ const fs = require('fs')
 const csv = require('csv')
 const axios = require('axios')
 const {Readable} = require('stream')
+const zip = require('lodash/zip')
+const find = require('lodash/find')
+const pick = require('lodash/pick')
 const isArray = require('lodash/isArray')
+const isEmpty = require('lodash/isEmpty')
+const isMatch = require('lodash/isMatch')
 const isInteger = require('lodash/isInteger')
 const isFunction = require('lodash/isFunction')
 const zipObject = require('lodash/zipObject')
@@ -49,27 +54,27 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  async iter({keyed, extended, cast=true, stream=false}={}) {
+  async iter({keyed, extended, cast=true, references={}, stream=false}={}) {
     let rowNumber = 0
     const rowStream = await createRowStream(this._source)
     const uniqueFieldsCache = this.schema ? createUniqueFieldsCache(this.schema) : {}
     const tableRowStream = rowStream.pipe(csv.transform(row => {
       rowNumber += 1
 
-      // Headers
+      // Get headers
       if (rowNumber === this._headersRow) {
         this._headers = row
         return
       }
 
-      // Cast
+      // Cast row
       if (cast) {
         if (this.schema) {
           row = this.schema.castRow(row)
         }
       }
 
-      // Unique
+      // Check unique
       for (const [index, cache] of Object.entries(uniqueFieldsCache)) {
         if (cache.has(row[index])) {
           const fieldName = this.schema.fields[index].name
@@ -80,7 +85,21 @@ class Table {
         }
       }
 
-      // Form
+      // Check foreign
+      if (this.schema && !isEmpty(this.schema.foreignKeys) && !isEmpty(references)) {
+        const keyedRow = zipObject(this.headers, row)
+        for (const [fk, ref] of zip(this.schema.foreignKeys, references)) {
+          if ([fk, ref].includes(undefined)) break
+          const fields = pick(keyedRow, fk.fields)
+          const found = find(ref, refFields => isMatch(refFields, fields))
+          if (!found) {
+            const message = `Table violates foreign key in row "${rowNumber}"`
+            throw new TableSchemaError(message)
+          }
+        }
+      }
+
+      // Form row
       if (keyed) {
         row = zipObject(this.headers, row)
       } else if (extended) {
@@ -95,8 +114,10 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  async read({keyed, extended, cast=true, limit}={}) {
-    const iterator = await this.iter({keyed, extended, cast})
+  async read({keyed, extended, cast=true, references={}, limit}={}) {
+
+    // Get rows
+    const iterator = await this.iter({keyed, extended, cast, references})
     const rows = []
     let count = 0
     for (;;) {
@@ -106,6 +127,7 @@ class Table {
       rows.push(iteration.value)
       if (limit && (count >= limit)) break
     }
+
     return rows
   }
 
