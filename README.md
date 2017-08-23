@@ -173,7 +173,7 @@ It was onle basic introduction to the `Table` class. To learn more let's take a 
 
 #### `async Table.load(source, {schema, strict=false, headers=1, references={}})`
 
-Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`.
+Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`. If `references` argument is provided foreign keys will be checked on any reading operation.
 
 - `source (String/Array[]/Function)` - data source (one of):
   - local CSV file (path)
