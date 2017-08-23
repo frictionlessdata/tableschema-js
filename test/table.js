@@ -165,8 +165,8 @@ describe('Table', () => {
     ]
 
     it('should read rows if single field foreign keys is valid', async () => {
-      const table = await Table.load(SOURCE, {schema: SCHEMA})
-      const rows = await table.read({references: REFERENCES})
+      const table = await Table.load(SOURCE, {schema: SCHEMA, references: REFERENCES})
+      const rows = await table.read()
       assert.deepEqual(rows.length, 3)
     })
 
@@ -174,16 +174,16 @@ describe('Table', () => {
       const schema = cloneDeep(SCHEMA)
       schema.foreignKeys[0].fields = ['name', 'surname']
       schema.foreignKeys[0].reference.fields = ['name', 'surname']
-      const table = await Table.load(SOURCE, {schema})
-      const rows = await table.read({references: REFERENCES})
+      const table = await Table.load(SOURCE, {schema, references: REFERENCES})
+      const rows = await table.read()
       assert.deepEqual(rows.length, 3)
     })
 
     it('should throw on read if single field foreign keys is invalid', async () => {
       const references = cloneDeep(REFERENCES)
       references[0][2].name = 'Max'
-      const table = await Table.load(SOURCE, {schema: SCHEMA})
-      const error = await catchError(table.read.bind(table), {references})
+      const table = await Table.load(SOURCE, {schema: SCHEMA, references})
+      const error = await catchError(table.read.bind(table))
       assert.include(error.message, 'violates foreign key')
     })
 
@@ -193,9 +193,16 @@ describe('Table', () => {
       schema.foreignKeys[0].reference.fields = ['name', 'surname']
       const references = cloneDeep(REFERENCES)
       delete references[0][2]
-      const table = await Table.load(SOURCE, {schema})
-      const error = await catchError(table.read.bind(table), {references})
+      const table = await Table.load(SOURCE, {schema, references})
+      const error = await catchError(table.read.bind(table))
       assert.include(error.message, 'violates foreign key')
+    })
+
+    it('should support references as a promise', async () => {
+      const references = new Promise(resolve => resolve(REFERENCES))
+      const table = await Table.load(SOURCE, {schema: SCHEMA, references})
+      const rows = await table.read()
+      assert.deepEqual(rows.length, 3)
     })
 
   })

@@ -28,14 +28,14 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  static async load(source, {schema, strict=false, headers=1}={}) {
+  static async load(source, {schema, strict=false, headers=1, references={}}={}) {
 
     // Load schema
     if (schema && !(schema instanceof Schema)) {
       schema = await Schema.load(schema, {strict})
     }
 
-    return new Table(source, {schema, strict, headers})
+    return new Table(source, {schema, strict, headers, references})
   }
 
   /**
@@ -55,8 +55,9 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  async iter({keyed, extended, cast=true, references={}, stream=false}={}) {
+  async iter({keyed, extended, cast=true, stream=false}={}) {
     let rowNumber = 0
+    this._references = await this._references
     const rowStream = await createRowStream(this._source)
     const uniqueFieldsCache = this.schema ? createUniqueFieldsCache(this.schema) : {}
     const tableRowStream = rowStream.pipe(csv.transform(row => {
@@ -95,9 +96,9 @@ class Table {
       }
 
       // Check foreign
-      if (this.schema && !isEmpty(this.schema.foreignKeys) && !isEmpty(references)) {
+      if (this.schema && !isEmpty(this.schema.foreignKeys) && !isEmpty(this._references)) {
         const keyedRow = zipObject(this.headers, row)
-        for (const [fk, ref] of zip(this.schema.foreignKeys, references)) {
+        for (const [fk, ref] of zip(this.schema.foreignKeys, this._references)) {
           if ([fk, ref].includes(undefined)) break
           const fields = pick(keyedRow, fk.fields)
           const found = find(ref, refFields => isMatch(refFields, fields))
@@ -123,10 +124,10 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  async read({keyed, extended, cast=true, references={}, limit}={}) {
+  async read({keyed, extended, cast=true, limit}={}) {
 
     // Get rows
-    const iterator = await this.iter({keyed, extended, cast, references})
+    const iterator = await this.iter({keyed, extended, cast})
     const rows = []
     let count = 0
     for (;;) {
@@ -174,10 +175,13 @@ class Table {
 
   // Private
 
-  constructor(source, {schema, strict=false, headers=1}={}) {
+  constructor(source, {schema, strict=false, headers=1, references={}}={}) {
+
+    // Set attributes
     this._source = source
     this._schema = schema
     this._strict = strict
+    this._references = references
 
     // Headers
     this._headers = null
