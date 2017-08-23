@@ -171,7 +171,7 @@ stream.on('data', (row) => {
 
 It was onle basic introduction to the `Table` class. To learn more let's take a look on `Table` class API reference.
 
-#### `async Table.load(source, {schema, strict=false, headers=1})`
+#### `async Table.load(source, {schema, strict=false, headers=1, references={}})`
 
 Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`.
 
@@ -181,10 +181,11 @@ Factory method to instantiate `Table` class. This method is async and it should 
   - array of arrays representing the rows
   - function returning readable stream with CSV file contents
 - `schema (Object)` - data schema in all forms supported by `Schema` class
+- `strict (Boolean)` - strictness option to pass to `Schema` constructor
 - `headers (Integer/String[])` - data source headers (one of):
   - row number containing headers (`source` should contain headers rows)
   - array of headers (`source` should NOT contain headers rows)
-- `strict (Boolean)` - strictness option to pass to `Schema` constructor
+- `references (Array/Promise)` - array of foreign key references. Every array item should match correspondent `schema.foreignKeys` item. For example for a foreign key `field: [field1, field2], reference: ...` a references item should be `[[field1: value1, field2: value2]]`. This argument could be a promise.
 - `(errors.TableSchemaError)` - raises any error occured in table creation process
 - `(Table)` - returns data table class instance
 
