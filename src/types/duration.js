@@ -1,5 +1,5 @@
-const lodash = require('lodash')
 const moment = require('moment')
+const isString = require('lodash/isString')
 const {ERROR} = require('../config')
 
 
@@ -7,7 +7,7 @@ const {ERROR} = require('../config')
 
 function castDuration(format, value) {
   if (!moment.isDuration(value)) {
-    if (!lodash.isString(value)) {
+    if (!isString(value)) {
       return ERROR
     }
     try {

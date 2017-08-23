@@ -1,5 +1,6 @@
 const tv4 = require('tv4')
-const lodash = require('lodash')
+const isArray = require('lodash/isArray')
+const isString = require('lodash/isString')
 const {TableSchemaError} = require('./errors')
 
 
@@ -78,16 +79,16 @@ function validatePrimaryKey(descriptor) {
   const fieldNames = (descriptor.fields || []).map(field => field.name)
   if (descriptor.primaryKey) {
     const primaryKey = descriptor.primaryKey
-    if (lodash.isString(primaryKey)) {
-      if (!lodash.includes(fieldNames, primaryKey)) {
+    if (isString(primaryKey)) {
+      if (!fieldNames.includes(primaryKey)) {
         messages.push(`primary key ${primaryKey} must match schema field names`)
       }
-    } else if (lodash.isArray(primaryKey)) {
-      lodash.each(primaryKey, pk => {
-        if (!lodash.includes(fieldNames, pk)) {
+    } else if (isArray(primaryKey)) {
+      for (const pk of primaryKey) {
+        if (!fieldNames.includes(pk)) {
           messages.push(`primary key ${pk} must match schema field names`)
         }
-      })
+      }
     }
   }
   return messages
@@ -99,40 +100,40 @@ function validateForeignKeys(descriptor) {
   const fieldNames = (descriptor.fields || []).map(field => field.name)
   if (descriptor.foreignKeys) {
     const foreignKeys = descriptor.foreignKeys
-    lodash.each(foreignKeys, fk => {
-      if (lodash.isString(fk.fields)) {
-        if (!lodash.includes(fieldNames, fk.fields)) {
+    for (const fk of foreignKeys) {
+      if (isString(fk.fields)) {
+        if (!fieldNames.includes(fk.fields)) {
           messages.push(`foreign key ${fk.fields} must match schema field names`)
         }
-        if (!lodash.isString(fk.reference.fields)) {
+        if (!isString(fk.reference.fields)) {
           messages.push(`foreign key ${fk.reference.fields} must be same type as ${fk.fields}`)
         }
-      } else if (lodash.isArray(fk.fields)) {
-        lodash.each(fk.fields, field => {
-          if (!lodash.includes(fieldNames, field)) {
+      } else if (isArray(fk.fields)) {
+        for (const field of fk.fields) {
+          if (!fieldNames.includes(field)) {
             messages.push(`foreign key ${field} must match schema field names`)
           }
-        })
-        if (!lodash.isArray(fk.reference.fields)) {
+        }
+        if (!isArray(fk.reference.fields)) {
           messages.push(`foreign key ${fk.reference.fields} must be same type as ${fk.fields}`)
         } else if (fk.reference.fields.length !== fk.fields.length) {
           messages.push('foreign key fields must have the same length as reference.fields')
         }
       }
       if (fk.reference.resource === '') {
-        if (lodash.isString(fk.reference.fields)) {
-          if (!lodash.includes(fieldNames, fk.reference.fields)) {
+        if (isString(fk.reference.fields)) {
+          if (!fieldNames.includes(fk.reference.fields)) {
             messages.push(`foreign key ${fk.fields} must be found in the schema field names`)
           }
-        } else if (lodash.isArray(fk.reference.fields)) {
-          lodash.each(fk.reference.fields, field => {
-            if (!lodash.includes(fieldNames, field)) {
+        } else if (isArray(fk.reference.fields)) {
+          for (const field of fk.reference.fields) {
+            if (!fieldNames.includes(field)) {
               messages.push(`foreign key ${field} must be found in the schema field names`)
             }
-          })
+          }
         }
       }
-    })
+    }
   }
   return messages
 }

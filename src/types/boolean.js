@@ -1,12 +1,13 @@
-const lodash = require('lodash')
+const isString = require('lodash/isString')
+const isBoolean = require('lodash/isBoolean')
 const {ERROR} = require('../config')
 
 
 // Module API
 
 function castBoolean(format, value, options={}) {
-  if (!lodash.isBoolean(value)) {
-    if (!lodash.isString(value)) {
+  if (!isBoolean(value)) {
+    if (!isString(value)) {
       return ERROR
     }
     value = value.trim().toLowerCase()

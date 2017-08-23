@@ -1,5 +1,10 @@
 const fs = require('fs')
-const lodash = require('lodash')
+const isArray = require('lodash/isArray')
+const isEqual = require('lodash/isEqual')
+const countBy = require('lodash/countBy')
+const cloneDeep = require('lodash/cloneDeep')
+const isBoolean = require('lodash/isBoolean')
+const upperFirst = require('lodash/upperFirst')
 const {TableSchemaError} = require('./errors')
 const {Profile} = require('./profile')
 const helpers = require('./helpers')
@@ -52,7 +57,7 @@ class Schema {
    */
   get primaryKey() {
     const primaryKey = this._currentDescriptor.primaryKey || []
-    return (lodash.isArray(primaryKey)) ? primaryKey : [primaryKey]
+    return (isArray(primaryKey)) ? primaryKey : [primaryKey]
   }
 
   /**
@@ -65,10 +70,10 @@ class Schema {
       key.reference = key.reference || {}
       key.reference.resource = key.reference.resource || ''
       key.reference.fields = key.reference.fields || []
-      if (!lodash.isArray(key.fields)) {
+      if (!isArray(key.fields)) {
         key.fields = [key.fields]
       }
-      if (!lodash.isArray(key.reference.fields)) {
+      if (!isArray(key.reference.fields)) {
         key.reference.fields = [key.reference.fields]
       }
     }
@@ -94,10 +99,8 @@ class Schema {
    */
   getField(fieldName, {index=0}={}) {
     const name = fieldName
-    const fields = lodash.filter(this._fields, field => {
-      if (this._caseInsensitiveHeaders) {
-        return field.name.toLowerCase === name.toLowerCase
-      }
+    const fields = this._fields.filter(field => {
+      if (this._caseInsensitiveHeaders) return field.name.toLowerCase === name.toLowerCase
       return field.name === name
     })
     if (!fields.length) {
@@ -194,7 +197,7 @@ class Schema {
   infer(rows, {headers=1}={}) {
 
     // Get headers
-    if (!lodash.isArray(headers)) {
+    if (!isArray(headers)) {
       let headersRow = headers
       for (;;) {
         headersRow -= 1
@@ -207,7 +210,7 @@ class Schema {
     const descriptor = {fields: []}
     for (const [index, header] of headers.entries()) {
       // This approach is not effective, we should go row by row
-      const columnValues = lodash.map(rows, row => row[index])
+      const columnValues = rows.map(row => row[index])
       const type = _guessType(columnValues)
       const field = {name: header, type}
       descriptor.fields.push(field)
@@ -224,9 +227,9 @@ class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   commit({strict}={}) {
-    if (lodash.isBoolean(strict)) this._strict = strict
-    else if (lodash.isEqual(this._currentDescriptor, this._nextDescriptor)) return false
-    this._currentDescriptor = lodash.cloneDeep(this._nextDescriptor)
+    if (isBoolean(strict)) this._strict = strict
+    else if (isEqual(this._currentDescriptor, this._nextDescriptor)) return false
+    this._currentDescriptor = cloneDeep(this._nextDescriptor)
     this._build()
     return true
   }
@@ -248,8 +251,8 @@ class Schema {
     // Set attributes
     this._strict = strict
     this._caseInsensitiveHeaders = caseInsensitiveHeaders
-    this._currentDescriptor = lodash.cloneDeep(descriptor)
-    this._nextDescriptor = lodash.cloneDeep(descriptor)
+    this._currentDescriptor = cloneDeep(descriptor)
+    this._nextDescriptor = cloneDeep(descriptor)
     this._profile = new Profile('table-schema')
     this._errors = []
     this._fields = []
@@ -263,7 +266,7 @@ class Schema {
 
     // Process descriptor
     this._currentDescriptor = helpers.expandSchemaDescriptor(this._currentDescriptor)
-    this._nextDescriptor = lodash.cloneDeep(this._currentDescriptor)
+    this._nextDescriptor = cloneDeep(this._currentDescriptor)
 
     // Validate descriptor
     this._errors = []
@@ -318,7 +321,7 @@ function _guessType(row) {
   const matches = []
   for (const value of row) {
     for (const type of _GUESS_TYPE_ORDER) {
-      const cast = types[`cast${lodash.upperFirst(type)}`]
+      const cast = types[`cast${upperFirst(type)}`]
       const result = cast('default', value)
       if (result !== ERROR) {
         matches.push(type)
@@ -330,7 +333,7 @@ function _guessType(row) {
   // Get winner type
   let winner = 'any'
   let count = 0
-  for (const [itemType, itemCount] of Object.entries(lodash.countBy(matches))) {
+  for (const [itemType, itemCount] of Object.entries(countBy(matches))) {
     if (itemCount > count) {
       winner = itemType
       count = itemCount

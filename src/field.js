@@ -1,4 +1,8 @@
-const lodash = require('lodash')
+const bind = require('lodash/bind')
+const partial = require('lodash/partial')
+const isArray = require('lodash/isArray')
+const cloneDeep = require('lodash/cloneDeep')
+const upperFirst = require('lodash/upperFirst')
 const {TableSchemaError} = require('./errors')
 const constraints = require('./constraints')
 const helpers = require('./helpers')
@@ -19,7 +23,7 @@ class Field {
   constructor(descriptor, {missingValues=config.DEFAULT_MISSING_VALUES}={}) {
 
     // Process descriptor
-    descriptor = lodash.cloneDeep(descriptor)
+    descriptor = cloneDeep(descriptor)
     descriptor = helpers.expandFieldDescriptor(descriptor)
 
     // Set attributes
@@ -104,7 +108,7 @@ class Field {
     // Check value
     if (constraints) {
       for (const [name, check] of Object.entries(this._checkFunctions)) {
-        if (lodash.isArray(constraints)) {
+        if (isArray(constraints)) {
           if (!constraints.includes(name)) continue
         }
         const passed = check(castValue)
@@ -144,15 +148,15 @@ class Field {
         options[key] = value
       }
     }
-    const func = types[`cast${lodash.upperFirst(this.type)}`]
+    const func = types[`cast${upperFirst(this.type)}`]
     if (!func) throw new TableSchemaError(`Not supported field type "${this.type}"`)
-    const cast = lodash.partial(func, this.format, lodash, options)
+    const cast = partial(func, this.format, partial.placeholder, options)
     return cast
   }
 
   _getCheckFunctions() {
     const checks = {}
-    const cast = lodash.bind(this.castValue, this, lodash, {constraints: false})
+    const cast = bind(this.castValue, this, bind.placeholder, {constraints: false})
     for (const [name, constraint] of Object.entries(this.constraints)) {
       let castConstraint = constraint
       // Cast enum constraint
@@ -163,8 +167,8 @@ class Field {
       if (['maximum', 'minimum'].includes(name)) {
         castConstraint = cast(constraint)
       }
-      const func = constraints[`check${lodash.upperFirst(name)}`]
-      const check = lodash.partial(func, castConstraint)
+      const func = constraints[`check${upperFirst(name)}`]
+      const check = partial(func, castConstraint)
       checks[name] = check
     }
     return checks

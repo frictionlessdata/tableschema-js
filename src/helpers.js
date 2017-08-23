@@ -1,6 +1,7 @@
 const fs = require('fs')
 const axios = require('axios')
-const lodash = require('lodash')
+const cloneDeep = require('lodash/cloneDeep')
+const isPlainObject = require('lodash/isPlainObject')
 const {TableSchemaError} = require('./errors')
 const config = require('./config')
 
@@ -10,8 +11,8 @@ const config = require('./config')
 async function retrieveDescriptor(descriptor) {
 
   // Inline
-  if (lodash.isPlainObject(descriptor)) {
-    descriptor = lodash.clone(descriptor)
+  if (isPlainObject(descriptor)) {
+    descriptor = cloneDeep(descriptor)
 
   // Remote
   } else if (isRemotePath(descriptor)) {

@@ -1,11 +1,11 @@
-const lodash = require('lodash')
+const isString = require('lodash/isString')
 const {ERROR} = require('../config')
 
 
 // Module API
 
 function castString(format, value) {
-  if (!lodash.isString(value)) {
+  if (!isString(value)) {
     return ERROR
   }
   if (format === 'uri') {

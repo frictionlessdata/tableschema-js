@@ -23,6 +23,7 @@ let webpackConfig = {
     new webpack.DefinePlugin({
       'process.env.USER_ENV': JSON.stringify('browser')
     }),
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
   ],
   node: {
     fs: 'empty',

@@ -1,15 +1,16 @@
-const lodash = require('lodash')
+const isArray = require('lodash/isArray')
+const isString = require('lodash/isString')
 const {ERROR} = require('../config')
 
 
 // Module API
 
 function castYearmonth(format, value) {
-  if (lodash.isArray(value)) {
+  if (isArray(value)) {
     if (value.length !== 2) {
       return ERROR
     }
-  } else if (lodash.isString(value)) {
+  } else if (isString(value)) {
     try {
       let [year, month] = value.split('-')
       year = parseInt(year, 10)

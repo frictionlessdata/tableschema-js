@@ -1,5 +1,6 @@
-const lodash = require('lodash')
 const moment = require('moment')
+const isDate = require('lodash/isDate')
+const isString = require('lodash/isString')
 const {timeParse} = require('d3-time-format')
 const {ERROR} = require('../config')
 
@@ -7,8 +8,8 @@ const {ERROR} = require('../config')
 // Module API
 
 function castTime(format, value) {
-  if (!lodash.isDate(value)) {
-    if (!lodash.isString(value)) {
+  if (!isDate(value)) {
+    if (!isString(value)) {
       return ERROR
     }
     try {

@@ -1,8 +1,11 @@
 const fs = require('fs')
 const csv = require('csv')
 const axios = require('axios')
-const lodash = require('lodash')
 const {Readable} = require('stream')
+const isArray = require('lodash/isArray')
+const isInteger = require('lodash/isInteger')
+const isFunction = require('lodash/isFunction')
+const zipObject = require('lodash/zipObject')
 const S2A = require('stream-to-async-iterator').default
 const {TableSchemaError} = require('./errors')
 const {Schema} = require('./schema')
@@ -80,7 +83,7 @@ class Table {
       // Form
       if (keyed) {
         // TODO: schema.fieldNames to the mix!
-        row = lodash.zipObject(this.headers, row)
+        row = zipObject(this.headers, row)
       } else if (extended) {
         row = [rowNumber, this.headers, row]
       }
@@ -141,9 +144,9 @@ class Table {
     // Headers
     this._headers = null
     this._headersRow = null
-    if (lodash.isArray(headers)) {
+    if (isArray(headers)) {
       this._headers = headers
-    } else if (lodash.isInteger(headers)) {
+    } else if (isInteger(headers)) {
       this._headersRow = headers
     }
   }
@@ -161,12 +164,12 @@ async function createRowStream(source) {
   let stream
 
   // Stream factory
-  if (lodash.isFunction(source)) {
+  if (isFunction(source)) {
     stream = source()
     stream = stream.pipe(parser)
 
   // Inline source
-  } else if (lodash.isArray(source)) {
+  } else if (isArray(source)) {
     stream = new Readable({objectMode: true})
     for (const row of source) stream.push(row)
     stream.push(null)

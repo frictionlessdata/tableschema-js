@@ -1,12 +1,13 @@
-const lodash = require('lodash')
+const isString = require('lodash/isString')
+const isPlainObject = require('lodash/isPlainObject')
 const {ERROR} = require('../config')
 
 
 // Module API
 
 function castObject(format, value) {
-  if (!lodash.isObject(value)) {
-    if (!lodash.isString(value)) {
+  if (!isPlainObject(value)) {
+    if (!isString(value)) {
       return ERROR
     }
     try {
@@ -14,7 +15,7 @@ function castObject(format, value) {
     } catch (error) {
       return ERROR
     }
-    if (!lodash.isPlainObject(value)) {
+    if (!isPlainObject(value)) {
       return ERROR
     }
   }

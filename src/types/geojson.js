@@ -1,14 +1,16 @@
 const tv4 = require('tv4')
-const lodash = require('lodash')
-const {ERROR} = require('../config')
+const isObject = require('lodash/isObject')
+const isString = require('lodash/isString')
+const isPlainObject = require('lodash/isPlainObject')
 const profile = require('../profiles/geojson.json')
+const {ERROR} = require('../config')
 
 
 // Module API
 
 function castGeojson(format, value) {
-  if (!lodash.isObject(value)) {
-    if (!lodash.isString(value)) {
+  if (!isObject(value)) {
+    if (!isString(value)) {
       return ERROR
     }
     try {
@@ -27,7 +29,7 @@ function castGeojson(format, value) {
       return ERROR
     }
   } else if (format === 'topojson') {
-    if (!lodash.isPlainObject(value)) {
+    if (!isPlainObject(value)) {
       return ERROR
     }
   }

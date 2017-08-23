@@ -1,5 +1,5 @@
-const lodash = require('lodash')
 const {assert} = require('chai')
+const cloneDeep = require('lodash/cloneDeep')
 const {validate} = require('../src')
 
 
@@ -92,7 +92,7 @@ describe('validate', () => {
   })
 
   it('primary key should be by type one of the allowed by schema', async () => {
-    const descriptor = lodash.clone(SCHEMA)
+    const descriptor = cloneDeep(SCHEMA)
     descriptor.primaryKey = {some: 'thing'}
     const {valid, errors} = await validate(descriptor)
     assert.deepEqual(valid, false)
@@ -100,7 +100,7 @@ describe('validate', () => {
   })
 
   it('primary key should match field names', async () => {
-    const descriptor = lodash.clone(SCHEMA)
+    const descriptor = cloneDeep(SCHEMA)
     descriptor.primaryKey = ['unknown']
     const {valid, errors} = await validate(descriptor)
     assert.deepEqual(valid, false)
@@ -108,7 +108,7 @@ describe('validate', () => {
   })
 
   it('ensure primary key as array match field names', async () => {
-    const descriptor = lodash.clone(SCHEMA)
+    const descriptor = cloneDeep(SCHEMA)
     descriptor.primaryKey = ['id', 'unknown']
     const {valid, errors} = await validate(descriptor)
     assert.deepEqual(valid, false)
@@ -116,7 +116,7 @@ describe('validate', () => {
   })
 
   it('ensure foreign keys is an array', async () => {
-    const descriptor = lodash.clone(SCHEMA)
+    const descriptor = cloneDeep(SCHEMA)
     descriptor.foreignKeys = 'keys'
     const {valid, errors} = await validate(descriptor)
     assert.deepEqual(valid, false)
@@ -124,7 +124,7 @@ describe('validate', () => {
   })
 
   it('ensure every foreign key has fields', async () => {
-    const descriptor = lodash.clone(SCHEMA)
+    const descriptor = cloneDeep(SCHEMA)
     descriptor.foreignKeys = ['key1', 'key2']
     const {valid, errors} = await validate(descriptor)
     assert.deepEqual(valid, false)
@@ -132,7 +132,7 @@ describe('validate', () => {
   })
 
   it('ensure fields in keys a string or an array', async () => {
-    const descriptor = lodash.clone(SCHEMA)
+    const descriptor = cloneDeep(SCHEMA)
     descriptor.foreignKeys = [{fields: {name: 'id'}}]
     const {valid, errors} = await validate(descriptor)
     assert.deepEqual(valid, false)
@@ -140,7 +140,7 @@ describe('validate', () => {
   })
 
   it('ensure fields exists in schema', async () => {
-    const descriptor = lodash.clone(SCHEMA)
+    const descriptor = cloneDeep(SCHEMA)
     descriptor.foreignKeys = [
       {
         fields: ['unknown'],
@@ -157,7 +157,7 @@ describe('validate', () => {
   })
 
   it('reference.fields should be same type as key.fields', async () => {
-    const descriptor = lodash.clone(SCHEMA)
+    const descriptor = cloneDeep(SCHEMA)
     descriptor.foreignKeys = [
       {
         fields: ['id'],
@@ -178,7 +178,7 @@ describe('validate', () => {
   })
 
   it('fields in keys a string or an array and resource is present', async () => {
-    const descriptor = lodash.clone(SCHEMA)
+    const descriptor = cloneDeep(SCHEMA)
     descriptor.foreignKeys = [
       {
         fields: ['id'],
@@ -194,7 +194,7 @@ describe('validate', () => {
   })
 
   it('empty resource should reference to the self fields', async () => {
-    const descriptor = lodash.clone(SCHEMA)
+    const descriptor = cloneDeep(SCHEMA)
     descriptor.foreignKeys = [
       {
         fields: ['id'],
