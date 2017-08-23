@@ -1,5 +1,4 @@
 const bind = require('lodash/bind')
-const partial = require('lodash/partial')
 const isArray = require('lodash/isArray')
 const cloneDeep = require('lodash/cloneDeep')
 const upperFirst = require('lodash/upperFirst')
@@ -150,7 +149,7 @@ class Field {
     }
     const func = types[`cast${upperFirst(this.type)}`]
     if (!func) throw new TableSchemaError(`Not supported field type "${this.type}"`)
-    const cast = partial(func, this.format, partial.placeholder, options)
+    const cast = bind(func, null, this.format, bind.placeholder, options)
     return cast
   }
 
@@ -168,7 +167,7 @@ class Field {
         castConstraint = cast(constraint)
       }
       const func = constraints[`check${upperFirst(name)}`]
-      const check = partial(func, castConstraint)
+      const check = bind(func, null, castConstraint)
       checks[name] = check
     }
     return checks
