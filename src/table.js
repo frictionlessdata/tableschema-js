@@ -82,7 +82,6 @@ class Table {
 
       // Form
       if (keyed) {
-        // TODO: schema.fieldNames to the mix!
         row = zipObject(this.headers, row)
       } else if (extended) {
         row = [rowNumber, this.headers, row]
@@ -99,16 +98,14 @@ class Table {
   async read({keyed, extended, cast=true, limit}={}) {
     const iterator = await this.iter({keyed, extended, cast})
     const rows = []
-    /* eslint-disable */
     let count = 0
     for (;;) {
       count += 1
       const iteration = await iterator.next()
       if (iteration.done) break
       rows.push(iteration.value)
-      if (limit && (count => limit)) break
+      if (limit && (count >= limit)) break
     }
-    /* eslint-enable */
     return rows
   }
 
