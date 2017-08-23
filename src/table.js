@@ -28,7 +28,7 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  static async load(source, {schema, strict=false, headers=1, references={}}={}) {
+  static async load(source, {schema, strict=false, headers=1, references=[]}={}) {
 
     // Load schema
     if (schema && !(schema instanceof Schema)) {
