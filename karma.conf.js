@@ -6,7 +6,7 @@ delete webpackConfig.entry
 const karmaConfig = (config) => {
   config.set({
     singleRun: true,
-    browsers: ['PhantomJS'],
+    browsers: ['Chrome'],
     frameworks: ['mocha', 'sinon-chai'],
     files: ['test/karma.opts'],
     reporters: ['spec'],
