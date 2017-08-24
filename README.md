@@ -185,7 +185,7 @@ Factory method to instantiate `Table` class. This method is async and it should 
 - `headers (Integer/String[])` - data source headers (one of):
   - row number containing headers (`source` should contain headers rows)
   - array of headers (`source` should NOT contain headers rows)
-- `references (Array/Promise)` - array of foreign key references. Every array item should match correspondent `schema.foreignKeys` item. For example for a foreign key `field: [field1, field2], reference: ...` a references item should be `[[field1: value1, field2: value2]]`. This argument could be a promise.
+- `references (Array/Function)` - array of foreign key references. Every array item should match correspondent `schema.foreignKeys` item. For example for a foreign key `field: [field1, field2], reference: ...` a references item should be `[[field1: value1, field2: value2]]`. This argument could be a function returning an array promise.
 - `(errors.TableSchemaError)` - raises any error occured in table creation process
 - `(Table)` - returns data table class instance
 

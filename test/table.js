@@ -153,7 +153,7 @@ describe('Table', () => {
         {
           fields: 'name',
           reference: {resource: 'people', fields: 'name'},
-        }
+        },
       ]
     }
     const REFERENCES = [
@@ -170,6 +170,14 @@ describe('Table', () => {
       assert.deepEqual(rows.length, 3)
     })
 
+    it('should throw on read if single field foreign keys is invalid', async () => {
+      const references = cloneDeep(REFERENCES)
+      references[0][2].name = 'Max'
+      const table = await Table.load(SOURCE, {schema: SCHEMA, references})
+      const error = await catchError(table.read.bind(table))
+      assert.include(error.message, 'violates foreign key')
+    })
+
     it('should read rows if multi field foreign keys is valid', async () => {
       const schema = cloneDeep(SCHEMA)
       schema.foreignKeys[0].fields = ['name', 'surname']
@@ -177,14 +185,6 @@ describe('Table', () => {
       const table = await Table.load(SOURCE, {schema, references: REFERENCES})
       const rows = await table.read()
       assert.deepEqual(rows.length, 3)
-    })
-
-    it('should throw on read if single field foreign keys is invalid', async () => {
-      const references = cloneDeep(REFERENCES)
-      references[0][2].name = 'Max'
-      const table = await Table.load(SOURCE, {schema: SCHEMA, references})
-      const error = await catchError(table.read.bind(table))
-      assert.include(error.message, 'violates foreign key')
     })
 
     it('should throw on read if multi field foreign keys is invalid', async () => {
@@ -198,8 +198,8 @@ describe('Table', () => {
       assert.include(error.message, 'violates foreign key')
     })
 
-    it('should support references as a promise', async () => {
-      const references = new Promise(resolve => resolve(REFERENCES))
+    it('should support references as a function', async () => {
+      const references = async () => REFERENCES
       const table = await Table.load(SOURCE, {schema: SCHEMA, references})
       const rows = await table.read()
       assert.deepEqual(rows.length, 3)

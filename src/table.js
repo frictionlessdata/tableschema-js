@@ -56,11 +56,24 @@ class Table {
    * https://github.com/frictionlessdata/tableschema-js#table
    */
   async iter({keyed, extended, cast=true, stream=false}={}) {
-    let rowNumber = 0
-    this._references = await this._references
+
+    // Get row stream
     const rowStream = await createRowStream(this._source)
-    const uniqueFieldsCache = this.schema ? createUniqueFieldsCache(this.schema) : {}
-    const tableRowStream = rowStream.pipe(csv.transform(row => {
+
+    // Resolve references
+    if (isFunction(this._references)) {
+      this._references = await this._references()
+    }
+
+    // Prepare unique checks
+    let uniqueFieldsCache = {}
+    if (this.schema) {
+      uniqueFieldsCache = createUniqueFieldsCache(this.schema)
+    }
+
+    // Get table row stream
+    let rowNumber = 0
+    let tableRowStream = rowStream.pipe(csv.transform(row => {
       rowNumber += 1
 
       // Get headers
@@ -118,7 +131,13 @@ class Table {
 
       return row
     }))
-    return (stream) ? tableRowStream : new S2A(tableRowStream)
+
+    // Form stream
+    if (!stream) {
+      tableRowStream = new S2A(tableRowStream)
+    }
+
+    return tableRowStream
   }
 
   /**
