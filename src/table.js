@@ -4,7 +4,6 @@ const axios = require('axios')
 const {Readable} = require('stream')
 const zip = require('lodash/zip')
 const find = require('lodash/find')
-const pick = require('lodash/pick')
 const isEqual = require('lodash/isEqual')
 const isArray = require('lodash/isArray')
 const isEmpty = require('lodash/isEmpty')
@@ -109,16 +108,21 @@ class Table {
       }
 
       // Check foreign
-      if (this.schema && !isEmpty(this.schema.foreignKeys) && !isEmpty(this._references)) {
+      if (this.schema && !isEmpty(this.schema.foreignKeys)) {
         const keyedRow = zipObject(this.headers, row)
-        for (const [fk, ref] of zip(this.schema.foreignKeys, this._references)) {
-          if ([fk, ref].includes(undefined)) break
-          const values = pick(keyedRow, fk.fields)
-          const empty = Object.values(values).every(value => value === null)
-          const valid = find(ref, refValues => isMatch(refValues, values))
-          if (!empty && !valid) {
-            const message = `Foreign key "${fk.fields}" violation in row "${rowNumber}"`
-            throw new TableSchemaError(message)
+        for (const fk of this.schema.foreignKeys) {
+          const reference = this._references[fk.reference.resource]
+          if (reference) {
+            const values = {}
+            for (const [field, refField] of zip(fk.fields, fk.reference.fields)) {
+              if (field && refField) values[refField] = keyedRow[field]
+            }
+            const empty = Object.values(values).every(value => value === null)
+            const valid = find(reference, refValues => isMatch(refValues, values))
+            if (!empty && !valid) {
+              const message = `Foreign key "${fk.fields}" violation in row "${rowNumber}"`
+              throw new TableSchemaError(message)
+            }
           }
         }
       }
