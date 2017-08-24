@@ -113,9 +113,10 @@ class Table {
         const keyedRow = zipObject(this.headers, row)
         for (const [fk, ref] of zip(this.schema.foreignKeys, this._references)) {
           if ([fk, ref].includes(undefined)) break
-          const fields = pick(keyedRow, fk.fields)
-          const found = find(ref, refFields => isMatch(refFields, fields))
-          if (!found) {
+          const values = pick(keyedRow, fk.fields)
+          const empty = Object.values(values).every(value => value === null)
+          const valid = find(ref, refValues => isMatch(refValues, values))
+          if (!empty && !valid) {
             const message = `Foreign key "${fk.fields}" violation in row "${rowNumber}"`
             throw new TableSchemaError(message)
           }

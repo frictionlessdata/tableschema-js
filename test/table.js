@@ -175,7 +175,7 @@ describe('Table', () => {
       references[0][2].name = 'Max'
       const table = await Table.load(SOURCE, {schema: SCHEMA, references})
       const error = await catchError(table.read.bind(table))
-      assert.include(error.message, 'violates foreign key')
+      assert.include(error.message, 'Foreign key')
     })
 
     it('should read rows if multi field foreign keys is valid', async () => {
@@ -195,7 +195,7 @@ describe('Table', () => {
       delete references[0][2]
       const table = await Table.load(SOURCE, {schema, references})
       const error = await catchError(table.read.bind(table))
-      assert.include(error.message, 'violates foreign key')
+      assert.include(error.message, 'Foreign key')
     })
 
     it('should support references as a function', async () => {
