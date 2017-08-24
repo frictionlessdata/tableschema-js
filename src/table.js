@@ -116,7 +116,7 @@ class Table {
           const fields = pick(keyedRow, fk.fields)
           const found = find(ref, refFields => isMatch(refFields, fields))
           if (!found) {
-            const message = `Table violates foreign key in row "${rowNumber}"`
+            const message = `Foreign key "${fk.fields}" violation in row "${rowNumber}"`
             throw new TableSchemaError(message)
           }
         }
