@@ -204,6 +204,7 @@ Iter through the table data and emits rows cast based on table schema (async for
 - `keyed (Boolean)` - iter keyed rows
 - `extended (Boolean)` - iter extended rows
 - `cast (Boolean)` - disable data casting if false
+- `check (Boolean)` - disable various checks if false
 - `stream (Boolean)` - return Node Readable Stream of table rows
 - `(errors.TableSchemaError)` - raises any error occured in this process
 - `(AsyncIterator/Stream)` - async iterator/stream of rows:
@@ -217,7 +218,8 @@ Read the whole table and returns as array of rows. Count of rows could be limite
 
 - `keyed (Boolean)` - flag to emit keyed rows
 - `extended (Boolean)` - flag to emit extended rows
-- `cast (Boolean)` - flag to disable data casting if false
+- `cast (Boolean)` - disable data casting if false
+- `check (Boolean)` - disable various checks if false
 - `limit (Number)` - integer limit of rows to return
 - `(errors.TableSchemaError)` - raises any error occured in this process
 - `(Array[])` - returns array of rows (see `table.iter`)
