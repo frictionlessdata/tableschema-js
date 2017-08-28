@@ -3,7 +3,7 @@ const ExtendableError = require('es6-error')
 
 // Module API
 
-class TableSchemaError extends ExtendableError {
+class DataPackageError extends ExtendableError {
 
   // Public
 
@@ -32,8 +32,12 @@ class TableSchemaError extends ExtendableError {
 }
 
 
+class TableSchemaError extends DataPackageError {}
+
+
 // System
 
 module.exports = {
+  DataPackageError,
   TableSchemaError,
 }
