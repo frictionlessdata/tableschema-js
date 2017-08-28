@@ -171,7 +171,7 @@ stream.on('data', (row) => {
 
 It was onle basic introduction to the `Table` class. To learn more let's take a look on `Table` class API reference.
 
-#### `async Table.load(source, {schema, strict=false, headers=1, references=[]})`
+#### `async Table.load(source, {schema, strict=false, headers=1, references={}})`
 
 Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`. If `references` argument is provided foreign keys will be checked on any reading operation.
 
