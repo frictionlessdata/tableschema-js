@@ -171,9 +171,9 @@ stream.on('data', (row) => {
 
 It was onle basic introduction to the `Table` class. To learn more let's take a look on `Table` class API reference.
 
-#### `async Table.load(source, {schema, strict=false, headers=1})`
+#### `async Table.load(source, {schema, strict=false, headers=1, references={}})`
 
-Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`.
+Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`. If `references` argument is provided foreign keys will be checked on any reading operation.
 
 - `source (String/Array[]/Function)` - data source (one of):
   - local CSV file (path)
@@ -181,10 +181,11 @@ Factory method to instantiate `Table` class. This method is async and it should 
   - array of arrays representing the rows
   - function returning readable stream with CSV file contents
 - `schema (Object)` - data schema in all forms supported by `Schema` class
+- `strict (Boolean)` - strictness option to pass to `Schema` constructor
 - `headers (Integer/String[])` - data source headers (one of):
   - row number containing headers (`source` should contain headers rows)
   - array of headers (`source` should NOT contain headers rows)
-- `strict (Boolean)` - strictness option to pass to `Schema` constructor
+- `references (Object/Function)` - object of foreign key references in a form of `{resource1: [{field1: value1, field2: value2}, ...], ...}`. This argument could be a function returning a promise.
 - `(errors.TableSchemaError)` - raises any error occured in table creation process
 - `(Table)` - returns data table class instance
 
@@ -203,6 +204,7 @@ Iter through the table data and emits rows cast based on table schema (async for
 - `keyed (Boolean)` - iter keyed rows
 - `extended (Boolean)` - iter extended rows
 - `cast (Boolean)` - disable data casting if false
+- `check (Boolean)` - disable various checks if false
 - `stream (Boolean)` - return Node Readable Stream of table rows
 - `(errors.TableSchemaError)` - raises any error occured in this process
 - `(AsyncIterator/Stream)` - async iterator/stream of rows:
@@ -216,7 +218,8 @@ Read the whole table and returns as array of rows. Count of rows could be limite
 
 - `keyed (Boolean)` - flag to emit keyed rows
 - `extended (Boolean)` - flag to emit extended rows
-- `cast (Boolean)` - flag to disable data casting if false
+- `cast (Boolean)` - disable data casting if false
+- `check (Boolean)` - disable various checks if false
 - `limit (Number)` - integer limit of rows to return
 - `(errors.TableSchemaError)` - raises any error occured in this process
 - `(Array[])` - returns array of rows (see `table.iter`)

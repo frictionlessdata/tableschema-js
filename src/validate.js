@@ -1,5 +1,4 @@
-const helpers = require('./helpers')
-const {Profile} = require('./profile')
+const {Schema} = require('./schema')
 
 
 // Module API
@@ -8,17 +7,8 @@ const {Profile} = require('./profile')
  * https://github.com/frictionlessdata/tableschema-js#validate
  */
 async function validate(descriptor) {
-
-  // Process descriptor
-  descriptor = await helpers.retrieveDescriptor(descriptor)
-  descriptor = helpers.expandSchemaDescriptor(descriptor)
-
-  // Get descriptor profile
-  const profile = await Profile.load('table-schema')
-
-  // Validate descriptor
-  return profile.validate(descriptor)
-
+  const {valid, errors} = await Schema.load(descriptor)
+  return {valid, errors}
 }
 
 
