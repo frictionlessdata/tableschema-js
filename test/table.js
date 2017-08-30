@@ -156,7 +156,7 @@ describe('Table', () => {
         },
       ]
     }
-    const REFERENCES = {
+    const RELATIONS = {
       people: [
         {firstname: 'Alex', surname: 'Martin'},
         {firstname: 'John', surname: 'Dockins'},
@@ -165,16 +165,20 @@ describe('Table', () => {
     }
 
     it('should read rows if single field foreign keys is valid', async () => {
-      const table = await Table.load(SOURCE, {schema: SCHEMA, references: REFERENCES})
-      const rows = await table.read()
-      assert.deepEqual(rows.length, 3)
+      const table = await Table.load(SOURCE, {schema: SCHEMA})
+      const rows = await table.read({relations: RELATIONS})
+      assert.deepEqual(rows, [
+        ['1', {firstname: 'Alex', surname: 'Martin'}, 'Martin'],
+        ['2', {firstname: 'John', surname: 'Dockins'}, 'Dockins'],
+        ['3', {firstname: 'Walter', surname: 'White'}, 'White'],
+      ])
     })
 
     it('should throw on read if single field foreign keys is invalid', async () => {
-      const references = cloneDeep(REFERENCES)
-      references.people[2].firstname = 'Max'
-      const table = await Table.load(SOURCE, {schema: SCHEMA, references})
-      const error = await catchError(table.read.bind(table))
+      const relations = cloneDeep(RELATIONS)
+      relations.people[2].firstname = 'Max'
+      const table = await Table.load(SOURCE, {schema: SCHEMA})
+      const error = await catchError(table.read.bind(table), {relations})
       assert.include(error.message, 'Foreign key')
     })
 
@@ -182,27 +186,36 @@ describe('Table', () => {
       const schema = cloneDeep(SCHEMA)
       schema.foreignKeys[0].fields = ['name', 'surname']
       schema.foreignKeys[0].reference.fields = ['firstname', 'surname']
-      const table = await Table.load(SOURCE, {schema, references: REFERENCES})
-      const rows = await table.read()
-      assert.deepEqual(rows.length, 3)
+      const table = await Table.load(SOURCE, {schema})
+      const keyedRows = await table.read({keyed: true, relations: RELATIONS})
+      assert.deepEqual(keyedRows, [
+        {
+          id: '1',
+          name: {firstname: 'Alex', surname: 'Martin'},
+          surname: {firstname: 'Alex', surname: 'Martin'},
+        },
+        {
+          id: '2',
+          name: {firstname: 'John', surname: 'Dockins'},
+          surname: {firstname: 'John', surname: 'Dockins'},
+        },
+        {
+          id: '3',
+          name: {firstname: 'Walter', surname: 'White'},
+          surname: {firstname: 'Walter', surname: 'White'},
+        },
+      ])
     })
 
     it('should throw on read if multi field foreign keys is invalid', async () => {
       const schema = cloneDeep(SCHEMA)
       schema.foreignKeys[0].fields = ['name', 'surname']
       schema.foreignKeys[0].reference.fields = ['name', 'surname']
-      const references = cloneDeep(REFERENCES)
-      delete references.people[2]
-      const table = await Table.load(SOURCE, {schema, references})
-      const error = await catchError(table.read.bind(table))
+      const relations = cloneDeep(RELATIONS)
+      delete relations.people[2]
+      const table = await Table.load(SOURCE, {schema})
+      const error = await catchError(table.read.bind(table), {relations})
       assert.include(error.message, 'Foreign key')
-    })
-
-    it('should support references as a function', async () => {
-      const references = async () => REFERENCES
-      const table = await Table.load(SOURCE, {schema: SCHEMA, references})
-      const rows = await table.read()
-      assert.deepEqual(rows.length, 3)
     })
 
   })

@@ -3,10 +3,8 @@ const csv = require('csv')
 const axios = require('axios')
 const {Readable} = require('stream')
 const zip = require('lodash/zip')
-const find = require('lodash/find')
 const isEqual = require('lodash/isEqual')
 const isArray = require('lodash/isArray')
-const isEmpty = require('lodash/isEmpty')
 const isMatch = require('lodash/isMatch')
 const isInteger = require('lodash/isInteger')
 const isFunction = require('lodash/isFunction')
@@ -27,14 +25,14 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  static async load(source, {schema, strict=false, headers=1, references={}}={}) {
+  static async load(source, {schema, strict=false, headers=1}={}) {
 
     // Load schema
     if (schema && !(schema instanceof Schema)) {
       schema = await Schema.load(schema, {strict})
     }
 
-    return new Table(source, {schema, strict, headers, references})
+    return new Table(source, {schema, strict, headers})
   }
 
   /**
@@ -54,21 +52,14 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  async iter({keyed, extended, cast=true, check=true, stream=false}={}) {
+  async iter({keyed, extended, cast=true, relations=false, stream=false}={}) {
 
     // Get row stream
     const rowStream = await createRowStream(this._source)
 
-    // Resolve references
-    if (check) {
-      if (isFunction(this._references)) {
-        this._references = await this._references()
-      }
-    }
-
     // Prepare unique checks
     let uniqueFieldsCache = {}
-    if (check) {
+    if (cast) {
       if (this.schema) {
         uniqueFieldsCache = createUniqueFieldsCache(this.schema)
       }
@@ -86,7 +77,7 @@ class Table {
       }
 
       // Check headers
-      if (check) {
+      if (cast) {
         if (this.schema && this.headers) {
           if (!isEqual(this.headers, this.schema.fieldNames)) {
             const message = 'Table headers don\'t match schema field names'
@@ -103,35 +94,26 @@ class Table {
       }
 
       // Check unique
-      if (check) {
+      if (cast) {
         for (const [index, cache] of Object.entries(uniqueFieldsCache)) {
           if (cache.has(row[index])) {
             const fieldName = this.schema.fields[index].name
             const message = `Field "${fieldName}" duplicates in row "${rowNumber}"`
             throw new TableSchemaError(message)
-          } else {
+          } else if (row[index] !== null) {
             cache.add(row[index])
           }
         }
       }
 
-      // Check foreign
-      if (check) {
-        if (this.schema && !isEmpty(this.schema.foreignKeys)) {
-          const keyedRow = zipObject(this.headers, row)
-          for (const fk of this.schema.foreignKeys) {
-            const reference = this._references[fk.reference.resource]
-            if (reference) {
-              const values = {}
-              for (const [field, refField] of zip(fk.fields, fk.reference.fields)) {
-                if (field && refField) values[refField] = keyedRow[field]
-              }
-              const empty = Object.values(values).every(value => value === null)
-              const valid = find(reference, refValues => isMatch(refValues, values))
-              if (!empty && !valid) {
-                const message = `Foreign key "${fk.fields}" violation in row "${rowNumber}"`
-                throw new TableSchemaError(message)
-              }
+      // Resolve relations
+      if (relations) {
+        if (this.schema) {
+          for (const foreignKey of this.schema.foreignKeys) {
+            row = resolveRelations(row, this.headers, relations, foreignKey)
+            if (row === null) {
+              const message = `Foreign key "${foreignKey.fields}" violation in row "rowNumber"`
+              throw new TableSchemaError(message)
             }
           }
         }
@@ -158,10 +140,10 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  async read({keyed, extended, cast=true, check=true, limit}={}) {
+  async read({keyed, extended, cast=true, relations=false, limit}={}) {
 
     // Get rows
-    const iterator = await this.iter({keyed, extended, cast, check})
+    const iterator = await this.iter({keyed, extended, cast, relations})
     const rows = []
     let count = 0
     for (;;) {
@@ -182,7 +164,7 @@ class Table {
     if (!this._schema || !this._headers) {
 
       // Headers
-      const sample = await this.read({limit, check: false})
+      const sample = await this.read({limit, cast: false})
 
       // Schema
       if (!this.schema) {
@@ -206,13 +188,12 @@ class Table {
 
   // Private
 
-  constructor(source, {schema, strict=false, headers=1, references={}}={}) {
+  constructor(source, {schema, strict=false, headers=1}={}) {
 
     // Set attributes
     this._source = source
     this._schema = schema
     this._strict = strict
-    this._references = references
 
     // Headers
     this._headers = null
@@ -285,6 +266,43 @@ function createUniqueFieldsCache(schema) {
   return cache
 }
 
+
+function resolveRelations(row, headers, relations, foreignKey) {
+
+  // Prepare helpers - needed data structures
+  const keyedRow = new Map(zip(headers, row))
+  const fields = zip(foreignKey.fields, foreignKey.reference.fields)
+  const reference = relations[foreignKey.reference.resource]
+  if (!reference) {
+    return row
+  }
+
+  // Collect values - valid if all null
+  let valid = true
+  const values = {}
+  for (const [field, refField] of fields) {
+    if (field && refField) {
+      values[refField] = keyedRow.get(field)
+      if (keyedRow.get(field) !== null) {
+        valid = false
+      }
+    }
+  }
+
+  // Resolve values - valid if match found
+  if (!valid) {
+    for (const refValues of reference) {
+      if (isMatch(refValues, values)) {
+        for (const [field] of fields) keyedRow.set(field, refValues)
+        valid = true
+        break
+      }
+    }
+  }
+
+  return valid ? Array.from(keyedRow.values()) : null
+
+}
 
 // System
 
