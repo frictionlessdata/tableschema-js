@@ -171,7 +171,7 @@ stream.on('data', (row) => {
 
 It was onle basic introduction to the `Table` class. To learn more let's take a look on `Table` class API reference.
 
-#### `async Table.load(source, {schema, strict=false, headers=1, references={}})`
+#### `async Table.load(source, {schema, strict=false, headers=1})`
 
 Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`. If `references` argument is provided foreign keys will be checked on any reading operation.
 
@@ -185,7 +185,6 @@ Factory method to instantiate `Table` class. This method is async and it should 
 - `headers (Integer/String[])` - data source headers (one of):
   - row number containing headers (`source` should contain headers rows)
   - array of headers (`source` should NOT contain headers rows)
-- `references (Object/Function)` - object of foreign key references in a form of `{resource1: [{field1: value1, field2: value2}, ...], ...}`. This argument could be a function returning a promise.
 - `(errors.TableSchemaError)` - raises any error occured in table creation process
 - `(Table)` - returns data table class instance
 
@@ -197,14 +196,14 @@ Factory method to instantiate `Table` class. This method is async and it should 
 
 - `(Schema)` - returns schema class instance
 
-#### `async table.iter({keyed, extended, cast=true, stream=false})`
+#### `async table.iter({keyed, extended, cast=true, relations=false, stream=false})`
 
 Iter through the table data and emits rows cast based on table schema (async for loop). With a `stream` flag instead of async iterator a Node stream will be returned. Data casting could be disabled.
 
 - `keyed (Boolean)` - iter keyed rows
 - `extended (Boolean)` - iter extended rows
 - `cast (Boolean)` - disable data casting if false
-- `check (Boolean)` - disable various checks if false
+- `relations (Object)` - object of foreign key references in a form of `{resource1: [{field1: value1, field2: value2}, ...], ...}`. If provided foreign key fields will checked and resolved to its references
 - `stream (Boolean)` - return Node Readable Stream of table rows
 - `(errors.TableSchemaError)` - raises any error occured in this process
 - `(AsyncIterator/Stream)` - async iterator/stream of rows:
@@ -212,14 +211,14 @@ Iter through the table data and emits rows cast based on table schema (async for
   - `{header1: value1, header2: value2}` - keyed
   - `[rowNumber, [header1, header2], [value1, value2]]` - extended
 
-#### `async table.read({keyed, extended, cast=true, limit})`
+#### `async table.read({keyed, extended, cast=true, relations=false, limit})`
 
 Read the whole table and returns as array of rows. Count of rows could be limited.
 
 - `keyed (Boolean)` - flag to emit keyed rows
 - `extended (Boolean)` - flag to emit extended rows
 - `cast (Boolean)` - disable data casting if false
-- `check (Boolean)` - disable various checks if false
+- `relations (Object)` - object of foreign key references in a form of `{resource1: [{field1: value1, field2: value2}, ...], ...}`. If provided foreign key fields will checked and resolved to its references
 - `limit (Number)` - integer limit of rows to return
 - `(errors.TableSchemaError)` - raises any error occured in this process
 - `(Array[])` - returns array of rows (see `table.iter`)
