@@ -95,13 +95,15 @@ class Table {
 
       // Check unique
       if (cast) {
-        for (const [index, cache] of Object.entries(uniqueFieldsCache)) {
-          if (cache.has(row[index])) {
-            const fieldName = this.schema.fields[index].name
-            const message = `Field "${fieldName}" duplicates in row "${rowNumber}"`
-            throw new TableSchemaError(message)
-          } else if (row[index] !== null) {
-            cache.add(row[index])
+        for (const [indexes, cache] of Object.entries(uniqueFieldsCache)) {
+          const splitIndexes = indexes.split(',').map(index => parseInt(index, 10))
+          const values = row.filter((value, index) => splitIndexes.includes(index))
+          if (!values.every(value => value === null)) {
+            if (cache.data.has(values.toString())) {
+              const message = `Field(s) "${cache.name}" duplicates in row "${rowNumber}"`
+              throw new TableSchemaError(message)
+            }
+            cache.data.add(values.toString())
           }
         }
       }
@@ -257,12 +259,30 @@ async function createRowStream(source) {
 
 
 function createUniqueFieldsCache(schema) {
+  const primaryKeyIndexes = []
   const cache = {}
+
+  // Unique
   for (const [index, field] of schema.fields.entries()) {
-    if (field.constraints.unique || schema.primaryKey.includes(field.name)) {
-      cache[index] = new Set()
+    if (schema.primaryKey.includes(field.name)) {
+      primaryKeyIndexes.push(index)
+    }
+    if (field.constraints.unique) {
+      cache[index.toString()] = {
+        name: field.name,
+        data: new Set(),
+      }
     }
   }
+
+  // Primary key
+  if (primaryKeyIndexes.length) {
+    cache[primaryKeyIndexes.join(',')] = {
+      name: schema.primaryKey.join(', '),
+      data: new Set(),
+    }
+  }
+
   return cache
 }
 

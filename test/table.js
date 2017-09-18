@@ -220,4 +220,37 @@ describe('Table', () => {
 
   })
 
+  describe('#issues', () => {
+    const SCHEMA = {
+      fields: [
+        {name: 'id1'},
+        {name: 'id2'},
+      ],
+      primaryKey: ['id1', 'id2']
+    }
+
+    it('should work with composity primary key unique (issue #91)', async () => {
+      const source = [
+        ['id1', 'id2'],
+        ['a', '1'],
+        ['a', '2'],
+      ]
+      const table = await Table.load(source, {schema: SCHEMA})
+      const rows = await table.read()
+      assert.deepEqual(rows, source.slice(1))
+    })
+
+    it('should fail with composity primary key not unique (issue #91)', async () => {
+      const source = [
+        ['id1', 'id2'],
+        ['a', '1'],
+        ['a', '1'],
+      ]
+      const table = await Table.load(source, {schema: SCHEMA})
+      const error = await catchError(table.read.bind(table))
+      assert.include(error.message, 'duplicates')
+    })
+
+  })
+
 })
