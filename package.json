@@ -1,6 +1,6 @@
 {
   "name": "tableschema",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A library for working with Table Schema in Javascript.",
   "license": "MIT",
   "main": "lib/index.js",
