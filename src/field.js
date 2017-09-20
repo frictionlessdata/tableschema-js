@@ -97,7 +97,7 @@ class Field {
     if (value !== null) {
       castValue = this._castFunction(value)
       if (castValue === config.ERROR) {
-        throw TableSchemaError(
+        throw new TableSchemaError(
           `Field "${this.name}" can't cast value "${value}"
           for type "${this.type}" with format "${this.format}"`
         )
@@ -112,7 +112,7 @@ class Field {
         }
         const passed = check(castValue)
         if (!passed) {
-          throw TableSchemaError(
+          throw new TableSchemaError(
             `Field "${this.name}" has constraint "${name}"
             which is not satisfied for value "{value}"`
           )

@@ -1,4 +1,5 @@
 const fs = require('fs')
+const zip = require('lodash/zip')
 const isArray = require('lodash/isArray')
 const isEqual = require('lodash/isEqual')
 const countBy = require('lodash/countBy')
@@ -138,52 +139,29 @@ class Schema {
   /**
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  castRow(items, {failFast=false, skipConstraints=false}={}) {
-    // TODO: this method has to be rewritten
-    const headers = this.fieldNames
+  castRow(row, {failFast=false}={}) {
     const result = []
     const errors = []
 
-    if (headers.length !== items.length) {
-      const message = 'Row dimension doesn\'t match schema\'s fields dimension'
-      throw new TableSchemaError(message)
+    // Check row length
+    if (row.length !== this.fields.length) {
+      throw new TableSchemaError(
+        `Row length ${row.length} doesn't match fields count ${this.fields.length}`
+      )
     }
 
-    for (let i = 0, length = items.length; i < length; i += 1) {
+    // Cast row
+    for (const [field, value] of zip(this.fields, row)) {
       try {
-        const field = this.getField(headers[i], i)
-        const value = field.castValue(items[i], {constraints: !skipConstraints})
-
-        // TODO: reimplement
-        // That's very wrong - on schema level uniqueness doesn't make sense
-        // and it's very bad to use it for exteral (by Table) monkeypatching
-        if (!skipConstraints) {
-          // unique constraints available only from Resource
-          if (this.uniqueness && this.uniqueHeaders) {
-            helpers.checkUnique(field.name, value, this.uniqueHeaders,
-                                     this.uniqueness)
-          }
-        }
-        result.push(value)
-      } catch (e) {
-        let error
-        switch (e.name) {
-          case 'UniqueConstraintsError':
-            error = new TableSchemaError(e.message)
-            break
-          default:
-            error = new TableSchemaError(
-              `Wrong type for header: ${headers[i]} and value: ${items[i]}`)
-        }
-        if (failFast === true) {
-          throw error
-        } else {
-          errors.push(error)
-        }
+        result.push(field.castValue(value))
+      } catch (error) {
+        if (failFast) throw error
+        errors.push(error)
       }
     }
 
-    if (errors.length > 0) {
+    // Raise errors
+    if (errors.length) {
       const message = `There are ${errors.length} cast errors (see 'error.errors')`
       throw new TableSchemaError(message, errors)
     }
