@@ -100,7 +100,7 @@ class Table {
           const values = row.filter((value, index) => splitIndexes.includes(index))
           if (!values.every(value => value === null)) {
             if (cache.data.has(values.toString())) {
-              const message = `Field(s) "${cache.name}" duplicates in row "${rowNumber}"`
+              const message = `Row ${rowNumber} has unique constraint violation in column "${cache.name}"`
               throw new TableSchemaError(message)
             }
             cache.data.add(values.toString())
@@ -114,7 +114,7 @@ class Table {
           for (const foreignKey of this.schema.foreignKeys) {
             row = resolveRelations(row, this.headers, relations, foreignKey)
             if (row === null) {
-              const message = `Foreign key "${foreignKey.fields}" violation in row "rowNumber"`
+              const message = `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`
               throw new TableSchemaError(message)
             }
           }

@@ -98,8 +98,8 @@ class Field {
       castValue = this._castFunction(value)
       if (castValue === config.ERROR) {
         throw new TableSchemaError(
-          `Field "${this.name}" can't cast value "${value}"
-          for type "${this.type}" with format "${this.format}"`
+          `The value "${value}" in column "${this.name}"
+          is not type "${this.type}" and format "${this.format}"`
         )
       }
     }
