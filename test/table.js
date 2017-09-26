@@ -134,6 +134,17 @@ describe('Table', () => {
       assert.include(error.message, 'match schema field names')
     })
 
+    describe('#parseOptions', () => {
+      it('should use provided parseOptions to parse file', async function() {
+        if (process.env.USER_ENV === 'browser') this.skip()
+        const table = await Table.load('data/data_parse_options.csv', {parseOptions: {delimiter: ';'}})
+        const rows = await table.read({extended: true, limit: 1})
+        assert.deepEqual(rows[0], [2,
+            ['id', 'age', 'name'],
+            ['1', '39', 'Paul']])
+      })
+    })
+
   })
 
   describe('#foreignKeys', () => {
