@@ -171,7 +171,7 @@ stream.on('data', (row) => {
 
 It was onle basic introduction to the `Table` class. To learn more let's take a look on `Table` class API reference.
 
-#### `async Table.load(source, {schema, strict=false, headers=1, parseOptions={ltrim: true}})`
+#### `async Table.load(source, {schema, strict=false, headers=1, ...parseOptions={ltrim: true}})`
 
 Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`. If `references` argument is provided foreign keys will be checked on any reading operation.
 
@@ -185,7 +185,7 @@ Factory method to instantiate `Table` class. This method is async and it should 
 - `headers (Integer/String[])` - data source headers (one of):
   - row number containing headers (`source` should contain headers rows)
   - array of headers (`source` should NOT contain headers rows)
-- `parseOptions (Object)` - Options o be used by CSV parser. All options listed at http://csv.adaltas.com/parse/#parser-options
+- `parseOptions (Object)` - Options to be used by CSV parser. All options listed at http://csv.adaltas.com/parse/#parser-options
 - `(errors.TableSchemaError)` - raises any error occured in table creation process
 - `(Table)` - returns data table class instance
 
