@@ -213,9 +213,9 @@ class Table {
 
 // Internal
 
-async function createRowStream(source, parseOptions={ltrim: true}) {
+async function createRowStream(source, parseOptions) {
 
-  const parser = csv.parse(parseOptions)
+  const parser = csv.parse({ltrim: true, ...parseOptions})
   let stream
 
   // Stream factory
