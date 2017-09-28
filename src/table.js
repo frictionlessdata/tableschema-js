@@ -25,14 +25,14 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  static async load(source, {schema, strict=false, headers=1}={}) {
+  static async load(source, {schema, strict=false, headers=1, ...parseOptions}={}) {
 
     // Load schema
     if (schema && !(schema instanceof Schema)) {
       schema = await Schema.load(schema, {strict})
     }
 
-    return new Table(source, {schema, strict, headers})
+    return new Table(source, {schema, strict, headers, ...parseOptions})
   }
 
   /**
@@ -55,7 +55,7 @@ class Table {
   async iter({keyed, extended, cast=true, relations=false, stream=false}={}) {
 
     // Get row stream
-    const rowStream = await createRowStream(this._source)
+    const rowStream = await createRowStream(this._source, this._parseOptions)
 
     // Prepare unique checks
     let uniqueFieldsCache = {}
@@ -183,19 +183,20 @@ class Table {
    * https://github.com/frictionlessdata/tableschema-js#table
    */
   async save(target) {
-    const rowStream = await createRowStream(this._source)
+    const rowStream = await createRowStream(this._source, this._parseOptions)
     const textStream = rowStream.pipe(csv.stringify())
     textStream.pipe(fs.createWriteStream(target))
   }
 
   // Private
 
-  constructor(source, {schema, strict=false, headers=1}={}) {
+  constructor(source, {schema, strict=false, headers=1, ...parseOptions}={}) {
 
     // Set attributes
     this._source = source
     this._schema = schema
     this._strict = strict
+    this._parseOptions = parseOptions
 
     // Headers
     this._headers = null
@@ -212,11 +213,9 @@ class Table {
 
 // Internal
 
-async function createRowStream(source) {
-  const parseOptions = {
-    ltrim: true
-  }
-  const parser = csv.parse(parseOptions)
+async function createRowStream(source, parseOptions) {
+
+  const parser = csv.parse({ltrim: true, ...parseOptions})
   let stream
 
   // Stream factory
