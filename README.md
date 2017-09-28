@@ -171,7 +171,7 @@ stream.on('data', (row) => {
 
 It was onle basic introduction to the `Table` class. To learn more let's take a look on `Table` class API reference.
 
-#### `async Table.load(source, {schema, strict=false, headers=1, ...parseOptions={ltrim: true}})`
+#### `async Table.load(source, {schema, strict=false, headers=1, ...parserOptions})`
 
 Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`. If `references` argument is provided foreign keys will be checked on any reading operation.
 
@@ -185,7 +185,7 @@ Factory method to instantiate `Table` class. This method is async and it should 
 - `headers (Integer/String[])` - data source headers (one of):
   - row number containing headers (`source` should contain headers rows)
   - array of headers (`source` should NOT contain headers rows)
-- `parseOptions (Object)` - Options to be used by CSV parser. All options listed at http://csv.adaltas.com/parse/#parser-options
+- `parserOptions (Object)` - options to be used by CSV parser. All options listed at http://csv.adaltas.com/parse/#parser-options. By default `ltrim` is true according to the CSV Dialect spec.
 - `(errors.TableSchemaError)` - raises any error occured in table creation process
 - `(Table)` - returns data table class instance
 
@@ -559,7 +559,7 @@ id,age,name
 
 Call `infer` with headers and values from the datafile:
 
-```js
+```javascript
 const descriptor = await infer('data.csv')
 ```
 
@@ -593,12 +593,13 @@ The `descriptor` variable is now a JSON object:
 }
 ```
 
-#### `async infer(source, {headers=1})`
+#### `async infer(source, {headers=1, ...options})`
 
 This funcion is async so it has to be used with `await` keyword or as a `Promise`.
 
-- `source (String/Array[])` - data source
+- `source (String/Array[]/Stream)` - data source
 - `headers (String[])` - array of headers
+- `options (Object)` - any `Table.load` options
 - `(errors.TableSchemaError)` - raises any error occured in the process
 - `(Object)` - returns schema descriptor
 
@@ -634,6 +635,11 @@ $ npm run build
 ## Changelog
 
 Here described only breaking and the most important changes. The full changelog and documentation for all released versions could be found in nicely formatted [commit history](https://github.com/frictionlessdata/tableschema-js/commits/master).
+
+### v1.1
+
+New API added:
+- `Table.load` and `infer` now accepts `parserOptions`
 
 ### v1.0
 

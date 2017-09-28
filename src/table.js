@@ -25,14 +25,14 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  static async load(source, {schema, strict=false, headers=1, ...parseOptions}={}) {
+  static async load(source, {schema, strict=false, headers=1, ...parserOptions}={}) {
 
     // Load schema
     if (schema && !(schema instanceof Schema)) {
       schema = await Schema.load(schema, {strict})
     }
 
-    return new Table(source, {schema, strict, headers, ...parseOptions})
+    return new Table(source, {schema, strict, headers, ...parserOptions})
   }
 
   /**
@@ -55,7 +55,7 @@ class Table {
   async iter({keyed, extended, cast=true, relations=false, stream=false}={}) {
 
     // Get row stream
-    const rowStream = await createRowStream(this._source, this._parseOptions)
+    const rowStream = await createRowStream(this._source, this._parserOptions)
 
     // Prepare unique checks
     let uniqueFieldsCache = {}
@@ -183,20 +183,20 @@ class Table {
    * https://github.com/frictionlessdata/tableschema-js#table
    */
   async save(target) {
-    const rowStream = await createRowStream(this._source, this._parseOptions)
+    const rowStream = await createRowStream(this._source, this._parserOptions)
     const textStream = rowStream.pipe(csv.stringify())
     textStream.pipe(fs.createWriteStream(target))
   }
 
   // Private
 
-  constructor(source, {schema, strict=false, headers=1, ...parseOptions}={}) {
+  constructor(source, {schema, strict=false, headers=1, ...parserOptions}={}) {
 
     // Set attributes
     this._source = source
     this._schema = schema
     this._strict = strict
-    this._parseOptions = parseOptions
+    this._parserOptions = parserOptions
 
     // Headers
     this._headers = null
@@ -213,9 +213,8 @@ class Table {
 
 // Internal
 
-async function createRowStream(source, parseOptions) {
-
-  const parser = csv.parse({ltrim: true, ...parseOptions})
+async function createRowStream(source, parserOptions) {
+  const parser = csv.parse({ltrim: true, ...parserOptions})
   let stream
 
   // Stream factory
