@@ -116,9 +116,9 @@ class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   addField(descriptor) {
-    if (!this._nextDescriptor.fields) this._nextDescriptor.fields = []
-    this._nextDescriptor.fields.push(descriptor)
-    this.commit()
+    if (!this._currentDescriptor.fields) this._currentDescriptor.fields = []
+    this._currentDescriptor.fields.push(descriptor)
+    this._build()
     return this._fields[this._fields.length - 1]
   }
 
@@ -129,8 +129,8 @@ class Schema {
     const field = this.getField(name)
     if (field) {
       const predicat = field => field.name !== name
-      this._nextDescriptor.fields = this._nextDescriptor.fields.filter(predicat)
-      this.commit()
+      this._currentDescriptor.fields = this._currentDescriptor.fields.filter(predicat)
+      this._build()
     }
     return field
   }
@@ -216,9 +216,9 @@ class Schema {
       descriptor.fields.push(field)
     }
 
-    // Commit descriptor
-    this._nextDescriptor = descriptor
-    this.commit()
+    // Save descriptor
+    this._currentDescriptor = descriptor
+    this._build()
 
     return descriptor
   }
