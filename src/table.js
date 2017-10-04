@@ -53,15 +53,7 @@ class Table {
    * https://github.com/frictionlessdata/tableschema-js#table
    */
   async iter({keyed, extended, cast=true, relations=false, stream=false}={}) {
-
-    // Get row stream
     let source = this._source
-    if (source.readable) {
-      const duplicateStream = this._source.pipe(new PassThrough())
-      this._source = duplicateStream.pipe(new PassThrough())
-      source = duplicateStream.pipe(new PassThrough())
-    }
-    const rowStream = await createRowStream(source, this._parserOptions)
 
     // Prepare unique checks
     let uniqueFieldsCache = {}
@@ -70,6 +62,16 @@ class Table {
         uniqueFieldsCache = createUniqueFieldsCache(this.schema)
       }
     }
+
+    // Multiplicate node stream
+    if (source.readable) {
+      const duplicateStream = this._source.pipe(new PassThrough())
+      this._source = duplicateStream.pipe(new PassThrough())
+      source = duplicateStream.pipe(new PassThrough())
+    }
+
+    // Get row stream
+    const rowStream = await createRowStream(source, this._parserOptions)
 
     // Get table row stream
     let rowNumber = 0
@@ -228,16 +230,16 @@ async function createRowStream(source, parserOptions) {
     stream = source()
     stream = stream.pipe(parser)
 
+  // Node stream
+  } else if (source.readable) {
+    stream = source
+    stream = stream.pipe(parser)
+
   // Inline source
   } else if (isArray(source)) {
     stream = new Readable({objectMode: true})
     for (const row of source) stream.push(row)
     stream.push(null)
-
-  // Row stream
-  } else if (source.readable) {
-    stream = source
-    stream = stream.pipe(parser)
 
   // Remote source
   } else if (helpers.isRemotePath(source)) {
