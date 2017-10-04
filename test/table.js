@@ -48,6 +48,16 @@ describe('Table', () => {
       assert.equal(rows.length, 5)
     })
 
+    it('should work with stream as a source', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const stream = fs.createReadStream('data/data_big.csv')
+      const table = await Table.load(stream)
+      const rows = await table.read()
+      assert.equal(rows.length, 100)
+      const anotherRows = await table.read() // Reading second time
+      assert.equal(anotherRows.length, 100)
+    })
+
     it('should work with readable stream factory', async function() {
       if (process.env.USER_ENV === 'browser') this.skip()
       const source = () => fs.createReadStream('data/data_big.csv')

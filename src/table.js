@@ -1,7 +1,7 @@
 const fs = require('fs')
 const csv = require('csv')
 const axios = require('axios')
-const {Readable} = require('stream')
+const {Readable, PassThrough} = require('stream')
 const zip = require('lodash/zip')
 const isEqual = require('lodash/isEqual')
 const isArray = require('lodash/isArray')
@@ -55,7 +55,13 @@ class Table {
   async iter({keyed, extended, cast=true, relations=false, stream=false}={}) {
 
     // Get row stream
-    const rowStream = await createRowStream(this._source, this._parserOptions)
+    let source = this._source
+    if (source.readable) {
+      const duplicateStream = this._source.pipe(new PassThrough())
+      this._source = duplicateStream.pipe(new PassThrough())
+      source = duplicateStream.pipe(new PassThrough())
+    }
+    const rowStream = await createRowStream(source, this._parserOptions)
 
     // Prepare unique checks
     let uniqueFieldsCache = {}
@@ -227,6 +233,11 @@ async function createRowStream(source, parserOptions) {
     stream = new Readable({objectMode: true})
     for (const row of source) stream.push(row)
     stream.push(null)
+
+  // Row stream
+  } else if (source.readable) {
+    stream = source
+    stream = stream.pipe(parser)
 
   // Remote source
   } else if (helpers.isRemotePath(source)) {
