@@ -183,8 +183,8 @@ class Table {
    * https://github.com/frictionlessdata/tableschema-js#table
    */
   async save(target) {
-    const rowStream = await createRowStream(this._source, this._parserOptions)
-    const textStream = rowStream.pipe(csv.stringify())
+    const rowStream = await this.iter({keyed: true, stream: true})
+    const textStream = rowStream.pipe(csv.stringify({header: true}))
     textStream.pipe(fs.createWriteStream(target))
   }
 
