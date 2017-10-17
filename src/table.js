@@ -88,9 +88,10 @@ class Table {
       if (cast) {
         if (this.schema && this.headers) {
           if (!isEqual(this.headers, this.schema.fieldNames)) {
-            throw new TableSchemaError(
-              'The column header names do not match the field names in the schema'
-            )
+            const error = new TableSchemaError(
+              'The column header names do not match the field names in the schema')
+            error.rowNumber = rowNumber
+            throw error
           }
         }
       }
@@ -98,7 +99,13 @@ class Table {
       // Cast row
       if (cast) {
         if (this.schema) {
-          row = this.schema.castRow(row)
+          try {
+            row = this.schema.castRow(row)
+          } catch (error) {
+            error.rowNumber = rowNumber
+            error.errors.forEach(error => {error.rowNumber = rowNumber})
+            throw error
+          }
         }
       }
 
@@ -109,10 +116,11 @@ class Table {
           const values = row.filter((value, index) => splitIndexes.includes(index))
           if (!values.every(value => value === null)) {
             if (cache.data.has(values.toString())) {
-              throw new TableSchemaError(
+              const error = new TableSchemaError(
                 `Row ${rowNumber} has an unique constraint ` +
-                `violation in column "${cache.name}"`
-              )
+                `violation in column "${cache.name}"`)
+              error.rowNumber = rowNumber
+              throw error
             }
             cache.data.add(values.toString())
           }
@@ -125,9 +133,10 @@ class Table {
           for (const foreignKey of this.schema.foreignKeys) {
             row = resolveRelations(row, this.headers, relations, foreignKey)
             if (row === null) {
-              throw new TableSchemaError(
-                `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`
-              )
+              const error = new TableSchemaError(
+                `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`)
+              error.rowNumber = rowNumber
+              throw error
             }
           }
         }

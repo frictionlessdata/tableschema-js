@@ -152,10 +152,11 @@ class Schema {
     }
 
     // Cast row
-    for (const [field, value] of zip(this.fields, row)) {
+    for (const [index, [field, value]] of zip(this.fields, row).entries()) {
       try {
         result.push(field.castValue(value))
       } catch (error) {
+        error.columnNumber = index + 1
         if (failFast) throw error
         errors.push(error)
       }

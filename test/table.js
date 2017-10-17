@@ -248,6 +248,33 @@ describe('Table', () => {
 
   })
 
+  describe('#error-metadata', () => {
+
+    it('should throw an error with correct row/column number', async () => {
+      const source = [
+        ['id', 'name'],
+        ['1', 'Alex'],
+        ['bad', 'bad'],
+        ['3', 'John'],
+      ]
+      const schema = {
+        fields: [
+          {name: 'id', type: 'integer'},
+          {name: 'name', type: 'string', constraints: {minLength: 4}},
+        ]
+      }
+      const table = await Table.load(source, {schema})
+      const error = await catchError(table.read.bind(table))
+      assert.include(error.errors[0].message, 'type "integer"')
+      assert.deepEqual(error.errors[0].rowNumber, 3)
+      assert.deepEqual(error.errors[0].columnNumber, 1)
+      assert.include(error.errors[1].message, '"minLength" constraint')
+      assert.deepEqual(error.errors[1].rowNumber, 3)
+      assert.deepEqual(error.errors[1].columnNumber, 2)
+    })
+
+  })
+
   describe('#issues', () => {
     const SCHEMA = {
       fields: [
