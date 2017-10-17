@@ -1,7 +1,7 @@
 const fs = require('fs')
 const csv = require('csv')
 const axios = require('axios')
-const {Readable} = require('stream')
+const {Readable, PassThrough} = require('stream')
 const zip = require('lodash/zip')
 const isEqual = require('lodash/isEqual')
 const isArray = require('lodash/isArray')
@@ -25,14 +25,14 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  static async load(source, {schema, strict=false, headers=1}={}) {
+  static async load(source, {schema, strict=false, headers=1, ...parserOptions}={}) {
 
     // Load schema
     if (schema && !(schema instanceof Schema)) {
       schema = await Schema.load(schema, {strict})
     }
 
-    return new Table(source, {schema, strict, headers})
+    return new Table(source, {schema, strict, headers, ...parserOptions})
   }
 
   /**
@@ -53,9 +53,7 @@ class Table {
    * https://github.com/frictionlessdata/tableschema-js#table
    */
   async iter({keyed, extended, cast=true, relations=false, stream=false}={}) {
-
-    // Get row stream
-    const rowStream = await createRowStream(this._source)
+    let source = this._source
 
     // Prepare unique checks
     let uniqueFieldsCache = {}
@@ -64,6 +62,16 @@ class Table {
         uniqueFieldsCache = createUniqueFieldsCache(this.schema)
       }
     }
+
+    // Multiplicate node stream
+    if (source.readable) {
+      const duplicateStream = this._source.pipe(new PassThrough())
+      this._source = duplicateStream.pipe(new PassThrough())
+      source = duplicateStream.pipe(new PassThrough())
+    }
+
+    // Get row stream
+    const rowStream = await createRowStream(source, this._parserOptions)
 
     // Get table row stream
     let rowNumber = 0
@@ -183,19 +191,20 @@ class Table {
    * https://github.com/frictionlessdata/tableschema-js#table
    */
   async save(target) {
-    const rowStream = await createRowStream(this._source)
-    const textStream = rowStream.pipe(csv.stringify())
+    const rowStream = await this.iter({keyed: true, stream: true})
+    const textStream = rowStream.pipe(csv.stringify({header: true}))
     textStream.pipe(fs.createWriteStream(target))
   }
 
   // Private
 
-  constructor(source, {schema, strict=false, headers=1}={}) {
+  constructor(source, {schema, strict=false, headers=1, ...parserOptions}={}) {
 
     // Set attributes
     this._source = source
     this._schema = schema
     this._strict = strict
+    this._parserOptions = parserOptions
 
     // Headers
     this._headers = null
@@ -212,16 +221,18 @@ class Table {
 
 // Internal
 
-async function createRowStream(source) {
-  const parseOptions = {
-    ltrim: true
-  }
-  const parser = csv.parse(parseOptions)
+async function createRowStream(source, parserOptions) {
+  const parser = csv.parse({ltrim: true, ...parserOptions})
   let stream
 
   // Stream factory
   if (isFunction(source)) {
     stream = source()
+    stream = stream.pipe(parser)
+
+  // Node stream
+  } else if (source.readable) {
+    stream = source
     stream = stream.pipe(parser)
 
   // Inline source

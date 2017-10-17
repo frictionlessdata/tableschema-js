@@ -171,20 +171,22 @@ stream.on('data', (row) => {
 
 It was onle basic introduction to the `Table` class. To learn more let's take a look on `Table` class API reference.
 
-#### `async Table.load(source, {schema, strict=false, headers=1})`
+#### `async Table.load(source, {schema, strict=false, headers=1, ...parserOptions})`
 
 Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`. If `references` argument is provided foreign keys will be checked on any reading operation.
 
-- `source (String/Array[]/Function)` - data source (one of):
+- `source (String/Array[]/Stream/Function)` - data source (one of):
   - local CSV file (path)
   - remote CSV file (url)
   - array of arrays representing the rows
+  - readable stream with CSV file contents
   - function returning readable stream with CSV file contents
 - `schema (Object)` - data schema in all forms supported by `Schema` class
 - `strict (Boolean)` - strictness option to pass to `Schema` constructor
 - `headers (Integer/String[])` - data source headers (one of):
   - row number containing headers (`source` should contain headers rows)
   - array of headers (`source` should NOT contain headers rows)
+- `parserOptions (Object)` - options to be used by CSV parser. All options listed at http://csv.adaltas.com/parse/#parser-options. By default `ltrim` is true according to the CSV Dialect spec.
 - `(errors.TableSchemaError)` - raises any error occured in table creation process
 - `(Table)` - returns data table class instance
 
@@ -558,7 +560,7 @@ id,age,name
 
 Call `infer` with headers and values from the datafile:
 
-```js
+```javascript
 const descriptor = await infer('data.csv')
 ```
 
@@ -592,12 +594,18 @@ The `descriptor` variable is now a JSON object:
 }
 ```
 
-#### `async infer(source, {headers=1})`
+#### `async infer(source, {headers=1, ...options})`
 
 This funcion is async so it has to be used with `await` keyword or as a `Promise`.
 
-- `source (String/Array[])` - data source
+- `source (String/Array[]/Stream/Function)` - data source (one of):
+  - local CSV file (path)
+  - remote CSV file (url)
+  - array of arrays representing the rows
+  - readable stream with CSV file contents
+  - function returning readable stream with CSV file contents
 - `headers (String[])` - array of headers
+- `options (Object)` - any `Table.load` options
 - `(errors.TableSchemaError)` - raises any error occured in the process
 - `(Object)` - returns schema descriptor
 
@@ -633,6 +641,16 @@ $ npm run build
 ## Changelog
 
 Here described only breaking and the most important changes. The full changelog and documentation for all released versions could be found in nicely formatted [commit history](https://github.com/frictionlessdata/tableschema-js/commits/master).
+
+### v1.2
+
+New API added:
+- `Table.load` and `infer` now accept Node Stream as a `source` argument
+
+### v1.1
+
+New API added:
+- `Table.load` and `infer` now accepts `parserOptions`
 
 ### v1.0
 

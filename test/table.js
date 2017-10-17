@@ -48,6 +48,16 @@ describe('Table', () => {
       assert.equal(rows.length, 5)
     })
 
+    it('should work with stream as a source', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const stream = fs.createReadStream('data/data_big.csv')
+      const table = await Table.load(stream)
+      const rows = await table.read()
+      assert.equal(rows.length, 100)
+      const anotherRows = await table.read() // Reading second time
+      assert.equal(anotherRows.length, 100)
+    })
+
     it('should work with readable stream factory', async function() {
       if (process.env.USER_ENV === 'browser') this.skip()
       const source = () => fs.createReadStream('data/data_big.csv')
@@ -132,6 +142,24 @@ describe('Table', () => {
       const table = await Table.load(source, {schema: SCHEMA})
       const error = await catchError(table.read.bind(table))
       assert.include(error.message, 'match schema field names')
+    })
+
+  })
+
+  describe('#parserOptions', () => {
+
+    it('should use default ltrim param to parse file', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const table = await Table.load('data/data_parse_options_default.csv')
+      const rows = await table.read({extended: true, limit: 1})
+      assert.deepEqual(rows[0], [2, ['id', 'age', 'name'], ['1', '39', 'Paul']])
+    })
+
+    it('should use provided parserOptions such as delimiter to parse file', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const table = await Table.load('data/data_parse_options_delimiter.csv', {delimiter: ';'})
+      const rows = await table.read({extended: true, limit: 1})
+      assert.deepEqual(rows[0], [2, ['id', 'age', 'name'], ['1', '39', 'Paul']])
     })
 
   })
