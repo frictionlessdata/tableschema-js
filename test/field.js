@@ -1,5 +1,6 @@
 const {assert} = require('chai')
 const {Field} = require('../src')
+const {catchError} = require('./helpers')
 
 
 // Constants
@@ -87,6 +88,23 @@ describe('Field', () => {
     })
     assert.equal(field.testValue(50), true)
     assert.equal(field.testValue(200), false)
+  })
+
+  it('should throw an error on incompatible value', async () => {
+    const field = new Field({name: 'column', type: 'integer'})
+    const error = await catchError(field.castValue.bind(field), 'bad-value')
+    assert.include(error.message, 'value "bad-value"')
+    assert.include(error.message, 'column "column"')
+    assert.include(error.message, 'type "integer"')
+    assert.include(error.message, 'format "default"')
+  })
+
+  it('should throw an error on incompatible constraint', async () => {
+    const field = new Field({name: 'column', type: 'integer', constraints: {minimum: 1}})
+    const error = await catchError(field.castValue.bind(field), 0)
+    assert.include(error.message, 'value "0"')
+    assert.include(error.message, '"minimum" constraint')
+    assert.include(error.message, 'column "column"')
   })
 
 })

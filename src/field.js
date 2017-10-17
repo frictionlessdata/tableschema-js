@@ -98,8 +98,8 @@ class Field {
       castValue = this._castFunction(value)
       if (castValue === config.ERROR) {
         throw new TableSchemaError(
-          `The value "${value}" in column "${this.name}"
-          is not type "${this.type}" and format "${this.format}"`
+          `The value "${value}" in column "${this.name}" ` +
+          `is not type "${this.type}" and format "${this.format}"`
         )
       }
     }
@@ -113,8 +113,8 @@ class Field {
         const passed = check(castValue)
         if (!passed) {
           throw new TableSchemaError(
-            `Field "${this.name}" has constraint "${name}"
-            which is not satisfied for value "{value}"`
+            `The value "${value}" does not conform ` +
+            `to the "${name}" constraint for column "${this.name}"`
           )
         }
       }
