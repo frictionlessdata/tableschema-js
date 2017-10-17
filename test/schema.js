@@ -91,14 +91,14 @@ describe('Schema', () => {
     const schema = await Schema.load(SCHEMA)
     const row = ['string', '10.0', '1', 'string']
     const error = await catchError(schema.castRow.bind(schema), row)
-    assert.include(error.message, 'Row length')
+    assert.include(error.message, '4 values does not match the 5 fields')
   })
 
   it('shouldn\'t convert row with too many items', async () => {
     const schema = await Schema.load(SCHEMA)
     const row = ['string', '10.0', '1', 'string', 'string', 'string']
     const error = await catchError(schema.castRow.bind(schema), row)
-    assert.include(error.message, 'Row length')
+    assert.include(error.message, '6 values does not match the 5 fields')
   })
 
   it('shouldn\'t convert row with wrong type (fail fast)', async () => {

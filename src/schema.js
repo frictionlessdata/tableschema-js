@@ -146,7 +146,8 @@ class Schema {
     // Check row length
     if (row.length !== this.fields.length) {
       throw new TableSchemaError(
-        `Row length ${row.length} doesn't match fields count ${this.fields.length}`
+        `The row with ${row.length} values does not match ` +
+        `the ${this.fields.length} fields in the schema`
       )
     }
 
