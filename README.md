@@ -611,7 +611,7 @@ This funcion is async so it has to be used with `await` keyword or as a `Promise
 
 ### Errors
 
-`errors.TableSchemaError`
+#### `errors.TableSchemaError`
 
 Base class for the all library errors. If there are more than one error you could get an additional information from the error object:
 
@@ -627,6 +627,15 @@ try {
   }
 }
 ```
+
+#### `errors.tableSchemaError.rowNumber`
+
+- `(Number/undefined)` - row number of the error if available
+
+#### `errors.tableSchemaError.columnNumber`
+
+- `(Number/undefined)` - column number of the error if available
+
 
 ## Contributing
 

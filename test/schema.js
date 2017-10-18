@@ -91,14 +91,14 @@ describe('Schema', () => {
     const schema = await Schema.load(SCHEMA)
     const row = ['string', '10.0', '1', 'string']
     const error = await catchError(schema.castRow.bind(schema), row)
-    assert.include(error.message, 'fields dimension')
+    assert.include(error.message, '4 values does not match the 5 fields')
   })
 
   it('shouldn\'t convert row with too many items', async () => {
     const schema = await Schema.load(SCHEMA)
     const row = ['string', '10.0', '1', 'string', 'string', 'string']
     const error = await catchError(schema.castRow.bind(schema), row)
-    assert.include(error.message, 'fields dimension')
+    assert.include(error.message, '6 values does not match the 5 fields')
   })
 
   it('shouldn\'t convert row with wrong type (fail fast)', async () => {
@@ -112,7 +112,7 @@ describe('Schema', () => {
     const schema = await Schema.load(SCHEMA)
     const row = ['string', 'notdecimal', '10.6', 'string', 'string']
     const error = await catchError(schema.castRow.bind(schema), row)
-    assert.include(error.message, 'cast errors')
+    assert.include(error.message, 'type and format mismatch errors')
     assert.include(error.errors[0].message, 'type')
   })
 

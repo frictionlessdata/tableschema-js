@@ -92,7 +92,7 @@ describe('Table', () => {
       ]
       const table = await Table.load(source, {schema: SCHEMA, headers: false})
       const error = await catchError(table.read.bind(table))
-      assert.include(error.message, 'duplicates')
+      assert.include(error.message, 'unique constraint')
     })
 
     it('unique constraints violation for primary key', async () => {
@@ -102,7 +102,7 @@ describe('Table', () => {
       ]
       const table = await Table.load(source, {schema: SCHEMA, headers: false})
       const error = await catchError(table.read.bind(table))
-      assert.include(error.message, 'duplicates')
+      assert.include(error.message, 'unique constraint')
     })
 
     it('should read source data and limit rows', async () => {
@@ -141,7 +141,7 @@ describe('Table', () => {
       ]
       const table = await Table.load(source, {schema: SCHEMA})
       const error = await catchError(table.read.bind(table))
-      assert.include(error.message, 'match schema field names')
+      assert.include(error.message, 'header names do not match the field names')
     })
 
   })
@@ -248,6 +248,33 @@ describe('Table', () => {
 
   })
 
+  describe('#error-metadata', () => {
+
+    it('should throw an error with correct row/column number', async () => {
+      const source = [
+        ['id', 'name'],
+        ['1', 'Alex'],
+        ['bad', 'bad'],
+        ['3', 'John'],
+      ]
+      const schema = {
+        fields: [
+          {name: 'id', type: 'integer'},
+          {name: 'name', type: 'string', constraints: {minLength: 4}},
+        ]
+      }
+      const table = await Table.load(source, {schema})
+      const error = await catchError(table.read.bind(table))
+      assert.include(error.errors[0].message, 'type "integer"')
+      assert.deepEqual(error.errors[0].rowNumber, 3)
+      assert.deepEqual(error.errors[0].columnNumber, 1)
+      assert.include(error.errors[1].message, '"minLength" constraint')
+      assert.deepEqual(error.errors[1].rowNumber, 3)
+      assert.deepEqual(error.errors[1].columnNumber, 2)
+    })
+
+  })
+
   describe('#issues', () => {
     const SCHEMA = {
       fields: [
@@ -276,7 +303,7 @@ describe('Table', () => {
       ]
       const table = await Table.load(source, {schema: SCHEMA})
       const error = await catchError(table.read.bind(table))
-      assert.include(error.message, 'duplicates')
+      assert.include(error.message, 'unique constraint')
     })
 
   })
