@@ -112,7 +112,7 @@ describe('Schema', () => {
     const schema = await Schema.load(SCHEMA)
     const row = ['string', 'notdecimal', '10.6', 'string', 'string']
     const error = await catchError(schema.castRow.bind(schema), row)
-    assert.include(error.message, 'cast errors')
+    assert.include(error.message, 'type and format mismatch errors')
     assert.include(error.errors[0].message, 'type')
   })
 

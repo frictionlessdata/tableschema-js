@@ -164,7 +164,7 @@ class Schema {
 
     // Raise errors
     if (errors.length) {
-      const message = `There are ${errors.length} cast errors (see 'error.errors')`
+      const message = `There are ${errors.length} type and format mismatch errors (see 'error.errors')`
       throw new TableSchemaError(message, errors)
     }
 
