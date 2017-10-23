@@ -40,4 +40,13 @@ describe('infer', () => {
     ])
   })
 
+  it('could infer formats', async () => {
+    const descriptor = await infer('data/data_infer_formats.csv')
+    assert.deepEqual(descriptor.fields, [
+      {name: 'id', type: 'integer', format: 'default'},
+      {name: 'price', type: 'number', format: 'default'},
+      {name: 'url', type: 'string', format: 'uri'},
+    ])
+  })
+
 })
