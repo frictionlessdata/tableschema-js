@@ -290,7 +290,7 @@ class Schema {
 
 // Internal
 
-const _INSPECT_VALUE_ORDER = [
+const _INSPECT_VALUE_GUESS_ORDER = [
   {type: 'duration', format: 'default'},
   {type: 'geojson', format: 'default'},
   // https://github.com/frictionlessdata/tableschema-js/issues/101
@@ -324,7 +324,7 @@ const _INSPECT_VALUE_ORDER = [
 
 
 function inspectValue(value) {
-  for (const {type, format} of _INSPECT_VALUE_ORDER) {
+  for (const {type, format} of _INSPECT_VALUE_GUESS_ORDER) {
     const cast = types[`cast${upperFirst(type)}`]
     const result = cast(format, value)
     if (result === config.ERROR) continue
