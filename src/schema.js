@@ -1,15 +1,15 @@
 const fs = require('fs')
+const min = require('lodash/min')
 const zip = require('lodash/zip')
 const isArray = require('lodash/isArray')
 const isEqual = require('lodash/isEqual')
-const countBy = require('lodash/countBy')
 const cloneDeep = require('lodash/cloneDeep')
 const isBoolean = require('lodash/isBoolean')
 const upperFirst = require('lodash/upperFirst')
 const {TableSchemaError} = require('./errors')
 const {Profile} = require('./profile')
 const helpers = require('./helpers')
-const {ERROR} = require('./config')
+const config = require('./config')
 const {Field} = require('./field')
 const types = require('./types')
 
@@ -186,17 +186,29 @@ class Schema {
       }
     }
 
-    // Get descriptor
-    const descriptor = {fields: []}
-    for (const [index, header] of headers.entries()) {
-      // This approach is not effective, we should go row by row
-      const columnValues = rows.map(row => row[index])
-      const type = _guessType(columnValues)
-      const field = {name: header, type}
-      descriptor.fields.push(field)
+    // Get deafult descriptor
+    const descriptor = {fields: headers.map(header => {
+      return {name: header, type: 'any', format: 'default'}
+    })}
+
+    // Get inferred descriptor
+    const threshold = min([rows.length, config.INFER_THRESHOLD])
+    for (const [fieldIndex, field] of descriptor.fields.entries()) {
+      const counter = {}
+      for (const [rowIndex, row] of rows.entries()) {
+        const inspectionCount = rowIndex + 1
+        const inspection = JSON.stringify(inspectValue(row[fieldIndex]))
+        counter[inspection] = (counter[inspection] || 0) + 1
+        if (inspectionCount >= threshold) {
+          if (counter[inspection]/inspectionCount >= config.INFER_CONFIDENCE) {
+            Object.assign(field, JSON.parse(inspection))
+            break
+          }
+        }
+      }
     }
 
-    // Save descriptor
+    // Set descriptor
     this._currentDescriptor = descriptor
     this._build()
 
@@ -278,49 +290,46 @@ class Schema {
 
 // Internal
 
-const _GUESS_TYPE_ORDER = [
-  'duration',
-  'geojson',
-  'geopoint',
-  'object',
-  'array',
-  'datetime',
-  'time',
-  'date',
-  'integer',
-  'number',
-  'boolean',
-  'string',
-  'any',
+const _INSPECT_VALUE_ORDER = [
+  {type: 'duration', format: 'default'},
+  {type: 'geojson', format: 'default'},
+  // https://github.com/frictionlessdata/tableschema-js/issues/101
+  // {type: 'geojson', format: 'topojson'},
+  {type: 'geopoint', format: 'default'},
+  {type: 'geopoint', format: 'array'},
+  {type: 'geopoint', format: 'object'},
+  {type: 'object', format: 'default'},
+  {type: 'array', format: 'default'},
+  {type: 'datetime', format: 'default'},
+  // This format is too broad
+  // {type: 'datetime', format: 'any'},
+  {type: 'time', format: 'default'},
+  // This format is too broad
+  // {type: 'time', format: 'any'},
+  {type: 'date', format: 'default'},
+  // This format is too broad
+  // {type: 'date', format: 'any'},
+  {type: 'integer', format: 'default'},
+  {type: 'number', format: 'default'},
+  {type: 'boolean', format: 'default'},
+  // https://github.com/frictionlessdata/tableschema-js/issues/102
+  // {type: 'string', format: 'uuid'},
+  // https://github.com/frictionlessdata/tableschema-js/issues/102
+  // {type: 'string', format: 'binary'},
+  {type: 'string', format: 'uri'},
+  {type: 'string', format: 'email'},
+  {type: 'string', format: 'default'},
+  {type: 'any', format: 'default'},
 ]
 
 
-function _guessType(row) {
-
-  // Get matching types
-  const matches = []
-  for (const value of row) {
-    for (const type of _GUESS_TYPE_ORDER) {
-      const cast = types[`cast${upperFirst(type)}`]
-      const result = cast('default', value)
-      if (result !== ERROR) {
-        matches.push(type)
-        break
-      }
-    }
+function inspectValue(value) {
+  for (const {type, format} of _INSPECT_VALUE_ORDER) {
+    const cast = types[`cast${upperFirst(type)}`]
+    const result = cast(format, value)
+    if (result === config.ERROR) continue
+    return {type, format}
   }
-
-  // Get winner type
-  let winner = 'any'
-  let count = 0
-  for (const [itemType, itemCount] of Object.entries(countBy(matches))) {
-    if (itemCount > count) {
-      winner = itemType
-      count = itemCount
-    }
-  }
-
-  return winner
 }
 
 

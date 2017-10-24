@@ -1,5 +1,5 @@
-id,price,url
-1,39.00$,http://www.test.com
-2,23.00$,http://www.test.de
-3,36.00$,http://www.test.uk
-4,28.00$,http://www.test.co.il
+id,location,website
+1,"[90,60]",http://www.test.com
+2,"[90,50]",http://www.test.de
+3,"[90,40]",http://www.test.uk
+4,"[90,30]",http://www.test.co.il

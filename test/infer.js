@@ -44,8 +44,8 @@ describe('infer', () => {
     const descriptor = await infer('data/data_infer_formats.csv')
     assert.deepEqual(descriptor.fields, [
       {name: 'id', type: 'integer', format: 'default'},
-      {name: 'price', type: 'number', format: 'default'},
-      {name: 'url', type: 'string', format: 'uri'},
+      {name: 'location', type: 'geopoint', format: 'array'},
+      {name: 'website', type: 'string', format: 'uri'},
     ])
   })
 
