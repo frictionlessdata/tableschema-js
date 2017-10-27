@@ -651,6 +651,11 @@ $ npm run build
 
 Here described only breaking and the most important changes. The full changelog and documentation for all released versions could be found in nicely formatted [commit history](https://github.com/frictionlessdata/tableschema-js/commits/master).
 
+### v1.4
+
+Improved behaviour:
+- Now the `infer` functions support formats inferring
+
 ### v1.3
 
 New API added:
