@@ -89,6 +89,8 @@ rules:
     - off
   array-callback-return:
     - off
+  arrow-body-style:
+    - off
   space-before-function-paren:
     - off
   consistent-return:
