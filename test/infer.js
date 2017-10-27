@@ -46,6 +46,7 @@ describe('infer', () => {
       {name: 'id', type: 'integer', format: 'default'},
       {name: 'location', type: 'geopoint', format: 'array'},
       {name: 'website', type: 'string', format: 'uri'},
+      {name: 'yearmonth', type: 'yearmonth', format: 'default'},
     ])
   })
 

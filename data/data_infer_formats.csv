@@ -1,5 +1,5 @@
-id,location,website
-1,"[90,60]",http://www.test.com
-2,"[90,50]",http://www.test.de
-3,"[90,40]",http://www.test.uk
-4,"[90,30]",http://www.test.co.il
+id,location,website,yearmonth
+1,"[90,60]",http://www.test.com,2000-10
+2,"[90,50]",http://www.test.de,2010-07
+3,"[90,40]",http://www.test.uk,2009-05
+4,"[90,30]",http://www.test.co.il,2015-04

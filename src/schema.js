@@ -291,6 +291,9 @@ class Schema {
 // Internal
 
 const _INSPECT_VALUE_GUESS_ORDER = [
+  // This format is too broad
+  // {type: 'year', format: 'default'},
+  {type: 'yearmonth', format: 'default'},
   {type: 'duration', format: 'default'},
   {type: 'geojson', format: 'default'},
   // https://github.com/frictionlessdata/tableschema-js/issues/101
