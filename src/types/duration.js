@@ -11,6 +11,9 @@ function castDuration(format, value) {
       return ERROR
     }
     try {
+      if (!value.startsWith('P')) {
+        return ERROR
+      }
       value = moment.duration(value)
       if (!value.as('milliseconds')) {
         return ERROR
