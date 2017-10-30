@@ -16,8 +16,8 @@ function castYearmonth(format, value) {
       if (items.length !== 2) {
         return ERROR
       }
-      year = parseInt(items[0], 10)
-      month = parseInt(items[1], 10)
+      const year = parseInt(items[0], 10)
+      const month = parseInt(items[1], 10)
       if (!year || !month) {
         return ERROR
       }
