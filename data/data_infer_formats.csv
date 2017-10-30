@@ -1,5 +1,5 @@
-id,location,website,yearmonth,date
-1,"[90,60]",http://www.test.com,2000-10,2000-10-15
-2,"[90,50]",http://www.test.de,2010-07,2001-10-15
-3,"[90,40]",http://www.test.uk,2009-05,2002-10-15
-4,"[90,30]",http://www.test.co.il,2015-04,2003-10-15
+id,location,website,yearmonth,date,time,datetime
+1,"[90,60]",http://www.test.com,2000-10,2000-10-15,17:55:12,2000-10-15T17:55:12Z
+2,"[90,50]",http://www.test.de,2010-07,2001-10-15,17:56:12,2001-10-15T17:56:12Z
+3,"[90,40]",http://www.test.uk,2009-05,2002-10-15,12:55:12,2002-10-15T12:55:12Z
+4,"[90,30]",http://www.test.co.il,2015-04,2003-10-15,08:55:03,2003-10-15T08:55:03Z

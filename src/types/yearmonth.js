@@ -12,9 +12,12 @@ function castYearmonth(format, value) {
     }
   } else if (isString(value)) {
     try {
-      let [year, month] = value.split('-')
-      year = parseInt(year, 10)
-      month = parseInt(month, 10)
+      const items = value.split('-')
+      if (items.length !== 2) {
+        return ERROR
+      }
+      year = parseInt(items[0], 10)
+      month = parseInt(items[1], 10)
       if (!year || !month) {
         return ERROR
       }
