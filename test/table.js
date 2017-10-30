@@ -144,6 +144,15 @@ describe('Table', () => {
       assert.include(error.message, 'header names do not match the field names')
     })
 
+    it('should support user-defined constraints (issue #103)', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const source = 'data/mathematics.csv'
+      const schema = 'data/mathematics.json'
+      const table = await Table.load(source, {schema})
+      const rows = await table.read()
+      assert.deepEqual(rows.length, 231)
+    })
+
   })
 
   describe('#parserOptions', () => {
@@ -160,6 +169,39 @@ describe('Table', () => {
       const table = await Table.load('data/data_parse_options_delimiter.csv', {delimiter: ';'})
       const rows = await table.read({extended: true, limit: 1})
       assert.deepEqual(rows[0], [2, ['id', 'age', 'name'], ['1', '39', 'Paul']])
+    })
+
+  })
+
+  describe('#primaryKey', () => {
+    const SCHEMA = {
+      fields: [
+        {name: 'id1'},
+        {name: 'id2'},
+      ],
+      primaryKey: ['id1', 'id2']
+    }
+
+    it('should work with composity primary key unique (issue #91)', async () => {
+      const source = [
+        ['id1', 'id2'],
+        ['a', '1'],
+        ['a', '2'],
+      ]
+      const table = await Table.load(source, {schema: SCHEMA})
+      const rows = await table.read()
+      assert.deepEqual(rows, source.slice(1))
+    })
+
+    it('should fail with composity primary key not unique (issue #91)', async () => {
+      const source = [
+        ['id1', 'id2'],
+        ['a', '1'],
+        ['a', '1'],
+      ]
+      const table = await Table.load(source, {schema: SCHEMA})
+      const error = await catchError(table.read.bind(table))
+      assert.include(error.message, 'unique constraint')
     })
 
   })
@@ -271,39 +313,6 @@ describe('Table', () => {
       assert.include(error.errors[1].message, '"minLength" constraint')
       assert.deepEqual(error.errors[1].rowNumber, 3)
       assert.deepEqual(error.errors[1].columnNumber, 2)
-    })
-
-  })
-
-  describe('#issues', () => {
-    const SCHEMA = {
-      fields: [
-        {name: 'id1'},
-        {name: 'id2'},
-      ],
-      primaryKey: ['id1', 'id2']
-    }
-
-    it('should work with composity primary key unique (issue #91)', async () => {
-      const source = [
-        ['id1', 'id2'],
-        ['a', '1'],
-        ['a', '2'],
-      ]
-      const table = await Table.load(source, {schema: SCHEMA})
-      const rows = await table.read()
-      assert.deepEqual(rows, source.slice(1))
-    })
-
-    it('should fail with composity primary key not unique (issue #91)', async () => {
-      const source = [
-        ['id1', 'id2'],
-        ['a', '1'],
-        ['a', '1'],
-      ]
-      const table = await Table.load(source, {schema: SCHEMA})
-      const error = await catchError(table.read.bind(table))
-      assert.include(error.message, 'unique constraint')
     })
 
   })

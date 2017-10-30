@@ -288,6 +288,7 @@ function createUniqueFieldsCache(schema) {
 
   // Unique
   for (const [index, field] of schema.fields.entries()) {
+    if (!field) continue
     if (schema.primaryKey.includes(field.name)) {
       primaryKeyIndexes.push(index)
     }
