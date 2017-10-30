@@ -1,0 +1,100 @@
+{
+    "fields": [
+      {
+        "description": "Total Number of Grades",
+        "name": "Grade",
+        "type": "string"
+      },
+      {
+        "description": "Grade Awarding Year",
+        "format": "any",
+        "name": "Year",
+        "type": "date"
+      },
+      {
+        "description": "Education Category (General, Special)",
+        "name": "Category",
+        "type": "string"
+      },
+      {
+        "constraints": {
+          "level": "Ratio"
+        },
+        "description": "Total number of tested",
+        "name": "Number_Tested",
+        "type": "integer"
+      },
+      {
+        "constraints": {
+          "level": "Ratio"
+        },
+        "description": "Mean of Scale Core",
+        "name": "Mean_Scale_Score",
+        "type": "integer"
+      },
+      {
+        "constraints": {
+          "level": "Ratio"
+        },
+        "description": "Score of Level 1",
+        "name": "Number_Level_1",
+        "type": "integer"
+      },
+      {
+        "constraints": {
+          "level": "Ratio"
+        },
+        "description": "Percentage of Level 1",
+        "name": "Percentage_Level_1",
+        "type": "number"
+      },
+      {
+        "constraints": {
+          "level": "Ratio"
+        },
+        "description": "Score of Level 2",
+        "name": "Number_Level_2",
+        "type": "integer"
+      },
+      {
+        "constraints": {
+          "level": "Ratio"
+        },
+        "description": "Percentage of Level 2",
+        "name": "Percentage_Level_2",
+        "type": "number"
+      },
+      {
+        "constraints": {
+          "level": "Ratio"
+        },
+        "description": "Score of Level 3",
+        "name": "Number_Level_3",
+        "type": "integer"
+      },
+      {
+        "constraints": {
+          "level": "Ratio"
+        },
+        "description": "Percentage of Level 3",
+        "name": "Percentage_Level_3",
+        "type": "number"
+      },
+      {
+        "constraints": {
+          "level": "Ratio"
+        },
+        "description": "Score of Level 4",
+        "name": "Number_Level_4",
+        "type": "integer"
+      },
+      {
+        "constraints": {
+          "level": "Ratio"
+        },
+        "description": "Percentage of Level 4",
+        "name": "Percentage_Level_4",
+        "type": "number"
+      }
+    ]
+}

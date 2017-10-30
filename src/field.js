@@ -140,6 +140,7 @@ class Field {
 
   _getCastFunction() {
     const options = {}
+
     // Get cast options
     for (const key of ['decimalChar', 'groupChar', 'bareNumber', 'trueValues', 'falseValues']) {
       const value = this.descriptor[key]
@@ -147,9 +148,12 @@ class Field {
         options[key] = value
       }
     }
+
+    // Get cast function
     const func = types[`cast${upperFirst(this.type)}`]
     if (!func) throw new TableSchemaError(`Not supported field type "${this.type}"`)
     const cast = bind(func, null, this.format, bind.placeholder, options)
+
     return cast
   }
 
@@ -158,17 +162,21 @@ class Field {
     const cast = bind(this.castValue, this, bind.placeholder, {constraints: false})
     for (const [name, constraint] of Object.entries(this.constraints)) {
       let castConstraint = constraint
+
       // Cast enum constraint
       if (['enum'].includes(name)) {
         castConstraint = constraint.map(cast)
       }
+
       // Cast maximum/minimum constraint
       if (['maximum', 'minimum'].includes(name)) {
         castConstraint = cast(constraint)
       }
+
+      // Get check function
       const func = constraints[`check${upperFirst(name)}`]
-      const check = bind(func, null, castConstraint)
-      checks[name] = check
+      if (func) checks[name] = bind(func, null, castConstraint)
+
     }
     return checks
   }
