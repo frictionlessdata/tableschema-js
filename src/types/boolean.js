@@ -10,7 +10,7 @@ function castBoolean(format, value, options={}) {
     if (!isString(value)) {
       return ERROR
     }
-    value = value.trim().toLowerCase()
+    value = value.trim()
     if ((options.trueValues || _TRUE_VALUES).includes(value)) {
       value = true
     } else if ((options.falseValues || _FALSE_VALUES).includes(value)) {
