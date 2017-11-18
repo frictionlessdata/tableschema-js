@@ -65,9 +65,10 @@ class Table {
 
     // Multiplicate node stream
     if (source.readable) {
-      const duplicateStream = this._source.pipe(new PassThrough())
-      this._source = duplicateStream.pipe(new PassThrough())
-      source = duplicateStream.pipe(new PassThrough())
+      // const duplicateStream = this._source.pipe(new PassThrough())
+      // this._source = duplicateStream.pipe(new PassThrough())
+      // source = duplicateStream.pipe(new PassThrough())
+      source = this._source.pipe(new PassThrough())
     }
 
     // Get row stream
