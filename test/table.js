@@ -54,8 +54,6 @@ describe('Table', () => {
       const table = await Table.load(stream)
       const rows = await table.read()
       assert.equal(rows.length, 100)
-      const anotherRows = await table.read() // Reading second time
-      assert.equal(anotherRows.length, 100)
     })
 
     it('should iter with huge stream as a source', async function() {
@@ -70,16 +68,12 @@ describe('Table', () => {
         let total = 0
         iter.on('data', () => {
           total = total + 1
-          console.log(total)
-          // this stops being called after a while
         })
         iter.on('end', () => {
-          // it is never called
           assert.equal(total, 107826)
           resolve()
         })
         iter.on('error', (err) => {
-          // it is never called
           reject(err)
         })
       })
