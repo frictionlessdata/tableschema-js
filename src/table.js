@@ -25,14 +25,21 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  static async load(source, {schema, strict=false, headers=1, ...parserOptions}={}) {
+  static async load(source, {
+    schema,
+    strict=false,
+    headers=1,
+    format=config.DEFAULT_FORMAT,
+    encoding=config.DEFAULT_ENCODING,
+    ...parserOptions
+  }={}) {
 
     // Load schema
     if (schema && !(schema instanceof Schema)) {
       schema = await Schema.load(schema, {strict})
     }
 
-    return new Table(source, {schema, strict, headers, ...parserOptions})
+    return new Table(source, {schema, strict, headers, format, encoding, ...parserOptions})
   }
 
   /**
@@ -71,7 +78,7 @@ class Table {
     }
 
     // Get row stream
-    const rowStream = await createRowStream(source, this._parserOptions)
+    const rowStream = await createRowStream(source, this._encoding, this._parserOptions)
 
     // Get table row stream
     let rowNumber = 0
@@ -211,12 +218,26 @@ class Table {
 
   // Private
 
-  constructor(source, {schema, strict=false, headers=1, ...parserOptions}={}) {
+  constructor(source, {
+    schema,
+    strict=false,
+    headers=1,
+    format=config.DEFAULT_FORMAT,
+    encoding=config.DEFAULT_ENCODING,
+    ...parserOptions
+  }={}) {
+
+    // Not supported formats
+    if (!['csv'].includes(format)) {
+      throw new TableSchemaError(`Tabular format "${format}" is not supported`)
+    }
 
     // Set attributes
     this._source = source
     this._schema = schema
     this._strict = strict
+    this._format = format
+    this._encoding = encoding
     this._parserOptions = parserOptions
 
     // Headers
@@ -234,7 +255,7 @@ class Table {
 
 // Internal
 
-async function createRowStream(source, parserOptions) {
+async function createRowStream(source, encoding, parserOptions) {
   const parser = csv.parse({ltrim: true, ...parserOptions})
   let stream
 
@@ -259,11 +280,13 @@ async function createRowStream(source, parserOptions) {
     if (config.IS_BROWSER) {
       const response = await axios.get(source)
       stream = new Readable()
+      stream.setEncoding(encoding)
       stream.push(response.data)
       stream.push(null)
       stream = stream.pipe(parser)
     } else {
       const response = await axios.get(source, {responseType: 'stream'})
+      stream.setEncoding(encoding)
       stream = response.data
       stream = stream.pipe(parser)
     }
@@ -274,6 +297,7 @@ async function createRowStream(source, parserOptions) {
       throw new TableSchemaError('Local paths are not supported in the browser')
     } else {
       stream = fs.createReadStream(source)
+      stream.setEncoding(encoding)
       stream = stream.pipe(parser)
     }
   }
