@@ -20,7 +20,8 @@ rules:
     - never
   max-len:
     - error
-    - 120
+    - code: 120
+      ignoreStrings: true
   comma-style:
     - off
     - first

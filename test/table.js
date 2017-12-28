@@ -181,7 +181,7 @@ describe('Table', () => {
       assert.deepEqual(rows, [['1', '39', 'Paul'], ['2', '23', 'Jimmy']])
     })
 
-    it('should use utf-8 by default for remote resource', async function() {
+    it('should use utf-8 by default for remote resource', async () => {
       const table = await Table.load('https://raw.githubusercontent.com/frictionlessdata/tableschema-js/master/data/data_infer.csv')
       const rows = await table.read({limit: 2})
       assert.deepEqual(rows, [['1', '39', 'Paul'], ['2', '23', 'Jimmy']])
@@ -201,7 +201,7 @@ describe('Table', () => {
       assert.deepEqual(rows, [['1', 'english'], ['2', '©']])
     })
 
-    it.skip('should support user-defined encoding for remote resource', async function() {
+    it.skip('should support user-defined encoding for remote resource', async () => {
       const table = await Table.load('https://raw.githubusercontent.com/frictionlessdata/tableschema-js/master/data/latin1.csv', {encoding: 'latin1'})
       const rows = await table.read({limit: 2})
       assert.deepEqual(rows, [['1', 'english'], ['2', '©']])
