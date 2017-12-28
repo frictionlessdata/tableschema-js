@@ -651,6 +651,12 @@ $ npm run build
 
 Here described only breaking and the most important changes. The full changelog and documentation for all released versions could be found in nicely formatted [commit history](https://github.com/frictionlessdata/tableschema-js/commits/master).
 
+### v1.5
+
+New API added:
+- added `format` option to the `Table` constructor
+- added `encoding` option to the `Table` constructor
+
 ### v1.4
 
 Improved behaviour:
