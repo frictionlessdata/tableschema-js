@@ -155,9 +155,26 @@ describe('Table', () => {
 
   })
 
-  describe.only('#encoding', () => {
+  describe('#format', () => {
 
-    it('should use utf-8 be default', async function() {
+    it('should use csv format by default', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const table = await Table.load('data/data_infer.csv')
+      const rows = await table.read({limit: 2})
+      assert.deepEqual(rows, [['1', '39', 'Paul'], ['2', '23', 'Jimmy']])
+    })
+
+    it('should raise on not supported formats', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const error = await catchError(Table.load, 'data/data_infer.csv', {format: 'xls'})
+      assert.include(error.message, 'format "xls" is not supported')
+    })
+
+  })
+
+  describe('#encoding', () => {
+
+    it('should use utf-8 by default', async function() {
       if (process.env.USER_ENV === 'browser') this.skip()
       const table = await Table.load('data/data_infer.csv')
       const rows = await table.read({limit: 2})

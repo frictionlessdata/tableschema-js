@@ -29,6 +29,7 @@ class Table {
     schema,
     strict=false,
     headers=1,
+    format=config.DEFAULT_FORMAT,
     encoding=config.DEFAULT_ENCODING,
     ...parserOptions
   }={}) {
@@ -38,7 +39,7 @@ class Table {
       schema = await Schema.load(schema, {strict})
     }
 
-    return new Table(source, {schema, strict, headers, encoding, ...parserOptions})
+    return new Table(source, {schema, strict, headers, format, encoding, ...parserOptions})
   }
 
   /**
@@ -221,14 +222,21 @@ class Table {
     schema,
     strict=false,
     headers=1,
+    format=config.DEFAULT_FORMAT,
     encoding=config.DEFAULT_ENCODING,
     ...parserOptions
   }={}) {
+
+    // Not supported formats
+    if (!['csv'].includes(format)) {
+      throw new TableSchemaError(`Tabular format "${format}" is not supported`)
+    }
 
     // Set attributes
     this._source = source
     this._schema = schema
     this._strict = strict
+    this._format = format
     this._encoding = encoding
     this._parserOptions = parserOptions
 
