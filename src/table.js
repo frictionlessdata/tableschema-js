@@ -276,17 +276,17 @@ async function createRowStream(source, encoding, parserOptions) {
     stream.push(null)
 
   // Remote source
+  // For now only utf-8 encoding is supported:
+  // https://github.com/axios/axios/issues/332
   } else if (helpers.isRemotePath(source)) {
     if (config.IS_BROWSER) {
       const response = await axios.get(source)
       stream = new Readable()
-      stream.setEncoding(encoding)
       stream.push(response.data)
       stream.push(null)
       stream = stream.pipe(parser)
     } else {
       const response = await axios.get(source, {responseType: 'stream'})
-      stream.setEncoding(encoding)
       stream = response.data
       stream = stream.pipe(parser)
     }
