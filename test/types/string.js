@@ -10,6 +10,7 @@ const TESTS = [
   ['default', '', ''],
   ['default', 0, ERROR],
   ['uri', 'http://google.com', 'http://google.com'],
+  ['uri', 'ftp://example.org/resource.txt', 'ftp://example.org/resource.txt'],
   ['uri', 'string', ERROR],
   ['uri', '', ERROR],
   ['uri', 0, ERROR],
