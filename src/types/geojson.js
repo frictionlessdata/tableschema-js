@@ -19,6 +19,9 @@ function castGeojson(format, value) {
     } catch (error) {
       return ERROR
     }
+    if (!isPlainObject(value)) {
+      return ERROR
+    }
   }
   if (format === 'default') {
     try {
