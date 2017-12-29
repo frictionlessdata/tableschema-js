@@ -37,7 +37,8 @@
     "moment": "~2.18.0",
     "regenerator-runtime": "^0.11.0",
     "stream-to-async-iterator": "^0.2.0",
-    "tv4": "^1.2.7"
+    "tv4": "^1.2.7",
+    "uuid-validate": "0.0.2"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
