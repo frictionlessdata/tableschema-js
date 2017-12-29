@@ -2,7 +2,8 @@ const tv4 = require('tv4')
 const isObject = require('lodash/isObject')
 const isString = require('lodash/isString')
 const isPlainObject = require('lodash/isPlainObject')
-const profile = require('../profiles/geojson.json')
+const geojsonProfile = require('../profiles/geojson.json')
+const topojsonProfile = require('../profiles/topojson.json')
 const {ERROR} = require('../config')
 
 
@@ -21,7 +22,7 @@ function castGeojson(format, value) {
   }
   if (format === 'default') {
     try {
-      const valid = tv4.validate(value, profile)
+      const valid = tv4.validate(value, geojsonProfile)
       if (!valid) {
         return ERROR
       }
@@ -29,7 +30,12 @@ function castGeojson(format, value) {
       return ERROR
     }
   } else if (format === 'topojson') {
-    if (!isPlainObject(value)) {
+    try {
+      const valid = tv4.validate(value, topojsonProfile)
+      if (!valid) {
+        return ERROR
+      }
+    } catch (error) {
       return ERROR
     }
   }
