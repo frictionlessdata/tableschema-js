@@ -1,4 +1,5 @@
 const isBase64 = require('validator/lib/isBase64')
+const isEmail = require('validator/lib/isEmail')
 const isUUID = require('validator/lib/isUUID')
 const isString = require('lodash/isString')
 const {ERROR} = require('../config')
@@ -15,7 +16,7 @@ function castString(format, value) {
       return ERROR
     }
   } else if (format === 'email') {
-    if (!_EMAIL_PATTERN.exec(value)) {
+    if (!isEmail(value)) {
       return ERROR
     }
   } else if (format === 'uuid') {
@@ -38,4 +39,3 @@ module.exports = {
 // Internal
 
 const _URI_PATTERN = new RegExp('^http[s]?://')
-const _EMAIL_PATTERN = new RegExp('[^@]+@[^@]+\\.[^@]+')
