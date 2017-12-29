@@ -1,4 +1,5 @@
-const uuidValidate = require('uuid-validate')
+const isBase64 = require('validator/lib/isBase64')
+const isUUID = require('validator/lib/isUUID')
 const isString = require('lodash/isString')
 const {ERROR} = require('../config')
 
@@ -18,11 +19,13 @@ function castString(format, value) {
       return ERROR
     }
   } else if (format === 'uuid') {
-    if (!uuidValidate(value)) {
+    if (!isUUID(value)) {
       return ERROR
     }
   } else if (format === 'binary') {
-    // TODO: implement validation
+    if (!isBase64(value)) {
+      return ERROR
+    }
   }
   return value
 }

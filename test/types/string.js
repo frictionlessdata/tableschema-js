@@ -25,8 +25,8 @@ const TESTS = [
   ['uuid', '', ERROR],
   ['uuid', 0, ERROR],
   ['binary', 'dGVzdA==', 'dGVzdA=='],
-  ['binary', '', ''],
-  // ['binary', 'string', ERROR],
+  ['binary', 'string', ERROR],
+  ['binary', '', ERROR],
   ['binary', 0, ERROR],
 ]
 
