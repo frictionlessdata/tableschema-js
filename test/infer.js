@@ -53,4 +53,66 @@ describe('infer', () => {
     ])
   })
 
+  it.skip('could infer date/time common patterns', async () => {
+    const data = [['1995-12-25'], ['1996-01-17'], ['1997-02-03']]
+    const descriptor = await infer(data, {headers: ['name']})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'date', format: '%Y-%m-%d'},
+    ])
+  })
+
+  it('could infer uuid', async () => {
+    const data = [['0a7b330a-a736-35ea-8f7f-feaf019cdc00']]
+    const descriptor = await infer(data, {headers: ['name']})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'string', format: 'uuid'},
+    ])
+  })
+
+  it('could infer binary', async () => {
+    const data = [['dGVzdA==']]
+    const descriptor = await infer(data, {headers: ['name']})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'string', format: 'binary'},
+    ])
+  })
+
+  it('could infer geopoint', async () => {
+    const data = [['90,45']]
+    const descriptor = await infer(data, {headers: ['name']})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'geopoint', format: 'default'},
+    ])
+  })
+
+  it('could infer email', async () => {
+    const data = [['test@example.com']]
+    const descriptor = await infer(data, {headers: ['name']})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'string', format: 'email'},
+    ])
+  })
+
+  it('could infer year', async () => {
+    const data = [['1984']]
+    const descriptor = await infer(data, {headers: ['name']})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'year', format: 'default'},
+    ])
+  })
+
+  it('could infer date formats', async () => {
+    const data = [[
+      '15/02/1984',
+      '15/02/84',
+      '15:12',
+    ]]
+    const descriptor = await infer(data, {headers: Array(data[0].length).fill('name')})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'date', format: '%d/%m/%Y'},
+      {name: 'name', type: 'date', format: '%d/%m/%y'},
+      {name: 'name', type: 'time', format: '%H:%M'},
+    ])
+  })
+
 })
