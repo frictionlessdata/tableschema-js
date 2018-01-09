@@ -93,4 +93,12 @@ describe('infer', () => {
     ])
   })
 
+  it('could infer year', async () => {
+    const data = [['1984']]
+    const descriptor = await infer(data, {headers: ['name']})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'year', format: 'default'},
+    ])
+  })
+
 })

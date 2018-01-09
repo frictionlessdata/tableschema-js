@@ -3,6 +3,7 @@ const min = require('lodash/min')
 const zip = require('lodash/zip')
 const isArray = require('lodash/isArray')
 const isEqual = require('lodash/isEqual')
+const isString = require('lodash/isString')
 const cloneDeep = require('lodash/cloneDeep')
 const isBoolean = require('lodash/isBoolean')
 const upperFirst = require('lodash/upperFirst')
@@ -290,7 +291,7 @@ class Schema {
 
 // Internal
 
-const _INSPECT_VALUE_GUESS_ORDER = [
+const INSPECT_VALUE_GUESS_ORDER = [
   // This format is too broad
   // {type: 'year', format: 'default'},
   {type: 'yearmonth', format: 'default'},
@@ -326,9 +327,21 @@ const _INSPECT_VALUE_GUESS_ORDER = [
 function inspectValue(value) {
 
   // Special
+  if (isString(value)) {
+
+    // Guess year
+    if (value.length === 4) {
+      if (value.match(/[12]\d{3}/)) {
+        return {type: 'year', format: 'default'}
+      }
+    }
+
+    // Guess date
+
+  }
 
   // General
-  for (const {type, format} of _INSPECT_VALUE_GUESS_ORDER) {
+  for (const {type, format} of INSPECT_VALUE_GUESS_ORDER) {
     const cast = types[`cast${upperFirst(type)}`]
     const result = cast(format, value)
     if (result === config.ERROR) continue
