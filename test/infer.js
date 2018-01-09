@@ -77,4 +77,12 @@ describe('infer', () => {
     ])
   })
 
+  it('could infer geopoint', async () => {
+    const data = [['90,45']]
+    const descriptor = await infer(data, {headers: ['name']})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'geopoint', format: 'default'},
+    ])
+  })
+
 })
