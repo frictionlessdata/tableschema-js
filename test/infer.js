@@ -101,4 +101,18 @@ describe('infer', () => {
     ])
   })
 
+  it('could infer date formats', async () => {
+    const data = [[
+      '15/02/1984',
+      '15/02/84',
+      '15:12',
+    ]]
+    const descriptor = await infer(data, {headers: Array(data[0].length).fill('name')})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'date', format: '%d/%m/%Y'},
+      {name: 'name', type: 'date', format: '%d/%m/%y'},
+      {name: 'name', type: 'time', format: '%H:%M'},
+    ])
+  })
+
 })

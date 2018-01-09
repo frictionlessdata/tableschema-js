@@ -7,6 +7,7 @@ const isString = require('lodash/isString')
 const cloneDeep = require('lodash/cloneDeep')
 const isBoolean = require('lodash/isBoolean')
 const upperFirst = require('lodash/upperFirst')
+const {timeParse} = require('d3-time-format')
 const {TableSchemaError} = require('./errors')
 const {Profile} = require('./profile')
 const helpers = require('./helpers')
@@ -291,6 +292,15 @@ class Schema {
 
 // Internal
 
+const INSPECT_VALUE_YEAR_PATTERN = /[12]\d{3}/
+const INSPECT_VALUE_DATE_TIME_MAPPING = {
+  // TODO:
+  // Decide on resonable amount of heuristics here
+  // and fill this mapping based on the decision
+  '%d/%m/%y': 'date',
+  '%d/%m/%Y': 'date',
+  '%H:%M': 'time',
+}
 const INSPECT_VALUE_GUESS_ORDER = [
   // This format is too broad
   // {type: 'year', format: 'default'},
@@ -326,21 +336,26 @@ const INSPECT_VALUE_GUESS_ORDER = [
 
 function inspectValue(value) {
 
-  // Special
+  // Heuristic
   if (isString(value)) {
 
     // Guess year
     if (value.length === 4) {
-      if (value.match(/[12]\d{3}/)) {
+      if (value.match(INSPECT_VALUE_YEAR_PATTERN)) {
         return {type: 'year', format: 'default'}
       }
     }
 
-    // Guess date
+    // Guess date/time
+    for (const [format, type] of Object.entries(INSPECT_VALUE_DATE_TIME_MAPPING)) {
+      if (timeParse(format)(value)) {
+        return {type, format}
+      }
+    }
 
   }
 
-  // General
+  // Automatic
   for (const {type, format} of INSPECT_VALUE_GUESS_ORDER) {
     const cast = types[`cast${upperFirst(type)}`]
     const result = cast(format, value)
