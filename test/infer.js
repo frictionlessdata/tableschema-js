@@ -85,4 +85,12 @@ describe('infer', () => {
     ])
   })
 
+  it('could infer email', async () => {
+    const data = [['test@example.com']]
+    const descriptor = await infer(data, {headers: ['name']})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'string', format: 'email'},
+    ])
+  })
+
 })

@@ -316,8 +316,8 @@ const _INSPECT_VALUE_GUESS_ORDER = [
   {type: 'boolean', format: 'default'},
   {type: 'string', format: 'uuid'},
   {type: 'string', format: 'binary'},
-  {type: 'string', format: 'uri'},
   {type: 'string', format: 'email'},
+  {type: 'string', format: 'uri'},
   {type: 'string', format: 'default'},
   {type: 'any', format: 'default'},
 ]
