@@ -296,8 +296,7 @@ const _INSPECT_VALUE_GUESS_ORDER = [
   {type: 'yearmonth', format: 'default'},
   {type: 'duration', format: 'default'},
   {type: 'geojson', format: 'default'},
-  // https://github.com/frictionlessdata/tableschema-js/issues/101
-  // {type: 'geojson', format: 'topojson'},
+  {type: 'geojson', format: 'topojson'},
   {type: 'geopoint', format: 'default'},
   {type: 'geopoint', format: 'array'},
   {type: 'geopoint', format: 'object'},
