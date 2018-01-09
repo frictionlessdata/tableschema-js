@@ -327,12 +327,17 @@ const _INSPECT_VALUE_GUESS_ORDER = [
 
 
 function inspectValue(value) {
+
+  // Special
+
+  // General
   for (const {type, format} of _INSPECT_VALUE_GUESS_ORDER) {
     const cast = types[`cast${upperFirst(type)}`]
     const result = cast(format, value)
     if (result === config.ERROR) continue
     return {type, format}
   }
+
 }
 
 
