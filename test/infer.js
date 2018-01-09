@@ -53,7 +53,7 @@ describe('infer', () => {
     ])
   })
 
-  it('could infer date/time common patterns', async () => {
+  it.skip('could infer date/time common patterns', async () => {
     const data = [['1995-12-25'], ['1996-01-17'], ['1997-02-03']]
     const descriptor = await infer(data, {headers: ['name']})
     assert.deepEqual(descriptor.fields, [
@@ -69,7 +69,7 @@ describe('infer', () => {
     ])
   })
 
-  it.only('could infer binary', async () => {
+  it('could infer binary', async () => {
     const data = [['dGVzdA==']]
     const descriptor = await infer(data, {headers: ['name']})
     assert.deepEqual(descriptor.fields, [
