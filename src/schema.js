@@ -315,8 +315,7 @@ const _INSPECT_VALUE_GUESS_ORDER = [
   {type: 'integer', format: 'default'},
   {type: 'number', format: 'default'},
   {type: 'boolean', format: 'default'},
-  // https://github.com/frictionlessdata/tableschema-js/issues/102
-  // {type: 'string', format: 'uuid'},
+  {type: 'string', format: 'uuid'},
   // https://github.com/frictionlessdata/tableschema-js/issues/102
   // {type: 'string', format: 'binary'},
   {type: 'string', format: 'uri'},

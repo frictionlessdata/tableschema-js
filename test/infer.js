@@ -53,4 +53,20 @@ describe('infer', () => {
     ])
   })
 
+  it('could infer date/time common patterns', async () => {
+    const data = [['1995-12-25'], ['1996-01-17'], ['1997-02-03']]
+    const descriptor = await infer(data, {headers: ['name']})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'date', format: '%Y-%m-%d'},
+    ])
+  })
+
+  it.only('could infer uuid', async () => {
+    const data = [['0a7b330a-a736-35ea-8f7f-feaf019cdc00']]
+    const descriptor = await infer(data, {headers: ['name']})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'string', format: 'uuid'},
+    ])
+  })
+
 })
