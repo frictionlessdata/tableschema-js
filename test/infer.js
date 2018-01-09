@@ -61,11 +61,19 @@ describe('infer', () => {
     ])
   })
 
-  it.only('could infer uuid', async () => {
+  it('could infer uuid', async () => {
     const data = [['0a7b330a-a736-35ea-8f7f-feaf019cdc00']]
     const descriptor = await infer(data, {headers: ['name']})
     assert.deepEqual(descriptor.fields, [
       {name: 'name', type: 'string', format: 'uuid'},
+    ])
+  })
+
+  it.only('could infer binary', async () => {
+    const data = [['dGVzdA==']]
+    const descriptor = await infer(data, {headers: ['name']})
+    assert.deepEqual(descriptor.fields, [
+      {name: 'name', type: 'string', format: 'binary'},
     ])
   })
 
