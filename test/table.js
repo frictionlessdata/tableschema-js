@@ -176,6 +176,60 @@ describe('Table', () => {
 
   })
 
+  describe('#format', () => {
+
+    it('should use csv format by default', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const table = await Table.load('data/data_infer.csv')
+      const rows = await table.read({limit: 2})
+      assert.deepEqual(rows, [['1', '39', 'Paul'], ['2', '23', 'Jimmy']])
+    })
+
+    it('should raise on not supported formats', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const error = await catchError(Table.load, 'data/data_infer.csv', {format: 'xls'})
+      assert.include(error.message, 'format "xls" is not supported')
+    })
+
+  })
+
+  describe('#encoding', () => {
+
+    it('should use utf-8 by default', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const table = await Table.load('data/data_infer.csv')
+      const rows = await table.read({limit: 2})
+      assert.deepEqual(rows, [['1', '39', 'Paul'], ['2', '23', 'Jimmy']])
+    })
+
+    it('should use utf-8 by default for remote resource', async () => {
+      const table = await Table.load('https://raw.githubusercontent.com/frictionlessdata/tableschema-js/master/data/data_infer.csv')
+      const rows = await table.read({limit: 2})
+      assert.deepEqual(rows, [['1', '39', 'Paul'], ['2', '23', 'Jimmy']])
+    })
+
+    it('should fail to read correctly file with other encoding', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const table = await Table.load('data/latin1.csv')
+      const rows = await table.read({limit: 2})
+      assert.notDeepEqual(rows, [['1', 'english'], ['2', '©']])
+    })
+
+    it('should support user-defined encoding', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const table = await Table.load('data/latin1.csv', {encoding: 'latin1'})
+      const rows = await table.read({limit: 2})
+      assert.deepEqual(rows, [['1', 'english'], ['2', '©']])
+    })
+
+    it.skip('should support user-defined encoding for remote resource', async () => {
+      const table = await Table.load('https://raw.githubusercontent.com/frictionlessdata/tableschema-js/master/data/latin1.csv', {encoding: 'latin1'})
+      const rows = await table.read({limit: 2})
+      assert.deepEqual(rows, [['1', 'english'], ['2', '©']])
+    })
+
+  })
+
   describe('#parserOptions', () => {
 
     it('should use default ltrim param to parse file', async function() {

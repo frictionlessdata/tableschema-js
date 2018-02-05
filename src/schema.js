@@ -3,9 +3,11 @@ const min = require('lodash/min')
 const zip = require('lodash/zip')
 const isArray = require('lodash/isArray')
 const isEqual = require('lodash/isEqual')
+const isString = require('lodash/isString')
 const cloneDeep = require('lodash/cloneDeep')
 const isBoolean = require('lodash/isBoolean')
 const upperFirst = require('lodash/upperFirst')
+const {timeParse} = require('d3-time-format')
 const {TableSchemaError} = require('./errors')
 const {Profile} = require('./profile')
 const helpers = require('./helpers')
@@ -290,14 +292,22 @@ class Schema {
 
 // Internal
 
-const _INSPECT_VALUE_GUESS_ORDER = [
+const INSPECT_VALUE_YEAR_PATTERN = /[12]\d{3}/
+const INSPECT_VALUE_DATE_TIME_MAPPING = {
+  // TODO:
+  // Decide on resonable amount of heuristics here
+  // and fill this mapping based on the decision
+  '%d/%m/%y': 'date',
+  '%d/%m/%Y': 'date',
+  '%H:%M': 'time',
+}
+const INSPECT_VALUE_GUESS_ORDER = [
   // This format is too broad
   // {type: 'year', format: 'default'},
   {type: 'yearmonth', format: 'default'},
   {type: 'duration', format: 'default'},
   {type: 'geojson', format: 'default'},
-  // https://github.com/frictionlessdata/tableschema-js/issues/101
-  // {type: 'geojson', format: 'topojson'},
+  {type: 'geojson', format: 'topojson'},
   {type: 'geopoint', format: 'default'},
   {type: 'geopoint', format: 'array'},
   {type: 'geopoint', format: 'object'},
@@ -315,24 +325,44 @@ const _INSPECT_VALUE_GUESS_ORDER = [
   {type: 'integer', format: 'default'},
   {type: 'number', format: 'default'},
   {type: 'boolean', format: 'default'},
-  // https://github.com/frictionlessdata/tableschema-js/issues/102
-  // {type: 'string', format: 'uuid'},
-  // https://github.com/frictionlessdata/tableschema-js/issues/102
-  // {type: 'string', format: 'binary'},
-  {type: 'string', format: 'uri'},
+  {type: 'string', format: 'uuid'},
+  {type: 'string', format: 'binary'},
   {type: 'string', format: 'email'},
+  {type: 'string', format: 'uri'},
   {type: 'string', format: 'default'},
   {type: 'any', format: 'default'},
 ]
 
 
 function inspectValue(value) {
-  for (const {type, format} of _INSPECT_VALUE_GUESS_ORDER) {
+
+  // Heuristic
+  if (isString(value)) {
+
+    // Guess year
+    if (value.length === 4) {
+      if (value.match(INSPECT_VALUE_YEAR_PATTERN)) {
+        return {type: 'year', format: 'default'}
+      }
+    }
+
+    // Guess date/time
+    for (const [format, type] of Object.entries(INSPECT_VALUE_DATE_TIME_MAPPING)) {
+      if (timeParse(format)(value)) {
+        return {type, format}
+      }
+    }
+
+  }
+
+  // Automatic
+  for (const {type, format} of INSPECT_VALUE_GUESS_ORDER) {
     const cast = types[`cast${upperFirst(type)}`]
     const result = cast(format, value)
     if (result === config.ERROR) continue
     return {type, format}
   }
+
 }
 
 
