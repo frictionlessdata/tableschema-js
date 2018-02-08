@@ -29,7 +29,7 @@
     "test:browser": "NODE_ENV=testing karma start"
   },
   "dependencies": {
-    "axios": "^0.16.1",
+    "axios": "^0.17.1",
     "csv": "^1.1.1",
     "d3-time-format": "^0.3.2",
     "es6-error": "^4.0.2",
@@ -60,7 +60,7 @@
     "eslint-plugin-jsx-a11y": "2.2.3",
     "eslint-plugin-react": "^6.8.0",
     "husky": "^0.13.3",
-    "jsdom": "^11.2.0",
+    "jsdom": "^11.6.2",
     "json-loader": "^0.5.4",
     "karma": "^1.6.0",
     "karma-jsdom-launcher": "^6.1.2",
