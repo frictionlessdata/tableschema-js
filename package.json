@@ -29,7 +29,7 @@
     "test:browser": "NODE_ENV=testing karma start"
   },
   "dependencies": {
-    "axios": "^0.16.1",
+    "axios": "^0.17.1",
     "csv": "^1.1.1",
     "d3-time-format": "^0.3.2",
     "es6-error": "^4.0.2",
