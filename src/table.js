@@ -119,7 +119,7 @@ class Table {
             if (cache.data.has(values.toString())) {
               const error = new TableSchemaError(
                 `Row ${rowNumber} has an unique constraint ` +
-              `violation in column "${cache.name}"`)
+                `violation in column "${cache.name}"`)
               error.rowNumber = rowNumber
               throw error
             }
