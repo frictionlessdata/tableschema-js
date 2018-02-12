@@ -102,14 +102,14 @@ class Table {
           try {
             row = this.schema.castRow(row, {failFast: false, forceCast})
           } catch (error) {
-            handleRowError(error, rowNumber)
+            addRowNumberToError(error, rowNumber)
             throw error
           }
         }
       }
 
       if (row instanceof Error) {
-        handleRowError(row, rowNumber)
+        addRowNumberToError(row, rowNumber)
       } else {
       // Check unique
         if (cast) {
@@ -331,9 +331,9 @@ function createUniqueFieldsCache(schema) {
   return cache
 }
 
-function handleRowError(error, rowNumber) {
+function addRowNumberToError(error, rowNumber) {
   error.rowNumber = rowNumber
-  error.errors.forEach(error => {error.rowNumber = rowNumber})
+  if (error.errors) error.errors.forEach(error => {error.rowNumber = rowNumber})
 }
 
 function resolveRelations(row, headers, relations, foreignKey) {
