@@ -100,46 +100,44 @@ class Table {
       if (cast) {
         if (this.schema) {
           try {
-            row = this.schema.castRow(row, {failFast: false, forceCast})
+            row = this.schema.castRow(row, {collectErrors: true})
           } catch (error) {
-            addRowNumberToError(error, rowNumber)
+            error.rowNumber = rowNumber
+            error.errors.forEach(error => {error.rowNumber = rowNumber})
+            if (forceCast) return error
             throw error
           }
         }
       }
 
-      if (row instanceof Error) {
-        addRowNumberToError(row, rowNumber)
-      } else {
       // Check unique
-        if (cast) {
-          for (const [indexes, cache] of Object.entries(uniqueFieldsCache)) {
-            const splitIndexes = indexes.split(',').map(index => parseInt(index, 10))
-            const values = row.filter((value, index) => splitIndexes.includes(index))
-            if (!values.every(value => value === null)) {
-              if (cache.data.has(values.toString())) {
-                const error = new TableSchemaError(
-                  `Row ${rowNumber} has an unique constraint ` +
-                `violation in column "${cache.name}"`)
-                error.rowNumber = rowNumber
-                throw error
-              }
-              cache.data.add(values.toString())
+      if (cast) {
+        for (const [indexes, cache] of Object.entries(uniqueFieldsCache)) {
+          const splitIndexes = indexes.split(',').map(index => parseInt(index, 10))
+          const values = row.filter((value, index) => splitIndexes.includes(index))
+          if (!values.every(value => value === null)) {
+            if (cache.data.has(values.toString())) {
+              const error = new TableSchemaError(
+                `Row ${rowNumber} has an unique constraint ` +
+              `violation in column "${cache.name}"`)
+              error.rowNumber = rowNumber
+              throw error
             }
+            cache.data.add(values.toString())
           }
         }
+      }
 
-        // Resolve relations
-        if (relations) {
-          if (this.schema) {
-            for (const foreignKey of this.schema.foreignKeys) {
-              row = resolveRelations(row, this.headers, relations, foreignKey)
-              if (row === null) {
-                const error = new TableSchemaError(
-                  `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`)
-                error.rowNumber = rowNumber
-                throw error
-              }
+      // Resolve relations
+      if (relations) {
+        if (this.schema) {
+          for (const foreignKey of this.schema.foreignKeys) {
+            row = resolveRelations(row, this.headers, relations, foreignKey)
+            if (row === null) {
+              const error = new TableSchemaError(
+                `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`)
+              error.rowNumber = rowNumber
+              throw error
             }
           }
         }
@@ -331,10 +329,6 @@ function createUniqueFieldsCache(schema) {
   return cache
 }
 
-function addRowNumberToError(error, rowNumber) {
-  error.rowNumber = rowNumber
-  if (error.errors) error.errors.forEach(error => {error.rowNumber = rowNumber})
-}
 
 function resolveRelations(row, headers, relations, foreignKey) {
 

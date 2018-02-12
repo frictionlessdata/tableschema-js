@@ -398,8 +398,10 @@ describe('Table', () => {
       const source = [['name'], [1], ['bad'], [3]]
       const schema = {fields: [{name: 'name', type: 'integer'}]}
       const table = await Table.load(source, {schema})
-      const rows = await table.read()
-      console.log(rows)
+      const rows = await table.read({forceCast: true})
+      assert.deepEqual(rows[0], [1])
+      assert.deepEqual(rows[1].errors.length, 1)
+      assert.deepEqual(rows[2], [3])
     })
 
   })
