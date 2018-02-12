@@ -179,7 +179,7 @@ describe('Schema', () => {
     }])
   })
 
-  it.only('infer should not modify data sample', async () => {
+  it('infer should not modify data sample', async () => {
     const sample = [[1], [2], [3]]
     const schema = await Schema.load()
     schema.infer(sample, {headers: 1})
