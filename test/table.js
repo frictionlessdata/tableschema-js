@@ -394,7 +394,7 @@ describe('Table', () => {
 
   describe('#forceCast', () => {
 
-    it.only('iter should allow forcing cast', async () => {
+    it('iter should allow forcing cast', async () => {
       const source = [['name'], [1], ['bad'], [3]]
       const schema = {fields: [{name: 'name', type: 'integer'}]}
       const table = await Table.load(source, {schema})

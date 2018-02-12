@@ -100,7 +100,7 @@ class Table {
       if (cast) {
         if (this.schema) {
           try {
-            row = this.schema.castRow(row, {collectErrors: true})
+            row = this.schema.castRow(row, {failFast: false})
           } catch (error) {
             error.rowNumber = rowNumber
             error.errors.forEach(error => {error.rowNumber = rowNumber})

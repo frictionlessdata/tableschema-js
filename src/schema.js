@@ -141,7 +141,7 @@ class Schema {
   /**
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  castRow(row, {collectErrors=false}={}) {
+  castRow(row, {failFast=false}={}) {
     const result = []
     const errors = []
 
@@ -159,7 +159,7 @@ class Schema {
         result.push(field.castValue(value))
       } catch (error) {
         error.columnNumber = index + 1
-        if (!collectErrors) throw error
+        if (failFast) throw error
         errors.push(error)
       }
     }
