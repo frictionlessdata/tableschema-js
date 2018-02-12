@@ -141,7 +141,7 @@ class Schema {
   /**
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
-  castRow(row, {failFast=false}={}) {
+  castRow(row, {failFast=false, forceCast=false}={}) {
     const result = []
     const errors = []
 
@@ -167,9 +167,12 @@ class Schema {
     // Raise errors
     if (errors.length) {
       const message = `There are ${errors.length} type and format mismatch errors (see 'error.errors')`
-      throw new TableSchemaError(message, errors)
+      if (!forceCast) {
+        throw new TableSchemaError(message, errors)
+      }
+      // may be less expensive to not throw, if we're collating errors
+      return new TableSchemaError(message, errors)
     }
-
     return result
   }
 

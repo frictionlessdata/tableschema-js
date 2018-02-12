@@ -59,7 +59,7 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  async iter({keyed, extended, cast=true, relations=false, stream=false}={}) {
+  async iter({keyed, extended, cast=true, relations=false, stream=false, forceCast=false}={}) {
     const source = this._source
 
     // Prepare unique checks
@@ -100,43 +100,46 @@ class Table {
       if (cast) {
         if (this.schema) {
           try {
-            row = this.schema.castRow(row)
+            row = this.schema.castRow(row, {failFast: false, forceCast})
           } catch (error) {
-            error.rowNumber = rowNumber
-            error.errors.forEach(error => {error.rowNumber = rowNumber})
+            handleRowError(error, rowNumber)
             throw error
           }
         }
       }
 
+      if (row instanceof Error) {
+        handleRowError(row, rowNumber)
+      } else {
       // Check unique
-      if (cast) {
-        for (const [indexes, cache] of Object.entries(uniqueFieldsCache)) {
-          const splitIndexes = indexes.split(',').map(index => parseInt(index, 10))
-          const values = row.filter((value, index) => splitIndexes.includes(index))
-          if (!values.every(value => value === null)) {
-            if (cache.data.has(values.toString())) {
-              const error = new TableSchemaError(
-                `Row ${rowNumber} has an unique constraint ` +
+        if (cast) {
+          for (const [indexes, cache] of Object.entries(uniqueFieldsCache)) {
+            const splitIndexes = indexes.split(',').map(index => parseInt(index, 10))
+            const values = row.filter((value, index) => splitIndexes.includes(index))
+            if (!values.every(value => value === null)) {
+              if (cache.data.has(values.toString())) {
+                const error = new TableSchemaError(
+                  `Row ${rowNumber} has an unique constraint ` +
                 `violation in column "${cache.name}"`)
-              error.rowNumber = rowNumber
-              throw error
+                error.rowNumber = rowNumber
+                throw error
+              }
+              cache.data.add(values.toString())
             }
-            cache.data.add(values.toString())
           }
         }
-      }
 
-      // Resolve relations
-      if (relations) {
-        if (this.schema) {
-          for (const foreignKey of this.schema.foreignKeys) {
-            row = resolveRelations(row, this.headers, relations, foreignKey)
-            if (row === null) {
-              const error = new TableSchemaError(
-                `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`)
-              error.rowNumber = rowNumber
-              throw error
+        // Resolve relations
+        if (relations) {
+          if (this.schema) {
+            for (const foreignKey of this.schema.foreignKeys) {
+              row = resolveRelations(row, this.headers, relations, foreignKey)
+              if (row === null) {
+                const error = new TableSchemaError(
+                  `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`)
+                error.rowNumber = rowNumber
+                throw error
+              }
             }
           }
         }
@@ -163,10 +166,10 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  async read({keyed, extended, cast=true, relations=false, limit}={}) {
+  async read({keyed, extended, cast=true, relations=false, limit, forceCast=false}={}) {
 
     // Get rows
-    const iterator = await this.iter({keyed, extended, cast, relations})
+    const iterator = await this.iter({keyed, extended, cast, relations, forceCast})
     const rows = []
     let count = 0
     for (;;) {
@@ -328,6 +331,10 @@ function createUniqueFieldsCache(schema) {
   return cache
 }
 
+function handleRowError(error, rowNumber) {
+  error.rowNumber = rowNumber
+  error.errors.forEach(error => {error.rowNumber = rowNumber})
+}
 
 function resolveRelations(row, headers, relations, foreignKey) {
 
