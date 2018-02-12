@@ -180,6 +180,7 @@ class Schema {
    * https://github.com/frictionlessdata/tableschema-js#schema
    */
   infer(rows, {headers=1}={}) {
+    rows = cloneDeep(rows)
 
     // Get headers
     if (!isArray(headers)) {

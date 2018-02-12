@@ -3,7 +3,7 @@ const {assert} = require('chai')
 const cloneDeep = require('lodash/cloneDeep')
 const {Table, Schema} = require('../src')
 const {catchError} = require('./helpers')
-
+const axios = require('axios').default
 
 // Tests
 
@@ -54,8 +54,29 @@ describe('Table', () => {
       const table = await Table.load(stream)
       const rows = await table.read()
       assert.equal(rows.length, 100)
-      const anotherRows = await table.read() // Reading second time
-      assert.equal(anotherRows.length, 100)
+    })
+
+    it('should iter with huge stream as a source', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      this.timeout(100000)
+      /* eslint max-len: off */
+      const url = 'https://raw.githubusercontent.com/datasets/un-locode/6da8b0a849dd5a72ad53a98d294cf4fe2e2cfd4a/data/code-list.csv'
+      const stream = (await axios.get(url, { responseType: 'stream' })).data
+      const table = await Table.load(stream)
+      const iter = await table.iter({ stream: true, keyed: true })
+      return new Promise((resolve, reject) => {
+        let total = 0
+        iter.on('data', () => {
+          total = total + 1
+        })
+        iter.on('end', () => {
+          assert.equal(total, 107826)
+          resolve()
+        })
+        iter.on('error', (err) => {
+          reject(err)
+        })
+      })
     })
 
     it('should work with readable stream factory', async function() {

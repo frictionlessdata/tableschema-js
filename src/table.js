@@ -1,7 +1,7 @@
 const fs = require('fs')
 const csv = require('csv')
 const axios = require('axios')
-const {Readable, PassThrough} = require('stream')
+const {Readable} = require('stream')
 const zip = require('lodash/zip')
 const isEqual = require('lodash/isEqual')
 const isArray = require('lodash/isArray')
@@ -60,7 +60,7 @@ class Table {
    * https://github.com/frictionlessdata/tableschema-js#table
    */
   async iter({keyed, extended, cast=true, relations=false, stream=false, forceCast=false}={}) {
-    let source = this._source
+    const source = this._source
 
     // Prepare unique checks
     let uniqueFieldsCache = {}
@@ -68,13 +68,6 @@ class Table {
       if (this.schema) {
         uniqueFieldsCache = createUniqueFieldsCache(this.schema)
       }
-    }
-
-    // Multiplicate node stream
-    if (source.readable) {
-      const duplicateStream = this._source.pipe(new PassThrough())
-      this._source = duplicateStream.pipe(new PassThrough())
-      source = duplicateStream.pipe(new PassThrough())
     }
 
     // Get row stream
