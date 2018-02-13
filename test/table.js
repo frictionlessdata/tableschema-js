@@ -392,4 +392,28 @@ describe('Table', () => {
 
   })
 
+  describe('#forceCast', () => {
+
+    it('iter should allow forcing cast', async () => {
+      const source = [['name'], [1], ['bad'], [3]]
+      const schema = {fields: [{name: 'name', type: 'integer'}]}
+      const table = await Table.load(source, {schema})
+      const rows = await table.read({forceCast: true})
+      assert.deepEqual(rows[0], [1])
+      assert.deepEqual(rows[1].errors.length, 1)
+      assert.deepEqual(rows[2], [3])
+    })
+
+    it('force cast should work with unique constraint', async () => {
+      const source = [['name'], [1], [1], [3]]
+      const schema = {fields: [{name: 'name', type: 'integer', constraints: {unique: true}}]}
+      const table = await Table.load(source, {schema})
+      const rows = await table.read({forceCast: true})
+      assert.deepEqual(rows[0], [1])
+      assert.include(rows[1].message, 'unique constraint violation')
+      assert.deepEqual(rows[2], [3])
+    })
+
+  })
+
 })

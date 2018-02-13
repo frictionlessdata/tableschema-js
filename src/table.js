@@ -59,7 +59,7 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  async iter({keyed, extended, cast=true, relations=false, stream=false}={}) {
+  async iter({keyed, extended, cast=true, relations=false, stream=false, forceCast=false}={}) {
     const source = this._source
 
     // Prepare unique checks
@@ -91,6 +91,7 @@ class Table {
             const error = new TableSchemaError(
               'The column header names do not match the field names in the schema')
             error.rowNumber = rowNumber
+            if (forceCast) return error
             throw error
           }
         }
@@ -100,10 +101,11 @@ class Table {
       if (cast) {
         if (this.schema) {
           try {
-            row = this.schema.castRow(row)
+            row = this.schema.castRow(row, {failFast: false})
           } catch (error) {
             error.rowNumber = rowNumber
             error.errors.forEach(error => {error.rowNumber = rowNumber})
+            if (forceCast) return error
             throw error
           }
         }
@@ -120,6 +122,7 @@ class Table {
                 `Row ${rowNumber} has an unique constraint ` +
                 `violation in column "${cache.name}"`)
               error.rowNumber = rowNumber
+              if (forceCast) return error
               throw error
             }
             cache.data.add(values.toString())
@@ -136,6 +139,7 @@ class Table {
               const error = new TableSchemaError(
                 `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`)
               error.rowNumber = rowNumber
+              if (forceCast) return error
               throw error
             }
           }
@@ -163,10 +167,10 @@ class Table {
   /**
    * https://github.com/frictionlessdata/tableschema-js#table
    */
-  async read({keyed, extended, cast=true, relations=false, limit}={}) {
+  async read({keyed, extended, cast=true, relations=false, limit, forceCast=false}={}) {
 
     // Get rows
-    const iterator = await this.iter({keyed, extended, cast, relations})
+    const iterator = await this.iter({keyed, extended, cast, relations, forceCast})
     const rows = []
     let count = 0
     for (;;) {
