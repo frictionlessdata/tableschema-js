@@ -91,6 +91,7 @@ class Table {
             const error = new TableSchemaError(
               'The column header names do not match the field names in the schema')
             error.rowNumber = rowNumber
+            if (forceCast) return error
             throw error
           }
         }
@@ -121,6 +122,7 @@ class Table {
                 `Row ${rowNumber} has an unique constraint ` +
                 `violation in column "${cache.name}"`)
               error.rowNumber = rowNumber
+              if (forceCast) return error
               throw error
             }
             cache.data.add(values.toString())
@@ -137,6 +139,7 @@ class Table {
               const error = new TableSchemaError(
                 `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`)
               error.rowNumber = rowNumber
+              if (forceCast) return error
               throw error
             }
           }
