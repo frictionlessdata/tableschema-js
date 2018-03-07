@@ -1,4 +1,5 @@
 const fs = require('fs')
+const {Readable} = require('stream')
 const {assert} = require('chai')
 const cloneDeep = require('lodash/cloneDeep')
 const {Table, Schema} = require('../src')
@@ -174,6 +175,20 @@ describe('Table', () => {
       assert.deepEqual(rows.length, 231)
     })
 
+    it('should autodetect CSV separated by semicolons', async () => {
+      const data = `city;location;population
+London;51.50,-0.11;8.788
+Paris;48.85,2.30;2.244
+`
+      const stream = Readable()
+      const table = await Table.load(stream)
+      stream._read = () => {}
+      stream.push(data)
+      stream.push(null)
+
+      await table.read()
+      assert.deepEqual(table.headers, ['city', 'location', 'population'])
+    })
   })
 
   describe('#format', () => {
