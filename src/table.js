@@ -1,7 +1,7 @@
 const fs = require('fs')
 const csv = require('csv')
 const axios = require('axios')
-const {Readable} = require('stream')
+const {Readable, PassThrough} = require('stream')
 const zip = require('lodash/zip')
 const isEqual = require('lodash/isEqual')
 const isArray = require('lodash/isArray')
@@ -10,6 +10,7 @@ const isInteger = require('lodash/isInteger')
 const isFunction = require('lodash/isFunction')
 const zipObject = require('lodash/zipObject')
 const S2A = require('stream-to-async-iterator').default
+const CSVSniffer = require('csv-sniffer')()
 const {TableSchemaError} = require('./errors')
 const {Schema} = require('./schema')
 const helpers = require('./helpers')
@@ -259,12 +260,10 @@ async function createRowStream(source, encoding, parserOptions) {
   // Stream factory
   if (isFunction(source)) {
     stream = source()
-    stream = stream.pipe(parser)
 
   // Node stream
   } else if (source.readable) {
     stream = source
-    stream = stream.pipe(parser)
 
   // Inline source
   } else if (isArray(source)) {
@@ -281,11 +280,9 @@ async function createRowStream(source, encoding, parserOptions) {
       stream = new Readable()
       stream.push(response.data)
       stream.push(null)
-      stream = stream.pipe(parser)
     } else {
       const response = await axios.get(source, {responseType: 'stream'})
       stream = response.data
-      stream = stream.pipe(parser)
     }
 
   // Local source
@@ -295,11 +292,45 @@ async function createRowStream(source, encoding, parserOptions) {
     } else {
       stream = fs.createReadStream(source)
       stream.setEncoding(encoding)
-      stream = stream.pipe(parser)
     }
   }
 
+  // Parse CSV unless it's already parsed
+  if (!isArray(source)) {
+    if (parserOptions.delimiter === undefined) {
+      const csvDelimiterDetector = createCsvDelimiterDetector(parser)
+      stream.pipe(csvDelimiterDetector)
+    }
+    stream = stream.pipe(parser)
+  }
+
   return stream
+}
+
+/**
+ * Detects the CSV delimiter, updating the received `csvParser` options.
+ *
+ * It will use the first chunk to detect the CSV delimiter, and update it on
+ * `csvParser.options.delimiter`. After this is finished, no further processing
+ * will be done.
+ *
+ * @param {module:csv/parse} csvParser - The csv.parse() instance
+ * @return {module:stream/PassThrough}
+ */
+function createCsvDelimiterDetector(csvParser) {
+  const detector = PassThrough()
+  const sniffer = new CSVSniffer()
+  let done = false
+
+  detector.on('data', (chunk) => {
+    if (!done) {
+      const result = sniffer.sniff(chunk.toString())
+      csvParser.options.delimiter = result.delimiter
+      done = true
+    }
+  })
+
+  return detector
 }
 
 
