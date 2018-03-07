@@ -22,7 +22,7 @@
     "lint": "eslint src test",
     "prepublish": "npm run build",
     "prepush": "npm run test",
-    "pretest": "npm run lint",
+    "posttest": "npm run lint",
     "profiles": "wget -O src/profiles/table-schema.json https://specs.frictionlessdata.io/schemas/table-schema.json",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "NODE_ENV=testing nyc mocha",
