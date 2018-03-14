@@ -11,6 +11,8 @@ const TESTS = [
   ['default', 0, ERROR],
   ['uri', 'http://google.com', 'http://google.com'],
   ['uri', 'ftp://example.org/resource.txt', 'ftp://example.org/resource.txt'],
+  ['uri', 'ftp://8.8.8.8', 'ftp://8.8.8.8'],
+  ['uri', '8.8.8.8', ERROR], // We require a protocol scheme (ftp:, http:, ...) in the URI
   ['uri', 'string', ERROR],
   ['uri', '', ERROR],
   ['uri', 0, ERROR],
