@@ -13,7 +13,7 @@ function castString(format, value) {
     return ERROR
   }
   if (format === 'uri') {
-    if (!isURL(value)) {
+    if (!isURL(value, {require_protocol: true})) {
       return ERROR
     }
   } else if (format === 'email') {
