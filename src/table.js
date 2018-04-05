@@ -307,11 +307,7 @@ async function createRowStream(source, encoding, parserOptions) {
   if (!isArray(source)) {
     if (parserOptions.delimiter === undefined) {
       const csvDelimiterDetector = createCsvDelimiterDetector(parser)
-      const snifferStream = stream.pipe(csvDelimiterDetector)
-      snifferStream.on('error', () => {
-        const error = new TableSchemaError('Data source dialect detection error')
-        stream.emit('error', error)
-      })
+      stream.pipe(csvDelimiterDetector)
     }
     stream = stream.pipe(parser)
   }
