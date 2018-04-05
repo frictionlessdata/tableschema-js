@@ -194,9 +194,12 @@ Paris;48.85,2.30;2.244
       if (process.env.USER_ENV === 'browser') this.skip()
       // TODO: here we disable csvSniffer because of the following issue
       // (https://github.com/frictionlessdata/tableschema-js/issues/142)
-      const table = await Table.load('data/defective_rows.csv', {delimiter: ''})
-      const error = await catchError(table.read.bind(table))
-      assert.include(error.message, 'parsing error')
+      const table = await Table.load('data/defective_rows.csv', {delimiter: ','})
+      const rows = await table.read()
+      assert.deepEqual(rows, [
+        ['1101', 'John'],
+        ['1102', 'Julie', '26', 'Potatoes'],
+      ])
     })
 
     it('should be able to handle non-parsable csv files', async function() {
