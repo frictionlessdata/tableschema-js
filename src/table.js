@@ -76,7 +76,7 @@ class Table {
 
     // Get table row stream
     let rowNumber = 0
-    let tableRowStream = rowStream.pipe(csv.transform(row => {
+    const tableRowStream = rowStream.pipe(csv.transform(row => {
       rowNumber += 1
 
       // Get headers
@@ -157,12 +157,20 @@ class Table {
       return row
     }))
 
-    // Form stream
-    if (!stream) {
-      tableRowStream = new S2A(tableRowStream)
+    // Handle csv errors
+    rowStream.on('error', () => {
+      const error = new TableSchemaError('Data source parsing error')
+      tableRowStream.emit('error', error)
+    })
+
+    // Return stream
+    if (stream) {
+      return tableRowStream
     }
 
-    return tableRowStream
+    // Return iterator
+    return new S2A(tableRowStream)
+
   }
 
   /**

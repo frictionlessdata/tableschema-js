@@ -189,6 +189,21 @@ Paris;48.85,2.30;2.244
       await table.read()
       assert.deepEqual(table.headers, ['city', 'location', 'population'])
     })
+
+    it('should be able to handle defective rows', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const table = await Table.load('data/defective_rows.csv')
+      const error = await catchError(table.read.bind(table))
+      assert.include(error.message, 'parsing error')
+    })
+
+    it('should be able to handle non-parsable csv files', async function() {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const table = await Table.load('data/schema.json')
+      const error = await catchError(table.read.bind(table))
+      assert.include(error.message, 'parsing error')
+    })
+
   })
 
   describe('#format', () => {
