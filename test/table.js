@@ -192,7 +192,7 @@ Paris;48.85,2.30;2.244
 
     it('should be able to handle defective rows', async function() {
       if (process.env.USER_ENV === 'browser') this.skip()
-      const table = await Table.load('data/defective_rows.csv')
+      const table = await Table.load('data/defective_rows.csv', {delimiter: ''})
       const error = await catchError(table.read.bind(table))
       assert.include(error.message, 'parsing error')
     })

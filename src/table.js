@@ -332,10 +332,8 @@ function createCsvDelimiterDetector(csvParser) {
 
   detector.on('data', (chunk) => {
     if (!done) {
-      try {
-        const result = sniffer.sniff(chunk.toString())
-        csvParser.options.delimiter = result.delimiter
-      } catch (error) {}
+      const result = sniffer.sniff(chunk.toString())
+      csvParser.options.delimiter = result.delimiter
       done = true
     }
   })
