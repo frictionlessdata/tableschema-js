@@ -7,7 +7,7 @@
 
 A library for working with [Table Schema](http://specs.frictionlessdata.io/table-schema/).
 
-> Version v1.0 includes various important changes. Please read a [migration guide](#v10).
+> Version v1.0 includes various important changes, including a move to asynchronous inference of schemas.
 
 ## Features
 
@@ -703,7 +703,7 @@ New API added:
 
 ### v1.0
 
-This version includes various big changes. **A migration guide is under development and will be published here**.
+This version includes various big changes, including a move to asynchronous inference.
 
 ### v0.2
 
