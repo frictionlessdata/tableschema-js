@@ -7,8 +7,6 @@
 
 A library for working with [Table Schema](http://specs.frictionlessdata.io/table-schema/).
 
-> Version v1.0 includes various important changes, including a move to asynchronous inference of schemas.
-
 ## Features
 
  - `Table` class for working with data and schema
