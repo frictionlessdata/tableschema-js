@@ -636,6 +636,13 @@ try {
 
 - `(Number/undefined)` - column number of the error if available
 
+#### `errors.tableSchemaError.fieldNames`
+
+- `(Array/undefined)` - names of the fields in the tableschema
+
+#### `errors.tableSchemaError.headerNames`
+
+- `(Array/undefined)` - names of the headers in the table
 
 ## Contributing
 
