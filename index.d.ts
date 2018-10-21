@@ -55,12 +55,6 @@ declare module "tableschema" {
         forceCast: true;
     }
 
-    //type TableReadFormat = KeyedReadOpts | ExtendedReadOpts | ForceCastReadOpts;
-
-    //type PossibleWorlds = TableReadFormat & ForceCastReadOpts;
-
-    // return types
-
     export class TableSchemaError extends Error {
         constructor(message: string | undefined, errors?: any)
         errors: TableSchemaError[];
