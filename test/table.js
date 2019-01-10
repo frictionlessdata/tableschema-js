@@ -164,6 +164,8 @@ describe('Table', () => {
       const table = await Table.load(source, {schema: SCHEMA})
       const error = await catchError(table.read.bind(table))
       assert.include(error.message, 'header names do not match the field names')
+      assert.deepEqual(error.headerNames, source[0])
+      assert.deepEqual(error.fieldNames, SCHEMA.headers)
     })
 
     it('should support user-defined constraints (issue #103)', async function() {

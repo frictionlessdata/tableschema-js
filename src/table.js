@@ -92,6 +92,8 @@ class Table {
             const error = new TableSchemaError(
               'The column header names do not match the field names in the schema')
             error.rowNumber = rowNumber
+            error.headerNames = this.headers
+            error.fieldNames = this.fieldNames
             if (forceCast) return error
             throw error
           }
