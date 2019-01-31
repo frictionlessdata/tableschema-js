@@ -4,6 +4,7 @@
   "description": "A library for working with Table Schema in Javascript.",
   "license": "MIT",
   "main": "lib/index.js",
+  "typings": "index.d.ts",
   "engines": {
     "node": ">=4"
   },
@@ -42,6 +43,7 @@
     "validator": "^9.2.0"
   },
   "devDependencies": {
+    "@types/csv-parse": "^1.1.11",
     "babel-cli": "^6.24.1",
     "babel-core": "^6.17.0",
     "babel-eslint": "^7.1.1",
