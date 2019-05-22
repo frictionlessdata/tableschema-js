@@ -79,6 +79,10 @@ class Table {
     const tableRowStream = rowStream.pipe(csv.transform(row => {
       rowNumber += 1
 
+      // collecting errors
+      const message = `there are collected errors (see 'error.errors') in row ${rowNumber}`
+      const collectedError = new TableSchemaError(message, [])
+
       // Get headers
       if (rowNumber === this._headersRow) {
         this._headers = row
@@ -91,11 +95,15 @@ class Table {
           if (!isEqual(this.headers, this.schema.fieldNames)) {
             const error = new TableSchemaError(
               'The column header names do not match the field names in the schema')
+            error.type = 'ERROR_HEADER'
             error.rowNumber = rowNumber
             error.headerNames = this.headers
-            error.fieldNames = this.fieldNames
-            if (forceCast) return error
-            throw error
+            error.fieldNames = this.schema.fieldNames
+            if (forceCast) {
+              collectedError.errors.push(error)
+            } else {
+              throw error
+            }
           }
         }
       }
@@ -106,16 +114,21 @@ class Table {
           try {
             row = this.schema.castRow(row, {failFast: false})
           } catch (error) {
+            error.type = 'ERROR_FORMAT'
             error.rowNumber = rowNumber
             error.errors.forEach(error => {error.rowNumber = rowNumber})
-            if (forceCast) return error
-            throw error
+            if (forceCast) {
+              collectedError.errors.push(error)
+            } else {
+              throw error
+            }
           }
         }
       }
 
       // Check unique
       if (cast) {
+        const errors = []
         for (const [indexes, cache] of Object.entries(uniqueFieldsCache)) {
           const splitIndexes = indexes.split(',').map(index => parseInt(index, 10))
           const values = row.filter((value, index) => splitIndexes.includes(index))
@@ -124,27 +137,52 @@ class Table {
               const error = new TableSchemaError(
                 `Row ${rowNumber} has an unique constraint ` +
                 `violation in column "${cache.name}"`)
+              if (this.headers) {
+                const columnNumber = this.headers.indexOf(cache.name)
+                if (columnNumber > -1) error.columnNumber = columnNumber
+              }
+              error.columnName = cache.name
               error.rowNumber = rowNumber
-              if (forceCast) return error
-              throw error
+              if (forceCast) {
+                errors.push(error)
+              } else {
+                throw error
+              }
             }
             cache.data.add(values.toString())
           }
+        }
+        if (errors.length) {
+          const message = `There are ${errors.length} unique key errors (see 'error.errors')`
+          const uniqueKeyError = new TableSchemaError(message, errors)
+          uniqueKeyError.type = 'ERROR_UNIQUE_KEY'
+          collectedError.errors.push(uniqueKeyError)
         }
       }
 
       // Resolve relations
       if (relations) {
         if (this.schema) {
+          const errors = []
           for (const foreignKey of this.schema.foreignKeys) {
             row = resolveRelations(row, this.headers, relations, foreignKey)
             if (row === null) {
               const error = new TableSchemaError(
                 `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`)
               error.rowNumber = rowNumber
-              if (forceCast) return error
-              throw error
+              error.columnName = foreignKey.fields
+              if (forceCast) {
+                errors.push(error)
+              } else {
+                throw error
+              }
             }
+          }
+          if (errors.length) {
+            const message = `There are ${errors.length} foreign key errors (see 'error.errors')`
+            const foreignKeyError = new TableSchemaError(message, errors)
+            foreignKeyError.type = 'ERROR_FOREIGN_KEY'
+            collectedError.errors.push(foreignKeyError)
           }
         }
       }
@@ -156,6 +194,14 @@ class Table {
         row = [rowNumber, this.headers, row]
       }
 
+      // return collecting errors per row
+      if (collectedError.errors.length) {
+        const {length} = collectedError.errors
+        const newMessage = `There are ${length} collected errors (see 'error.errors') in row ${rowNumber}`
+        collectedError.message = newMessage
+        collectedError.rowNumber = rowNumber
+        return collectedError
+      }
       return row
     }))
 

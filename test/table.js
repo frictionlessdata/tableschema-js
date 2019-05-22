@@ -165,7 +165,7 @@ describe('Table', () => {
       const error = await catchError(table.read.bind(table))
       assert.include(error.message, 'header names do not match the field names')
       assert.deepEqual(error.headerNames, source[0])
-      assert.deepEqual(error.fieldNames, SCHEMA.headers)
+      assert.deepEqual(error.fieldNames, ['id', 'height', 'age', 'name', 'occupation'])
     })
 
     it('should support user-defined constraints (issue #103)', async function() {
@@ -447,7 +447,7 @@ Paris;48.85,2.30;2.244
       const table = await Table.load(source, {schema})
       const rows = await table.read({forceCast: true})
       assert.deepEqual(rows[0], [1])
-      assert.include(rows[1].message, 'unique constraint violation')
+      assert.include(rows[1].errors[0].errors[0].message, 'unique constraint violation')
       assert.deepEqual(rows[2], [3])
     })
 
