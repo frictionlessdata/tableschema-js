@@ -165,8 +165,8 @@ class Table {
         if (this.schema) {
           const errors = []
           for (const foreignKey of this.schema.foreignKeys) {
-            row = resolveRelations(row, this.headers, relations, foreignKey)
-            if (row === null) {
+            const newRow = resolveRelations(row, this.headers, relations, foreignKey)
+            if (newRow === null) {
               const error = new TableSchemaError(
                 `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`)
               error.rowNumber = rowNumber
