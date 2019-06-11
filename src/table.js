@@ -163,26 +163,35 @@ class Table {
       // Resolve relations
       if (relations) {
         if (this.schema) {
-          const errors = []
-          for (const foreignKey of this.schema.foreignKeys) {
-            const newRow = resolveRelations(row, this.headers, relations, foreignKey)
-            if (newRow === null) {
-              const error = new TableSchemaError(
-                `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`)
-              error.rowNumber = rowNumber
-              error.columnName = foreignKey.fields
-              if (forceCast) {
+          if (forceCast) {
+            const errors = []
+            for (const foreignKey of this.schema.foreignKeys) {
+              const resolvedRow = resolveRelations(row, this.headers, relations, foreignKey)
+              if (resolvedRow === null) {
+                const error = new TableSchemaError(
+                  `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`)
+                error.rowNumber = rowNumber
+                error.columnName = foreignKey.fields
                 errors.push(error)
-              } else {
+              }
+            }
+            if (errors.length) {
+              const message = `There are ${errors.length} foreign key errors (see 'error.errors')`
+              const foreignKeyError = new TableSchemaError(message, errors)
+              foreignKeyError.type = 'ERROR_FOREIGN_KEY'
+              collectedError.errors.push(foreignKeyError)
+            }
+          } else {
+            for (const foreignKey of this.schema.foreignKeys) {
+              row = resolveRelations(row, this.headers, relations, foreignKey)
+              if (row === null) {
+                const error = new TableSchemaError(
+                  `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`)
+                error.rowNumber = rowNumber
+                error.columnName = foreignKey.fields
                 throw error
               }
             }
-          }
-          if (errors.length) {
-            const message = `There are ${errors.length} foreign key errors (see 'error.errors')`
-            const foreignKeyError = new TableSchemaError(message, errors)
-            foreignKeyError.type = 'ERROR_FOREIGN_KEY'
-            collectedError.errors.push(foreignKeyError)
           }
         }
       }
