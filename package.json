@@ -21,6 +21,7 @@
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "dev": "webpack-dev-server --open --inline --hot",
     "lint": "eslint src test",
+    "prepare": "npm run build",
     "prepublish": "npm run build",
     "prepush": "npm run test",
     "posttest": "npm run lint",
