@@ -15,6 +15,27 @@ A library for working with [Table Schema](http://specs.frictionlessdata.io/table
 - `validate` function for validating schema descriptors
 - `infer` function that creates a schema based on a data sample
 
+## Contents
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [Getting started](#getting-started)
+  - [Installation](#installation)
+  - [Examples](#examples)
+- [Documentation](#documentation)
+  - [Table](#table)
+  - [Schema](#schema)
+  - [Field](#field)
+  - [Validate](#validate)
+  - [Infer](#infer)
+  - [Errors](#errors)
+- [Contributing](#contributing)
+- [Changelog](#changelog)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Getting started
 
 ### Installation
@@ -661,67 +682,67 @@ $ npm run build
 
 Here described only breaking and the most important changes. The full changelog and documentation for all released versions could be found in nicely formatted [commit history](https://github.com/frictionlessdata/tableschema-js/commits/master).
 
-### v1.9
+#### v1.9
 
 Fix bug:
 
 - URI format must have the scheme protocol to be valid ([#135](https://github.com/frictionlessdata/tableschema-js/issues/135))
 
-### v1.8
+#### v1.8
 
 Improved behaviour:
 
 - Automatically detect the CSV delimiter if one isn't explicit set
 
-### v1.7
+#### v1.7
 
 New API added:
 
 - added `forceCast` flag to the the `table.iter/read` methods
 
-### v1.6
+#### v1.6
 
 Improved behaviour:
 
 - improved validation of `string` and `geojson` types
 - added heuristics to the `infer` function
 
-### v1.5
+#### v1.5
 
 New API added:
 
 - added `format` option to the `Table` constructor
 - added `encoding` option to the `Table` constructor
 
-### v1.4
+#### v1.4
 
 Improved behaviour:
 
 - Now the `infer` functions support formats inferring
 
-### v1.3
+#### v1.3
 
 New API added:
 
 - `error.rowNumber` if available
 - `error.columnNumber` if available
 
-### v1.2
+#### v1.2
 
 New API added:
 
 - `Table.load` and `infer` now accept Node Stream as a `source` argument
 
-### v1.1
+#### v1.1
 
 New API added:
 
 - `Table.load` and `infer` now accepts `parserOptions`
 
-### v1.0
+#### v1.0
 
 This version includes various big changes, including a move to asynchronous inference.
 
-### v0.2
+#### v0.2
 
 First stable version of the library.

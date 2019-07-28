@@ -25,6 +25,7 @@
     "prepush": "npm run test",
     "posttest": "npm run lint",
     "profiles": "wget -O src/profiles/table-schema.json https://specs.frictionlessdata.io/schemas/table-schema.json",
+    "readme": "doctoc --maxlevel 3 README.md",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "NODE_ENV=testing nyc mocha",
     "test:browser": "NODE_ENV=testing karma start"
@@ -57,6 +58,7 @@
     "chai": "^3.5.0",
     "chai-spies": "^0.6.0",
     "coveralls": "^2.11.14",
+    "doctoc": "^1.4.0",
     "eslint": "^3.11.1",
     "eslint-config-airbnb": "^13.0.0",
     "eslint-plugin-import": "^2.2.0",
