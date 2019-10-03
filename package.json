@@ -57,7 +57,7 @@
     "babel-preset-stage-3": "^6.24.1",
     "chai": "^3.5.0",
     "chai-spies": "^0.6.0",
-    "coveralls": "^2.11.14",
+    "coveralls": "^3.0.6",
     "doctoc": "^1.4.0",
     "eslint": "^4.19.1",
     "eslint-config-airbnb": "^13.0.0",
@@ -81,7 +81,7 @@
     "superagent-mock": "^1.1.0",
     "webpack": "^2.2.0",
     "webpack-bundle-size-analyzer": "^2.7.0",
-    "webpack-dev-server": "^2.11.5",
+    "webpack-dev-server": "^3.8.2",
     "webpack-merge": "^4.1.0"
   },
   "author": {
