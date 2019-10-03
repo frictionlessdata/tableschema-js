@@ -8,11 +8,11 @@ const types = require('../../src/types')
 
 const TESTS = [
   // ['default',
-    // {'properties': {'Ã': 'Ã'}, 'type': 'Feature', 'geometry': null},
-    // {'properties': {'Ã': 'Ã'}, 'type': 'Feature', 'geometry': null}],
+  // {'properties': {'Ã': 'Ã'}, 'type': 'Feature', 'geometry': null},
+  // {'properties': {'Ã': 'Ã'}, 'type': 'Feature', 'geometry': null}],
   // ['default',
-    // '{"geometry": null, "type": "Feature", "properties": {"\\u00c3": "\\u00c3"}}',
-    // {'properties': {'Ã': 'Ã'}, 'type': 'Feature', 'geometry': null}],
+  // '{"geometry": null, "type": "Feature", "properties": {"\\u00c3": "\\u00c3"}}',
+  // {'properties': {'Ã': 'Ã'}, 'type': 'Feature', 'geometry': null}],
   ['default', {'coordinates': [0, 0, 0], 'type': 'Point'}, ERROR],
   ['default', 'string', ERROR],
   ['default', 1, ERROR],

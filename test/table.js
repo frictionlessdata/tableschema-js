@@ -144,8 +144,8 @@ describe('Table', () => {
       const table = await Table.load(SOURCE, {schema: SCHEMA})
       const rows = await table.read({extended: true, limit: 1})
       assert.deepEqual(rows[0], [2,
-          ['id', 'height', 'age', 'name', 'occupation'],
-          [1, 10.0, 1, 'string1', new Date(2012, 6-1, 15)]])
+        ['id', 'height', 'age', 'name', 'occupation'],
+        [1, 10.0, 1, 'string1', new Date(2012, 6-1, 15)]])
     })
 
     it('should infer headers and schema', async function() {

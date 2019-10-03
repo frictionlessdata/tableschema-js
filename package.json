@@ -59,7 +59,7 @@
     "chai-spies": "^0.6.0",
     "coveralls": "^2.11.14",
     "doctoc": "^1.4.0",
-    "eslint": "^3.11.1",
+    "eslint": "^4.19.1",
     "eslint-config-airbnb": "^13.0.0",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "2.2.3",
