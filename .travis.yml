@@ -13,12 +13,16 @@ script:
 after_script:
   - npm run coveralls
 
-deploy:
-  provider: npm
-  email: eskarev@gmail.com
-  skip_cleanup: true
-  on:
-    tags: true
-    branch: master
-  api_key:
-    secure: P0qJjLiSjgx1GU9YJYSZkoVsJ6BwmtBES/aTC6eVqB/prp0sEiSV7cMyI/n7LBTWcZg9+Lcx9rFvzOG/uRV0z2C0EtmQ9CrxqRiqHqs2hTXhsOYbL7GanF2jGF6dZKY7hzTDcrUd9wamOily7gOxrsM6hwZZk2K6Pd4h0nS2MVIACqKRGbMVsNOSPeGipj9k540YBgz+H8qJdF47hFydWbbef3+B1fM40/zV+hNiFqWddli29ZKm0z4hQEEDc68jTaeYThoaf81sKdJJg0Foh35BJYqCXVID9wHyzGwFi5wFbKmt/NlCSfchC/AOSteFU4dtttsCGg+uq4h3szuByMjza0khZHBzK63ci8lAnQt3EW1gxJdrx5VFmCUh8VT0I0AksJWOX0lUS/lOtcSaXFyfLvFIY62WB0GQOL9qck9mtUaGGq9Eyxg46ScyoYAIsuxB3q/CLzrjpCEouksM8xL1KowHF1FQEPZj1BkngNLUtj0f1UOeGshBmbtMAjZVQFV8UeW1GsBZm6H/SqnHD6Tec+KyENJiPey6oXc7Ul6p9nG+jk0r4s4MTiJIGYZ4nuy5Ro81nZI8SMwxyJXaL4HC4Y5ozwG6fkhAsDXR/SuxSwACMv0DqEQWWEGi2HZEZbjS28kskH1qURAKxKfFFGNyAvRKAbX/NXXJckto030=
+jobs:
+  include:
+    - stage: release
+      if: tag IS present
+      node_js: 12
+      deploy:
+        provider: npm
+        email: eskarev@gmail.com
+        skip_cleanup: true
+        on:
+          tags: true
+        api_key:
+          secure: P0qJjLiSjgx1GU9YJYSZkoVsJ6BwmtBES/aTC6eVqB/prp0sEiSV7cMyI/n7LBTWcZg9+Lcx9rFvzOG/uRV0z2C0EtmQ9CrxqRiqHqs2hTXhsOYbL7GanF2jGF6dZKY7hzTDcrUd9wamOily7gOxrsM6hwZZk2K6Pd4h0nS2MVIACqKRGbMVsNOSPeGipj9k540YBgz+H8qJdF47hFydWbbef3+B1fM40/zV+hNiFqWddli29ZKm0z4hQEEDc68jTaeYThoaf81sKdJJg0Foh35BJYqCXVID9wHyzGwFi5wFbKmt/NlCSfchC/AOSteFU4dtttsCGg+uq4h3szuByMjza0khZHBzK63ci8lAnQt3EW1gxJdrx5VFmCUh8VT0I0AksJWOX0lUS/lOtcSaXFyfLvFIY62WB0GQOL9qck9mtUaGGq9Eyxg46ScyoYAIsuxB3q/CLzrjpCEouksM8xL1KowHF1FQEPZj1BkngNLUtj0f1UOeGshBmbtMAjZVQFV8UeW1GsBZm6H/SqnHD6Tec+KyENJiPey6oXc7Ul6p9nG+jk0r4s4MTiJIGYZ4nuy5Ro81nZI8SMwxyJXaL4HC4Y5ozwG6fkhAsDXR/SuxSwACMv0DqEQWWEGi2HZEZbjS28kskH1qURAKxKfFFGNyAvRKAbX/NXXJckto030=
