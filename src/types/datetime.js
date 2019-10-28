@@ -14,7 +14,7 @@ function castDatetime(format, value) {
     }
     try {
       if (format === 'default') {
-        value = moment(timeParse(_DEFAULT_PATTERN)(value))
+        value = moment(value, _DEFAULT_PATTERN, true)
       } else if (format === 'any') {
         value = moment(value)
       } else {
@@ -45,4 +45,4 @@ module.exports = {
 
 // Internal
 
-const _DEFAULT_PATTERN = '%Y-%m-%dT%H:%M:%SZ'
+const _DEFAULT_PATTERN = 'YYYY-MM-DDTHH:mm:ss[Z]'
