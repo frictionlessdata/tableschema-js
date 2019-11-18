@@ -58,6 +58,8 @@ $ npm install tableschema@latest # v1.0-alpha
 
 ### Examples
 
+#### Node
+
 Code examples in this readme requires Node v8.3+ or proper modern browser . Also you have to wrap code into async function if the await keyword is used. You could see even more examples in the [examples](https://github.com/frictionlessdata/tableschema-js/tree/master/examples) directory.
 
 ```javascript
@@ -68,6 +70,36 @@ await table.infer() // infer a schema
 await table.read({keyed: true}) // read the data
 await table.schema.save() // save the schema
 await table.save() // save the data
+```
+
+#### Browser
+
+> https://jsfiddle.net/rollninja/hs985buj/3/
+
+After the script registration the library will be available as a global variable `datapackage`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>datapackage-js</title>
+  </head>
+  <body>
+    <script src="//unpkg.com/datapackage/dist/datapackage.min.js"></script>
+    <script>
+      const main = async () => {
+        const resource = await datapackage.Resource.load({path: 'https://raw.githubusercontent.com/frictionlessdata/datapackage-js/master/data/data.csv'})
+        const rows = await resource.read()
+        document.body.innerHTML += `<div>${resource.headers}</div>`
+        for (const row of rows) {
+          document.body.innerHTML += `<div>${row}</div>`
+        }
+      }
+      main()
+    </script>
+  </body>
+</html>
 ```
 
 ## Documentation
