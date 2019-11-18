@@ -74,24 +74,24 @@ await table.save() // save the data
 
 #### Browser
 
-> https://jsfiddle.net/rollninja/hs985buj/3/
+> https://jsfiddle.net/rollninja/ayngwd38/2/
 
-After the script registration the library will be available as a global variable `datapackage`:
+After the script registration the library will be available as a global variable `tableschema`:
 
 ```html
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>datapackage-js</title>
+    <title>tableschema-js</title>
   </head>
   <body>
-    <script src="//unpkg.com/datapackage/dist/datapackage.min.js"></script>
+    <script src="//unpkg.com/tableschema/dist/tableschema.min.js"></script>
     <script>
       const main = async () => {
-        const resource = await datapackage.Resource.load({path: 'https://raw.githubusercontent.com/frictionlessdata/datapackage-js/master/data/data.csv'})
-        const rows = await resource.read()
-        document.body.innerHTML += `<div>${resource.headers}</div>`
+        const table = await tableschema.Table.load('https://raw.githubusercontent.com/frictionlessdata/datapackage-js/master/data/data.csv')
+        const rows = await table.read()
+        document.body.innerHTML += `<div>${table.headers}</div>`
         for (const row of rows) {
           document.body.innerHTML += `<div>${row}</div>`
         }
