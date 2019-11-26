@@ -46,8 +46,7 @@ The package use semantic versioning. It means that major versions could include 
 #### NPM
 
 ```bash
-$ npm install jsontableschema # v0.2
-$ npm install tableschema@latest # v1.0-alpha
+$ npm install tableschema
 ```
 
 #### CDN
