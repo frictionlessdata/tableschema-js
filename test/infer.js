@@ -69,14 +69,6 @@ describe('infer', () => {
     ])
   })
 
-  it('could infer binary', async () => {
-    const data = [['dGVzdA==']]
-    const descriptor = await infer(data, {headers: ['name']})
-    assert.deepEqual(descriptor.fields, [
-      {name: 'name', type: 'string', format: 'binary'},
-    ])
-  })
-
   it('could infer geopoint', async () => {
     const data = [['90,45']]
     const descriptor = await infer(data, {headers: ['name']})
