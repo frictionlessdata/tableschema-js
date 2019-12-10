@@ -25,7 +25,7 @@ function castString(format, value) {
       return ERROR
     }
   } else if (format === 'binary') {
-    if (!value.endsWith('==') || !isBase64(value)) {
+    if (!isBase64(value)) {
       return ERROR
     }
   }
