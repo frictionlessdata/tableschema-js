@@ -11,8 +11,8 @@ list:
 	@grep '^\.PHONY' Makefile | cut -d' ' -f2- | tr ' ' '\n'
 
 readme:
-	referencer src README.md --in-place
-	doctoc --maxlevel 3 README.md
+	npx referencer src README.md --in-place
+	npx doctoc --maxlevel 3 README.md
 
 release:
 	git checkout master && git pull origin && git fetch -p && git diff

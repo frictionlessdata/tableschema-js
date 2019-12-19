@@ -24,14 +24,15 @@ A library for working with [Table Schema](http://specs.frictionlessdata.io/table
 
 - [Getting started](#getting-started)
   - [Installation](#installation)
-  - [Examples](#examples)
 - [Documentation](#documentation)
+  - [Introduction](#introduction)
+  - [Working with Table](#working-with-table)
+  - [Working with Schema](#working-with-schema)
+  - [Working with Field](#working-with-field)
+  - [Working with validate/infer](#working-with-validateinfer)
+- [API Reference](#api-reference)
   - [Table](#table)
-  - [Schema](#schema)
-  - [Field](#field)
-  - [Validate](#validate)
-  - [Infer](#infer)
-  - [Errors](#errors)
+- [Legacy API Reference](#legacy-api-reference)
 - [Contributing](#contributing)
 - [Changelog](#changelog)
 
@@ -405,7 +406,122 @@ The `descriptor` variable is now a JSON object:
 
 ## API Reference
 
-## API Reference (legacy)
+### Table
+Table representation
+
+
+* [Table](#Table)
+    * _instance_
+        * [.headers](#Table+headers) ⇒ <code>Array.&lt;string&gt;</code>
+        * [.schema](#Table+schema) ⇒ <code>Schema</code>
+        * [.iter(keyed, extended, cast, forceCast, relations, stream)](#Table+iter) ⇒ <code>AsyncIterator</code> \| <code>Stream</code>
+        * [.read(limit)](#Table+read) ⇒ <code>Array.&lt;Array&gt;</code> \| <code>Array.&lt;Object&gt;</code>
+        * [.infer(limit)](#Table+infer) ⇒ <code>Object</code>
+        * [.save(target, true)](#Table+save)
+    * _static_
+        * [.load(source, schema, strict, headers, parserOptions)](#Table.load) ⇒ [<code>Table</code>](#Table)
+
+
+#### table.headers ⇒ <code>Array.&lt;string&gt;</code>
+Headers
+
+**Returns**: <code>Array.&lt;string&gt;</code> - data source headers  
+
+#### table.schema ⇒ <code>Schema</code>
+Schema
+
+**Returns**: <code>Schema</code> - table schema instance  
+
+#### table.iter(keyed, extended, cast, forceCast, relations, stream) ⇒ <code>AsyncIterator</code> \| <code>Stream</code>
+Iterate through the table data
+
+And emits rows cast based on table schema (async for loop).
+With a `stream` flag instead of async iterator a Node stream will be returned.
+Data casting can be disabled.
+
+**Returns**: <code>AsyncIterator</code> \| <code>Stream</code> - async iterator/stream of rows:
+ - `[value1, value2]` - base
+ - `{header1: value1, header2: value2}` - keyed
+ - `[rowNumber, [header1, header2], [value1, value2]]` - extended  
+**Throws**:
+
+- <code>TableSchemaError</code> raises any error occurred in this process
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| keyed | <code>boolean</code> | iter keyed rows |
+| extended | <code>boolean</code> | iter extended rows |
+| cast | <code>boolean</code> | disable data casting if false |
+| forceCast | <code>boolean</code> | instead of raising on the first row with cast error   return an error object to replace failed row. It will allow   to iterate over the whole data file even if it's not compliant to the schema.   Example of output stream:     `[['val1', 'val2'], TableSchemaError, ['val3', 'val4'], ...]` |
+| relations | <code>Object</code> | object of foreign key references in a form of   `{resource1: [{field1: value1, field2: value2}, ...], ...}`.   If provided foreign key fields will checked and resolved to its references |
+| stream | <code>boolean</code> | return Node Readable Stream of table rows |
+
+
+#### table.read(limit) ⇒ <code>Array.&lt;Array&gt;</code> \| <code>Array.&lt;Object&gt;</code>
+Read the table data into memory
+
+> The API is the same as `table.iter` has except for:
+
+**Returns**: <code>Array.&lt;Array&gt;</code> \| <code>Array.&lt;Object&gt;</code> - list of rows:
+ - `[value1, value2]` - base
+ - `{header1: value1, header2: value2}` - keyed
+ - `[rowNumber, [header1, header2], [value1, value2]]` - extended  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| limit | <code>integer</code> | limit of rows to read |
+
+
+#### table.infer(limit) ⇒ <code>Object</code>
+Infer a schema for the table.
+
+It will infer and set Table Schema to `table.schema` based on table data.
+
+**Returns**: <code>Object</code> - Table Schema descriptor  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| limit | <code>number</code> | limit rows sample size |
+
+
+#### table.save(target, true)
+Save data source to file locally in CSV format with `,` (comma) delimiter
+
+**Throws**:
+
+- <code>TableSchemaError</code> an error if there is saving problem
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| target | <code>string</code> | path where to save a table data |
+| true | <code>Boolean</code> | on success |
+
+
+#### Table.load(source, schema, strict, headers, parserOptions) ⇒ [<code>Table</code>](#Table)
+Factory method to instantiate `Table` class.
+
+This method is async and it should be used with await keyword or as a `Promise`.
+If `references` argument is provided foreign keys will be checked
+on any reading operation.
+
+**Returns**: [<code>Table</code>](#Table) - data table class instance  
+**Throws**:
+
+- <code>TableSchemaError</code> raises any error occurred in table creation process
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| source | <code>string</code> \| <code>Array.&lt;Array&gt;</code> \| <code>Stream</code> \| <code>function</code> | data source (one of):   - local CSV file (path)   - remote CSV file (url)   - array of arrays representing the rows   - readable stream with CSV file contents   - function returning readable stream with CSV file contents |
+| schema | <code>string</code> \| <code>Object</code> | data schema   in all forms supported by `Schema` class |
+| strict | <code>boolean</code> | strictness option to pass to `Schema` constructor |
+| headers | <code>number</code> \| <code>Array.&lt;string&gt;</code> | data source headers (one of):   - row number containing headers (`source` should contain headers rows)   - array of headers (`source` should NOT contain headers rows) |
+| parserOptions | <code>Object</code> | options to be used by CSV parser.   All options listed at <http://csv.adaltas.com/parse/#parser-options>.   By default `ltrim` is true according to the CSV Dialect spec. |
+
+
+## Legacy API Reference
 
 #### `async Table.load(source[, {schema, strict=false, headers=1, ...parserOptions}])`
 

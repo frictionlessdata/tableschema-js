@@ -1,5 +1,5 @@
 require('regenerator-runtime/runtime')
-const {Table} = require('./table')
+const { Table } = require('./table')
 const {Schema} = require('./schema')
 const {Field} = require('./field')
 const {validate} = require('./validate')

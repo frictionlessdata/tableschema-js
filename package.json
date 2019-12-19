@@ -75,7 +75,6 @@
     "mocha": "^6.2.1",
     "mocha-lcov-reporter": "^1.2.0",
     "nyc": "^14.1.1",
-    "referencer": "^0.2.3",
     "sinon": "^2.1.0",
     "sinon-chai": "^2.9.0",
     "superagent-mock": "^3.7.0",
