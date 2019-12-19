@@ -55,11 +55,11 @@ $ npm install tableschema
 <script src="//unpkg.com/tableschema/dist/tableschema.min.js"></script>
 ```
 
-### Examples
+## Documentation
 
-#### Node
+### Introduction
 
-Code examples in this readme requires Node v8.3+ or proper modern browser . Also you have to wrap code into async function if the await keyword is used. You could see even more examples in the [examples](https://github.com/frictionlessdata/tableschema-js/tree/master/examples) directory.
+Let's start with a simple example for Node.js:
 
 ```javascript
 const {Table} = require('tableschema')
@@ -71,7 +71,7 @@ await table.schema.save() // save the schema
 await table.save() // save the data
 ```
 
-#### Browser
+And for browser:
 
 > https://jsfiddle.net/rollninja/ayngwd38/2/
 
@@ -101,9 +101,7 @@ After the script registration the library will be available as a global variable
 </html>
 ```
 
-## Documentation
-
-### Table
+### Working with Table
 
 A table is a core concept in a tabular data world. It represents data with metadata (Table Schema). Let's see how we could use it in practice.
 
@@ -223,6 +221,192 @@ stream.on('data', (row) => {
 
 It was only basic introduction to the `Table` class. To learn more let's take a look on `Table` class API reference.
 
+### Working with Schema
+
+A model of a schema with helpful methods for working with the schema and supported data. Schema instances can be initialized with a schema source as a url to a JSON file or a JSON object. The schema is initially validated (see [validate](#validate) below). By default validation errors will be stored in `schema.errors` but in a strict mode it will be instantly raised.
+
+Let's create a blank schema. It's not valid because `descriptor.fields` property is required by the [Table Schema](http://specs.frictionlessdata.io/table-schema/) specification:
+
+```javascript
+const schema = await Schema.load({})
+schema.valid // false
+schema.errors
+// Error: Descriptor validation error:
+//         Missing required property: fields
+//         at "" in descriptor and
+//         at "/required/0" in profile
+```
+
+To not create a schema descriptor by hands we will use a `schema.infer` method to infer the descriptor from given data:
+
+```javascript
+schema.infer([
+  ['id', 'age', 'name'],
+  ['1','39','Paul'],
+  ['2','23','Jimmy'],
+  ['3','36','Jane'],
+  ['4','28','Judy'],
+])
+schema.valid // true
+schema.descriptor
+//{ fields:
+//   [ { name: 'id', type: 'integer', format: 'default' },
+//     { name: 'age', type: 'integer', format: 'default' },
+//     { name: 'name', type: 'string', format: 'default' } ],
+//  missingValues: [ '' ] }
+```
+
+Now we have an inferred schema and it's valid. We could cast data row against our schema. We provide a string input by an output will be cast correspondingly:
+
+```javascript
+schema.castRow(['5', '66', 'Sam'])
+// [ 5, 66, 'Sam' ]
+```
+
+But if we try provide some missing value to `age` field cast will fail because for now only one possible missing value is an empty string. Let's update our schema:
+
+```javascript
+schema.castRow(['6', 'N/A', 'Walt'])
+// Cast error
+schema.descriptor.missingValues = ['', 'N/A']
+schema.commit()
+schema.castRow(['6', 'N/A', 'Walt'])
+// [ 6, null, 'Walt' ]
+```
+
+We could save the schema to a local file. And we could continue the work in any time just loading it from the local file:
+
+```javascript
+await schema.save('schema.json')
+const schema = await Schema.load('schema.json')
+```
+
+It was only basic introduction to the `Schema` class. To learn more let's take a look on `Schema` class API reference.
+
+### Working with Field
+
+Class represents a field in the schema.
+
+Data values can be cast to native JavaScript types. Casting a value will check the value is of the expected type, is in the correct format, and complies with any constraints imposed by a schema.
+
+```javascript
+{
+    'name': 'birthday',
+    'type': 'date',
+    'format': 'default',
+    'constraints': {
+        'required': True,
+        'minimum': '2015-05-30'
+    }
+}
+```
+
+Following code will not raise the exception, despite the fact our date is less than minimum constraints in the field, because we do not check constraints of the field descriptor
+
+```javascript
+var dateType = field.castValue('2014-05-29')
+```
+
+And following example will raise exception, because we set flag 'skip constraints' to `false`, and our date is less than allowed by `minimum` constraints of the field. Exception will be raised as well in situation of trying to cast non-date format values, or empty values
+
+```javascript
+try {
+    var dateType = field.castValue('2014-05-29', false)
+} catch(e) {
+    // uh oh, something went wrong
+}
+```
+
+Values that can't be cast will raise an `Error` exception.
+Casting a value that doesn't meet the constraints will raise an `Error` exception.
+
+Available types, formats and resultant value of the cast:
+
+| Type | Formats | Casting result |
+| ---- | ------- | -------------- |
+| any | default | Any |
+| array | default | Array |
+| boolean | default | Boolean |
+| date | default, any, <PATTERN> | Date |
+| datetime | default, any, <PATTERN> | Date |
+| duration | default | moment.Duration |
+| geojson | default, topojson | Object |
+| geopoint | default, array, object | [Number, Number] |
+| integer | default | Number |
+| number | default | Number |
+| object | default | Object |
+| string | default, uri, email, binary | String |
+| time | default, any, <PATTERN> | Date |
+| year | default | Number |
+| yearmonth | default | [Number, Number] |
+
+### Working with validate/infer
+
+> `validate()` validates whether a **schema** is a validate Table Schema accordingly to the [specifications](http://schemas.datapackages.org/json-table-schema.json). It does **not** validate data against a schema.
+
+Given a schema descriptor `validate` returns `Promise` with a validation object:
+
+```javascript
+const {validate} = require('tableschema')
+
+const {valid, errors} = await validate('schema.json')
+for (const error of errors) {
+  // inspect Error objects
+}
+```
+
+Given data source and headers `infer` will return a Table Schema as a JSON object based on the data values.
+
+Given the data file, example.csv:
+
+```csv
+id,age,name
+1,39,Paul
+2,23,Jimmy
+3,36,Jane
+4,28,Judy
+```
+
+Call `infer` with headers and values from the datafile:
+
+```javascript
+const descriptor = await infer('data.csv')
+```
+
+The `descriptor` variable is now a JSON object:
+
+```javascript
+{
+  fields: [
+    {
+      name: 'id',
+      title: '',
+      description: '',
+      type: 'integer',
+      format: 'default'
+    },
+    {
+      name: 'age',
+      title: '',
+      description: '',
+      type: 'integer',
+      format: 'default'
+    },
+    {
+      name: 'name',
+      title: '',
+      description: '',
+      type: 'string',
+      format: 'default'
+    }
+  ]
+}
+```
+
+## API Reference
+
+## API Reference (legacy)
+
 #### `async Table.load(source[, {schema, strict=false, headers=1, ...parserOptions}])`
 
 Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`. If `references` argument is provided foreign keys will be checked on any reading operation.
@@ -294,67 +478,6 @@ Save data source to file locally in CSV format with `,` (comma) delimiter
 - `(errors.TableSchemaError)` - raises an error if there is saving problem
 - `(Boolean)` - returns true on success
 
-### Schema
-
-A model of a schema with helpful methods for working with the schema and supported data. Schema instances can be initialized with a schema source as a url to a JSON file or a JSON object. The schema is initially validated (see [validate](#validate) below). By default validation errors will be stored in `schema.errors` but in a strict mode it will be instantly raised.
-
-Let's create a blank schema. It's not valid because `descriptor.fields` property is required by the [Table Schema](http://specs.frictionlessdata.io/table-schema/) specification:
-
-```javascript
-const schema = await Schema.load({})
-schema.valid // false
-schema.errors
-// Error: Descriptor validation error:
-//         Missing required property: fields
-//         at "" in descriptor and
-//         at "/required/0" in profile
-```
-
-To not create a schema descriptor by hands we will use a `schema.infer` method to infer the descriptor from given data:
-
-```javascript
-schema.infer([
-  ['id', 'age', 'name'],
-  ['1','39','Paul'],
-  ['2','23','Jimmy'],
-  ['3','36','Jane'],
-  ['4','28','Judy'],
-])
-schema.valid // true
-schema.descriptor
-//{ fields:
-//   [ { name: 'id', type: 'integer', format: 'default' },
-//     { name: 'age', type: 'integer', format: 'default' },
-//     { name: 'name', type: 'string', format: 'default' } ],
-//  missingValues: [ '' ] }
-```
-
-Now we have an inferred schema and it's valid. We could cast data row against our schema. We provide a string input by an output will be cast correspondingly:
-
-```javascript
-schema.castRow(['5', '66', 'Sam'])
-// [ 5, 66, 'Sam' ]
-```
-
-But if we try provide some missing value to `age` field cast will fail because for now only one possible missing value is an empty string. Let's update our schema:
-
-```javascript
-schema.castRow(['6', 'N/A', 'Walt'])
-// Cast error
-schema.descriptor.missingValues = ['', 'N/A']
-schema.commit()
-schema.castRow(['6', 'N/A', 'Walt'])
-// [ 6, null, 'Walt' ]
-```
-
-We could save the schema to a local file. And we could continue the work in any time just loading it from the local file:
-
-```javascript
-await schema.save('schema.json')
-const schema = await Schema.load('schema.json')
-```
-
-It was only basic introduction to the `Schema` class. To learn more let's take a look on `Schema` class API reference.
 
 #### `async Schema.load([descriptor], {strict=false})`
 
@@ -466,62 +589,6 @@ Save schema descriptor to target destination.
 - `(errors.TableSchemaError)` - raises any error occurred in the process
 - `(Boolean)` - returns true on success
 
-### Field
-
-Class represents a field in the schema.
-
-Data values can be cast to native JavaScript types. Casting a value will check the value is of the expected type, is in the correct format, and complies with any constraints imposed by a schema.
-
-```javascript
-{
-    'name': 'birthday',
-    'type': 'date',
-    'format': 'default',
-    'constraints': {
-        'required': True,
-        'minimum': '2015-05-30'
-    }
-}
-```
-
-Following code will not raise the exception, despite the fact our date is less than minimum constraints in the field, because we do not check constraints of the field descriptor
-
-```javascript
-var dateType = field.castValue('2014-05-29')
-```
-
-And following example will raise exception, because we set flag 'skip constraints' to `false`, and our date is less than allowed by `minimum` constraints of the field. Exception will be raised as well in situation of trying to cast non-date format values, or empty values
-
-```javascript
-try {
-    var dateType = field.castValue('2014-05-29', false)
-} catch(e) {
-    // uh oh, something went wrong
-}
-```
-
-Values that can't be cast will raise an `Error` exception.
-Casting a value that doesn't meet the constraints will raise an `Error` exception.
-
-Available types, formats and resultant value of the cast:
-
-| Type | Formats | Casting result |
-| ---- | ------- | -------------- |
-| any | default | Any |
-| array | default | Array |
-| boolean | default | Boolean |
-| date | default, any, <PATTERN> | Date |
-| datetime | default, any, <PATTERN> | Date |
-| duration | default | moment.Duration |
-| geojson | default, topojson | Object |
-| geopoint | default, array, object | [Number, Number] |
-| integer | default | Number |
-| number | default | Number |
-| object | default | Object |
-| string | default, uri, email, binary | String |
-| time | default, any, <PATTERN> | Date |
-| year | default | Number |
-| yearmonth | default | [Number, Number] |
 
 #### `new Field(descriptor[, missingValues])`
 
@@ -575,20 +642,6 @@ Test if value is compliant to the field.
 - `constraints (Boolean/String[])` - constraints configuration; defaults to `true`.
 - `(Boolean)` - returns if value is compliant to the field
 
-### Validate
-
-> `validate()` validates whether a **schema** is a validate Table Schema accordingly to the [specifications](http://schemas.datapackages.org/json-table-schema.json). It does **not** validate data against a schema.
-
-Given a schema descriptor `validate` returns `Promise` with a validation object:
-
-```javascript
-const {validate} = require('tableschema')
-
-const {valid, errors} = await validate('schema.json')
-for (const error of errors) {
-  // inspect Error objects
-}
-```
 
 #### `async validate(descriptor)`
 
@@ -600,55 +653,6 @@ This function is async so it has to be used with `await` keyword or as a `Promis
   - object
 - `(Object)` - returns `{valid, errors}` object
 
-### Infer
-
-Given data source and headers `infer` will return a Table Schema as a JSON object based on the data values.
-
-Given the data file, example.csv:
-
-```csv
-id,age,name
-1,39,Paul
-2,23,Jimmy
-3,36,Jane
-4,28,Judy
-```
-
-Call `infer` with headers and values from the datafile:
-
-```javascript
-const descriptor = await infer('data.csv')
-```
-
-The `descriptor` variable is now a JSON object:
-
-```javascript
-{
-  fields: [
-    {
-      name: 'id',
-      title: '',
-      description: '',
-      type: 'integer',
-      format: 'default'
-    },
-    {
-      name: 'age',
-      title: '',
-      description: '',
-      type: 'integer',
-      format: 'default'
-    },
-    {
-      name: 'name',
-      title: '',
-      description: '',
-      type: 'string',
-      format: 'default'
-    }
-  ]
-}
-```
 
 #### `async infer(source, {headers=1, ...options})`
 
@@ -664,8 +668,6 @@ This function is async so it has to be used with `await` keyword or as a `Promis
 - `options (Object)` - any `Table.load` options
 - `(errors.TableSchemaError)` - raises any error occured in the process
 - `(Object)` - returns schema descriptor
-
-### Errors
 
 #### `errors.TableSchemaError`
 
@@ -702,7 +704,7 @@ try {
 
 ## Contributing
 
-The project follows the [Open Knowledge International coding standards](https://github.com/okfn/coding-standards). There are common commands to work with the project:
+> The project follows the [Open Knowledge International coding standards](https://github.com/okfn/coding-standards). There are common commands to work with the project:
 
 ```bash
 $ npm install
