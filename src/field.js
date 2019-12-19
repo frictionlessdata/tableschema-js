@@ -11,13 +11,20 @@ const types = require('./types')
 
 // Module API
 
+/**
+ * Field representation
+ */
 class Field {
 
   // Public
 
   /**
-   * Construct field
-   * https://github.com/frictionlessdata/tableschema-js#field
+   * Constructor to instantiate `Field` class.
+
+   * @param {Object} descriptor - schema field descriptor
+   * @param {string[]} missingValues - an array with string representing missing values
+   * @throws {TableSchemaError} raises any error occured in the process
+   * @returns {Field} returns field class instance
    */
   constructor(descriptor, {missingValues=config.DEFAULT_MISSING_VALUES}={}) {
 
@@ -35,7 +42,8 @@ class Field {
 
   /**
    * Field name
-   * https://github.com/frictionlessdata/tableschema-js#field
+   *
+   * @returns {string}
    */
   get name() {
     return this._descriptor.name
@@ -43,7 +51,8 @@ class Field {
 
   /**
    * Field type
-   * https://github.com/frictionlessdata/tableschema-js#field
+   *
+   * @returns {string}
    */
   get type() {
     return this._descriptor.type
@@ -51,7 +60,8 @@ class Field {
 
   /**
    * Field format
-   * https://github.com/frictionlessdata/tableschema-js#field
+   *
+   * @returns {string}
    */
   get format() {
     return this._descriptor.format
@@ -59,7 +69,8 @@ class Field {
 
   /**
    * Return true if field is required
-   * https://github.com/frictionlessdata/tableschema-js#field
+   *
+   * @returns {boolean}
    */
   get required() {
     return (this._descriptor.constraints || {}).required === true
@@ -67,7 +78,8 @@ class Field {
 
   /**
    * Field constraints
-   * https://github.com/frictionlessdata/tableschema-js#field
+   *
+   * @returns {Object}
    */
   get constraints() {
     return this._descriptor.constraints || {}
@@ -75,7 +87,8 @@ class Field {
 
   /**
    * Field descriptor
-   * https://github.com/frictionlessdata/tableschema-js#field
+   *
+   * @returns {Object}
    */
   get descriptor() {
     return this._descriptor
@@ -83,7 +96,10 @@ class Field {
 
   /**
    * Cast value
-   * https://github.com/frictionlessdata/tableschema-js#field
+   *
+   * @param {any} value - value to cast
+   * @param {Object|false} constraints
+   * @returns {any} cast value
    */
   castValue(value, {constraints=true}={}) {
 
@@ -125,7 +141,10 @@ class Field {
 
   /**
    * Check if value can be cast
-   * https://github.com/frictionlessdata/tableschema-js#field
+   *
+   * @param {any} value - value to test
+   * @param {Object|false} constraints
+   * @returns {boolean}
    */
   testValue(value, {constraints=true}={}) {
     try {

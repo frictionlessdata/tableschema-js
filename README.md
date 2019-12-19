@@ -32,6 +32,16 @@ A library for working with [Table Schema](http://specs.frictionlessdata.io/table
   - [Working with validate/infer](#working-with-validateinfer)
 - [API Reference](#api-reference)
   - [Table](#table)
+  - [Schema](#schema)
+  - [Field](#field)
+  - [validate(descriptor) ⇒ <code>Object</code>](#validatedescriptor-%E2%87%92-codeobjectcode)
+  - [infer(source, headers, options) ⇒ <code>Object</code>](#infersource-headers-options-%E2%87%92-codeobjectcode)
+  - [Classes](#classes)
+  - [DataPackageError](#datapackageerror)
+  - [TableSchemaError](#tableschemaerror)
+  - [Classes](#classes-1)
+  - [DataPackageError](#datapackageerror-1)
+  - [TableSchemaError](#tableschemaerror-1)
 - [Legacy API Reference](#legacy-api-reference)
 - [Contributing](#contributing)
 - [Changelog](#changelog)
@@ -690,6 +700,250 @@ This method is async and it should be used with await keyword or as a `Promise`.
 | --- | --- | --- |
 | descriptor | <code>string</code> \| <code>Object</code> | schema descriptor:   - local path   - remote url   - object |
 | strict | <code>boolean</code> | flag to alter validation behaviour:   - if false error will not be raised and all error will be collected in `schema.errors`   - if strict is true any validation error will be raised immediately |
+
+
+### Field
+Field representation
+
+
+* [Field](#Field)
+    * [new Field(descriptor, missingValues)](#new_Field_new)
+    * [.name](#Field+name) ⇒ <code>string</code>
+    * [.type](#Field+type) ⇒ <code>string</code>
+    * [.format](#Field+format) ⇒ <code>string</code>
+    * [.required](#Field+required) ⇒ <code>boolean</code>
+    * [.constraints](#Field+constraints) ⇒ <code>Object</code>
+    * [.descriptor](#Field+descriptor) ⇒ <code>Object</code>
+    * [.castValue(value, constraints)](#Field+castValue) ⇒ <code>any</code>
+    * [.testValue(value, constraints)](#Field+testValue) ⇒ <code>boolean</code>
+
+
+#### new Field(descriptor, missingValues)
+Constructor to instantiate `Field` class.
+
+**Returns**: [<code>Field</code>](#Field) - returns field class instance  
+**Throws**:
+
+- <code>TableSchemaError</code> raises any error occured in the process
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| descriptor | <code>Object</code> | schema field descriptor |
+| missingValues | <code>Array.&lt;string&gt;</code> | an array with string representing missing values |
+
+
+#### field.name ⇒ <code>string</code>
+Field name
+
+
+#### field.type ⇒ <code>string</code>
+Field type
+
+
+#### field.format ⇒ <code>string</code>
+Field format
+
+
+#### field.required ⇒ <code>boolean</code>
+Return true if field is required
+
+
+#### field.constraints ⇒ <code>Object</code>
+Field constraints
+
+
+#### field.descriptor ⇒ <code>Object</code>
+Field descriptor
+
+
+#### field.castValue(value, constraints) ⇒ <code>any</code>
+Cast value
+
+**Returns**: <code>any</code> - cast value  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| value | <code>any</code> | value to cast |
+| constraints | <code>Object</code> \| <code>false</code> |  |
+
+
+#### field.testValue(value, constraints) ⇒ <code>boolean</code>
+Check if value can be cast
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| value | <code>any</code> | value to test |
+| constraints | <code>Object</code> \| <code>false</code> |  |
+
+
+### validate(descriptor) ⇒ <code>Object</code>
+This function is async so it has to be used with `await` keyword or as a `Promise`.
+
+**Returns**: <code>Object</code> - returns `{valid, errors}` object  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| descriptor | <code>string</code> \| <code>Object</code> | schema descriptor (one of):   - local path   - remote url   - object |
+
+
+### infer(source, headers, options) ⇒ <code>Object</code>
+This function is async so it has to be used with `await` keyword or as a `Promise`.
+
+**Returns**: <code>Object</code> - returns schema descriptor  
+**Throws**:
+
+- <code>TableSchemaError</code> raises any error occured in the process
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| source | <code>string</code> \| <code>Array.&lt;Array&gt;</code> \| <code>Stream</code> \| <code>function</code> | data source (one of):   - local CSV file (path)   - remote CSV file (url)   - array of arrays representing the rows   - readable stream with CSV file contents   - function returning readable stream with CSV file contents |
+| headers | <code>Array.&lt;string&gt;</code> | array of headers |
+| options | <code>Object</code> | any `Table.load` options |
+
+### Classes
+
+<dl>
+<dt><a href="#DataPackageError">DataPackageError</a></dt>
+<dd><p>Base class for the all DataPackage/TableSchema errors.</p>
+<p>If there are more than one error you could get an additional information
+from the error object:</p>
+<pre><code class="language-javascript">try {
+  // some lib action
+} catch (error) {
+  console.log(error) // you have N cast errors (see error.errors)
+  if (error.multiple) {
+    for (const error of error.errors) {
+        console.log(error) // cast error M is ...
+    }
+  }
+}</code></pre>
+</dd>
+<dt><a href="#TableSchemaError">TableSchemaError</a></dt>
+<dd><p>Base class for the all TableSchema errors.</p>
+</dd>
+</dl>
+
+
+### DataPackageError
+Base class for the all DataPackage/TableSchema errors.
+
+If there are more than one error you could get an additional information
+from the error object:
+
+```javascript
+try {
+  // some lib action
+} catch (error) {
+  console.log(error) // you have N cast errors (see error.errors)
+  if (error.multiple) {
+    for (const error of error.errors) {
+        console.log(error) // cast error M is ...
+    }
+  }
+}
+```
+
+
+* [DataPackageError](#DataPackageError)
+    * [new DataPackageError(message, nested)](#new_DataPackageError_new)
+    * [.multiple](#DataPackageError+multiple) ⇒ <code>boolean</code>
+    * [.errors](#DataPackageError+errors) ⇒ <code>Array.&lt;Error&gt;</code>
+
+
+#### new DataPackageError(message, nested)
+Create an error
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| message | <code>string</code> |  |
+| nested | <code>Array.&lt;Error&gt;</code> | errors |
+
+
+#### dataPackageError.multiple ⇒ <code>boolean</code>
+Whether it's nested
+
+
+#### dataPackageError.errors ⇒ <code>Array.&lt;Error&gt;</code>
+List of errors
+
+
+### TableSchemaError
+Base class for the all TableSchema errors.
+
+### Classes
+
+<dl>
+<dt><a href="#DataPackageError">DataPackageError</a></dt>
+<dd><p>Base class for the all DataPackage/TableSchema errors.</p>
+<p>If there are more than one error you could get an additional information
+from the error object:</p>
+<pre><code class="language-javascript">try {
+  // some lib action
+} catch (error) {
+  console.log(error) // you have N cast errors (see error.errors)
+  if (error.multiple) {
+    for (const error of error.errors) {
+        console.log(error) // cast error M is ...
+    }
+  }
+}</code></pre>
+</dd>
+<dt><a href="#TableSchemaError">TableSchemaError</a></dt>
+<dd><p>Base class for the all TableSchema errors.</p>
+</dd>
+</dl>
+
+
+### DataPackageError
+Base class for the all DataPackage/TableSchema errors.
+
+If there are more than one error you could get an additional information
+from the error object:
+
+```javascript
+try {
+  // some lib action
+} catch (error) {
+  console.log(error) // you have N cast errors (see error.errors)
+  if (error.multiple) {
+    for (const error of error.errors) {
+        console.log(error) // cast error M is ...
+    }
+  }
+}
+```
+
+
+* [DataPackageError](#DataPackageError)
+    * [new DataPackageError(message, nested)](#new_DataPackageError_new)
+    * [.multiple](#DataPackageError+multiple) ⇒ <code>boolean</code>
+    * [.errors](#DataPackageError+errors) ⇒ <code>Array.&lt;Error&gt;</code>
+
+
+#### new DataPackageError(message, nested)
+Create an error
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| message | <code>string</code> |  |
+| nested | <code>Array.&lt;Error&gt;</code> | errors |
+
+
+#### dataPackageError.multiple ⇒ <code>boolean</code>
+Whether it's nested
+
+
+#### dataPackageError.errors ⇒ <code>Array.&lt;Error&gt;</code>
+List of errors
+
+
+### TableSchemaError
+Base class for the all TableSchema errors.
 
 
 ## Legacy API Reference
