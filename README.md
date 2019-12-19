@@ -36,7 +36,6 @@ A library for working with [Table Schema](http://specs.frictionlessdata.io/table
   - [Field](#field)
   - [validate(descriptor) ⇒ <code>Object</code>](#validatedescriptor-%E2%87%92-codeobjectcode)
   - [infer(source, headers, options) ⇒ <code>Object</code>](#infersource-headers-options-%E2%87%92-codeobjectcode)
-  - [Classes](#classes)
   - [DataPackageError](#datapackageerror)
   - [TableSchemaError](#tableschemaerror)
 - [Contributing](#contributing)
@@ -798,29 +797,6 @@ This function is async so it has to be used with `await` keyword or as a `Promis
 | source | <code>string</code> \| <code>Array.&lt;Array&gt;</code> \| <code>Stream</code> \| <code>function</code> | data source (one of):   - local CSV file (path)   - remote CSV file (url)   - array of arrays representing the rows   - readable stream with CSV file contents   - function returning readable stream with CSV file contents |
 | headers | <code>Array.&lt;string&gt;</code> | array of headers |
 | options | <code>Object</code> | any `Table.load` options |
-
-### Classes
-
-<dl>
-<dt><a href="#DataPackageError">DataPackageError</a></dt>
-<dd><p>Base class for the all DataPackage/TableSchema errors.</p>
-<p>If there are more than one error you could get an additional information
-from the error object:</p>
-<pre><code class="language-javascript">try {
-  // some lib action
-} catch (error) {
-  console.log(error) // you have N cast errors (see error.errors)
-  if (error.multiple) {
-    for (const error of error.errors) {
-        console.log(error) // cast error M is ...
-    }
-  }
-}</code></pre>
-</dd>
-<dt><a href="#TableSchemaError">TableSchemaError</a></dt>
-<dd><p>Base class for the all TableSchema errors.</p>
-</dd>
-</dl>
 
 
 ### DataPackageError
