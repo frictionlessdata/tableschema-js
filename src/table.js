@@ -19,12 +19,38 @@ const config = require('./config')
 
 // Module API
 
+/**
+ * Table representation
+ */
 class Table {
 
   // Public
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#table
+   * Factory method to instantiate `Table` class.
+   *
+   * This method is async and it should be used with await keyword or as a `Promise`.
+   * If `references` argument is provided foreign keys will be checked
+   * on any reading operation.
+   *
+   * @param {(string|Array[]|Stream|Function)} source - data source (one of):
+   *   - local CSV file (path)
+   *   - remote CSV file (url)
+   *   - array of arrays representing the rows
+   *   - readable stream with CSV file contents
+   *   - function returning readable stream with CSV file contents
+   * @param {(string|Object)} schema - data schema
+   *   in all forms supported by `Schema` class
+   * @param {boolean} strict - strictness option to pass to `Schema` constructor
+   * @param {(number|string[])} headers - data source headers (one of):
+   *   - row number containing headers (`source` should contain headers rows)
+   *   - array of headers (`source` should NOT contain headers rows)
+   * @param {Object} parserOptions - options to be used by CSV parser.
+   *   All options listed at <http://csv.adaltas.com/parse/#parser-options>.
+   *   By default `ltrim` is true according to the CSV Dialect spec.
+   * @throws {TableSchemaError} raises any error occurred in table creation process
+   * @returns {Table} data table class instance
+   *
    */
   static async load(source, {
     schema,
@@ -44,21 +70,48 @@ class Table {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#table
+   * Headers
+   *
+   * @returns {string[]} data source headers
    */
   get headers() {
     return this._headers
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#table
+   * Schema
+   *
+   * @returns {Schema} table schema instance
    */
   get schema() {
     return this._schema
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#table
+   * Iterate through the table data
+   *
+   * And emits rows cast based on table schema (async for loop).
+   * With a `stream` flag instead of async iterator a Node stream will be returned.
+   * Data casting can be disabled.
+   *
+   * @param {boolean} keyed - iter keyed rows
+   * @param {boolean} extended - iter extended rows
+   * @param {boolean} cast - disable data casting if false
+   * @param {boolean} forceCast - instead of raising on the first row with cast error
+   *   return an error object to replace failed row. It will allow
+   *   to iterate over the whole data file even if it's not compliant to the schema.
+   *   Example of output stream:
+   *     `[['val1', 'val2'], TableSchemaError, ['val3', 'val4'], ...]`
+   * @param {Object} relations - object of foreign key references in a form of
+   *   `{resource1: [{field1: value1, field2: value2}, ...], ...}`.
+   *   If provided foreign key fields will checked and resolved to its references
+   * @param {boolean} stream - return Node Readable Stream of table rows
+   * @throws {TableSchemaError} raises any error occurred in this process
+   * @returns {(AsyncIterator|Stream)} async iterator/stream of rows:
+   *  - `[value1, value2]` - base
+   *  - `{header1: value1, header2: value2}` - keyed
+   *  - `[rowNumber, [header1, header2], [value1, value2]]` - extended
+   *
    */
   async iter({keyed, extended, cast=true, relations=false, stream=false, forceCast=false}={}) {
     const source = this._source
@@ -176,7 +229,16 @@ class Table {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#table
+   * Read the table data into memory
+   *
+   * > The API is the same as `table.iter` has except for:
+   *
+   * @param {integer} limit - limit of rows to read
+   * @returns {(Array[]|Object[])} list of rows:
+   *  - `[value1, value2]` - base
+   *  - `{header1: value1, header2: value2}` - keyed
+   *  - `[rowNumber, [header1, header2], [value1, value2]]` - extended
+   *
    */
   async read({keyed, extended, cast=true, relations=false, limit, forceCast=false}={}) {
 
@@ -196,7 +258,13 @@ class Table {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#table
+   * Infer a schema for the table.
+   *
+   * It will infer and set Table Schema to `table.schema` based on table data.
+   *
+   * @param {number} limit - limit rows sample size
+   * @returns {Object} Table Schema descriptor
+   *
    */
   async infer({limit=100}={}) {
     if (!this._schema || !this._headers) {
@@ -216,7 +284,11 @@ class Table {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#table
+   * Save data source to file locally in CSV format with `,` (comma) delimiter
+   *
+   * @param {string} target  - path where to save a table data
+   * @throws {TableSchemaError} an error if there is saving problem
+   * @returns {Boolean} true on success
    */
   async save(target) {
     const rowStream = await this.iter({keyed: true, stream: true})
@@ -318,6 +390,7 @@ async function createRowStream(source, encoding, parserOptions) {
 }
 
 /**
+ * @ignore
  * Detects the CSV delimiter, updating the received `csvParser` options.
  *
  * It will use the first chunk to detect the CSV delimiter, and update it on
@@ -325,7 +398,7 @@ async function createRowStream(source, encoding, parserOptions) {
  * will be done.
  *
  * @param {module:csv/parse} csvParser - The csv.parse() instance
- * @return {module:stream/PassThrough}
+ * @returns {module:stream/PassThrough}
  */
 function createCsvDelimiterDetector(csvParser) {
   const detector = PassThrough()

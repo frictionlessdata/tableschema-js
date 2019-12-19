@@ -10,6 +10,10 @@ all: list
 list:
 	@grep '^\.PHONY' Makefile | cut -d' ' -f2- | tr ' ' '\n'
 
+readme:
+	npx referencer src README.md --in-place
+	npx doctoc --maxlevel 3 README.md
+
 release:
 	git checkout master && git pull origin && git fetch -p && git diff
 	@echo "\nContinuing in 10 seconds. Press <CTRL+C> to abort\n" && sleep 10

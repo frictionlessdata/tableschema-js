@@ -24,14 +24,21 @@ A library for working with [Table Schema](http://specs.frictionlessdata.io/table
 
 - [Getting started](#getting-started)
   - [Installation](#installation)
-  - [Examples](#examples)
 - [Documentation](#documentation)
+  - [Introduction](#introduction)
+  - [Working with Table](#working-with-table)
+  - [Working with Schema](#working-with-schema)
+  - [Working with Field](#working-with-field)
+  - [Working with validate/infer](#working-with-validateinfer)
+- [API Reference](#api-reference)
   - [Table](#table)
   - [Schema](#schema)
   - [Field](#field)
-  - [Validate](#validate)
-  - [Infer](#infer)
-  - [Errors](#errors)
+  - [validate(descriptor) ⇒ <code>Object</code>](#validatedescriptor-%E2%87%92-codeobjectcode)
+  - [infer(source, headers, options) ⇒ <code>Object</code>](#infersource-headers-options-%E2%87%92-codeobjectcode)
+  - [Classes](#classes)
+  - [DataPackageError](#datapackageerror)
+  - [TableSchemaError](#tableschemaerror)
 - [Contributing](#contributing)
 - [Changelog](#changelog)
 
@@ -55,11 +62,11 @@ $ npm install tableschema
 <script src="//unpkg.com/tableschema/dist/tableschema.min.js"></script>
 ```
 
-### Examples
+## Documentation
 
-#### Node
+### Introduction
 
-Code examples in this readme requires Node v8.3+ or proper modern browser . Also you have to wrap code into async function if the await keyword is used. You could see even more examples in the [examples](https://github.com/frictionlessdata/tableschema-js/tree/master/examples) directory.
+Let's start with a simple example for Node.js:
 
 ```javascript
 const {Table} = require('tableschema')
@@ -71,7 +78,7 @@ await table.schema.save() // save the schema
 await table.save() // save the data
 ```
 
-#### Browser
+And for browser:
 
 > https://jsfiddle.net/rollninja/ayngwd38/2/
 
@@ -101,9 +108,7 @@ After the script registration the library will be available as a global variable
 </html>
 ```
 
-## Documentation
-
-### Table
+### Working with Table
 
 A table is a core concept in a tabular data world. It represents data with metadata (Table Schema). Let's see how we could use it in practice.
 
@@ -223,78 +228,7 @@ stream.on('data', (row) => {
 
 It was only basic introduction to the `Table` class. To learn more let's take a look on `Table` class API reference.
 
-#### `async Table.load(source[, {schema, strict=false, headers=1, ...parserOptions}])`
-
-Factory method to instantiate `Table` class. This method is async and it should be used with await keyword or as a `Promise`. If `references` argument is provided foreign keys will be checked on any reading operation.
-
-- `source (String/Array[]/Stream/Function)` - data source (one of):
-  - local CSV file (path)
-  - remote CSV file (url)
-  - array of arrays representing the rows
-  - readable stream with CSV file contents
-  - function returning readable stream with CSV file contents
-- `schema (String/Object)` - data schema in all forms supported by `Schema` class
-- `strict (Boolean)` - strictness option to pass to `Schema` constructor
-- `headers (Number/String[])` - data source headers (one of):
-  - row number containing headers (`source` should contain headers rows)
-  - array of headers (`source` should NOT contain headers rows)
-- `parserOptions (Object)` - options to be used by CSV parser. All options listed at <http://csv.adaltas.com/parse/#parser-options>. By default `ltrim` is true according to the CSV Dialect spec.
-- `(errors.TableSchemaError)` - raises any error occurred in table creation process
-- `(Table)` - returns data table class instance
-
-#### `table.headers`
-
-- `(String[])` - returns data source headers
-
-#### `table.schema`
-
-- `(Schema)` - returns schema class instance
-
-#### `async table.iter([{keyed, extended, cast=true, forceCast=false, relations?, stream=false}])`
-
-Iterate through the table data and emits rows cast based on table schema (async for loop). With a `stream` flag instead of async iterator a Node stream will be returned. Data casting can be disabled.
-
-- `keyed (Boolean)` - iter keyed rows
-- `extended (Boolean)` - iter extended rows
-- `cast (Boolean)` - disable data casting if false
-- `forceCast (Boolean)` - instead of raising on the first row with cast error return an error object to replace failed row. It will allow to iterate over the whole data file even if it's not compliant to the schema. Example of output stream: `[['val1', 'val2'], TableSchemaError, ['val3', 'val4'], ...]`
-- `relations (Object)` - object of foreign key references in a form of `{resource1: [{field1: value1, field2: value2}, ...], ...}`. If provided foreign key fields will checked and resolved to its references
-- `stream (Boolean)` - return Node Readable Stream of table rows
-- `(errors.TableSchemaError)` - raises any error occurred in this process
-- `(AsyncIterator/Stream)` - async iterator/stream of rows:
-  - `[value1, value2]` - base
-  - `{header1: value1, header2: value2}` - keyed
-  - `[rowNumber, [header1, header2], [value1, value2]]` - extended
-
-#### `async table.read({keyed, extended, cast=true, relations=false, limit})`
-
-Read the whole table and returns as array of rows. Count of rows could be limited.
-
-- `keyed (Boolean)` - flag to emit keyed rows
-- `extended (Boolean)` - flag to emit extended rows
-- `cast (Boolean)` - disable data casting if false
-- `forceCast (Boolean)` - instead of raising on the first row with cast error return an error object to replace failed row. It will allow to iterate over the whole data file even if it's not compliant to the schema. Example of output stream: `[['val1', 'val2'], TableSchemaError, ['val3', 'val4'], ...]`
-- `relations (Object)` - object of foreign key references in a form of `{resource1: [{field1: value1, field2: value2}, ...], ...}`. If provided foreign key fields will checked and resolved to its references
-- `limit (Number)` - integer limit of rows to return
-- `(errors.TableSchemaError)` - raises any error occurred in this process
-- `(Array[])` - returns array of rows (see `table.iter`)
-
-#### `async table.infer({limit=100})`
-
-Infer a schema for the table. It will infer and set Table Schema to `table.schema` based on table data.
-
-- `limit (Number)` - limit rows sample size
-- `(Object)` - returns Table Schema descriptor
-
-#### `async table.save(target)`
-
-Save data source to file locally in CSV format with `,` (comma) delimiter
-
-- `target (String)` - path where to save a table data
-- `(errors.TableSchemaError)` - raises an error if there is saving problem
-- `(Boolean)` - returns true on success
-
-### Schema
+### Working with Schema
 
 A model of a schema with helpful methods for working with the schema and supported data. Schema instances can be initialized with a schema source as a url to a JSON file or a JSON object. The schema is initially validated (see [validate](#validate) below). By default validation errors will be stored in `schema.errors` but in a strict mode it will be instantly raised.
 
@@ -356,117 +290,7 @@ const schema = await Schema.load('schema.json')
 
 It was only basic introduction to the `Schema` class. To learn more let's take a look on `Schema` class API reference.
 
-#### `async Schema.load([descriptor], {strict=false})`
-
-Factory method to instantiate `Schema` class. This method is async and it should be used with await keyword or as a `Promise`.
-
-- `descriptor (String/Object)` - schema descriptor:
-  - local path
-  - remote url
-  - object
-- `strict (Boolean)` - flag to alter validation behaviour:
-  - if false error will not be raised and all error will be collected in `schema.errors`
-  - if strict is true any validation error will be raised immediately
-- `(errors.TableSchemaError)` - raises any error occurred in the process
-- `(Schema)` - returns schema class instance
-
-#### `schema.valid`
-
-- `(Boolean)` - returns validation status. It always true in strict mode.
-
-#### `schema.errors`
-
-- `(Error[])` - returns validation errors. It always empty in strict mode.
-
-#### `schema.descriptor`
-
-- `(Object)` - returns schema descriptor
-
-#### `schema.primaryKey`
-
-- `(string[])` - returns schema primary key
-
-#### `schema.foreignKeys`
-
-- `(Object[])` - returns schema foreign keys
-
-#### `schema.fields`
-
-- `(Field[])` - returns an array of `Field` instances.
-
-#### `schema.fieldNames`
-
-- `(String[])` - returns an array of field names.
-
-#### `schema.getField(name)`
-
-Get schema field by name.
-
-- `name (String)` - schema field name
-- `(Field/null)` - returns `Field` instance or null if not found
-
-#### `schema.addField(descriptor)`
-
-Add new field to schema. The schema descriptor will be validated with newly added field descriptor.
-
-- `descriptor (Object)` - field descriptor
-- `(errors.TableSchemaError)` - raises any error occurred in the process
-- `(Field/null)` - returns added `Field` instance or null if not added
-
-#### `schema.removeField(name)`
-
-Remove field resource by name. The schema descriptor will be validated after field descriptor removal.
-
-- `name (String)` - schema field name
-- `(errors.TableSchemaError)` - raises any error occurred in the process
-- `(Field/null)` - returns removed `Field` instances or null if not found
-
-#### `schema.castRow(row)`
-
-Cast row based on field types and formats.
-
-- `row (any[])` - data row as an array of values
-- `(any[])` - returns cast data row
-
-#### `schema.infer(rows[, {headers}])`
-
-Infer and set `schema.descriptor` based on data sample.
-
-- `rows (Array[])` - array of arrays representing rows.
-- `headers (Integer/String[])` - data sample headers (one of):
-  - row number containing headers (`rows` should contain headers rows)
-  - array of headers (`rows` should NOT contain headers rows)
-  - defaults to 1
-- `{Object}` - returns Table Schema descriptor
-
-#### `schema.commit({strict})`
-
-Update schema instance if there are in-place changes in the descriptor.
-
-- `strict (Boolean)` - alter `strict` mode for further work
-- `(errors.TableSchemaError)` - raises any error occurred in the process
-- `(Boolean)` - returns true on success and false if not modified
-
-```javascript
-const descriptor = {fields: [{name: 'field', type: 'string'}]}
-const schema = await Schema.load(descriptor)
-
-schema.getField('name').type // string
-schema.descriptor.fields[0].type = 'number'
-schema.getField('name').type // string
-schema.commit()
-schema.getField('name').type // number
-```
-
-#### `async schema.save(target)`
-
-Save schema descriptor to target destination.
-
-- `target (String)` - path where to save a descriptor
-- `(errors.TableSchemaError)` - raises any error occurred in the process
-- `(Boolean)` - returns true on success
-
-### Field
+### Working with Field
 
 Class represents a field in the schema.
 
@@ -523,59 +347,7 @@ Available types, formats and resultant value of the cast:
 | year | default | Number |
 | yearmonth | default | [Number, Number] |
 
-#### `new Field(descriptor[, missingValues])`
-
-Constructor to instantiate `Field` class.
-
-- `descriptor (Object)` - schema field descriptor
-- `missingValues (String[])` - an array with string representing missing values
-- `(errors.TableSchemaError)` - raises any error occured in the process
-- `(Field)` - returns field class instance
-
-#### `field.name`
-
-- `(String)` - returns field name
-
-#### `field.type`
-
-- `(String)` - returns field type
-
-#### `field.format`
-
-- `(String)` - returns field format
-
-#### `field.required`
-
-- `(Boolean)` - returns true if field is required
-
-#### `field.constraints`
-
-- `(Object)` - returns an object with field constraints
-
-#### `field.descriptor`
-
-- `(Object)` - returns field descriptor
-
-#### `field.castValue(value, {constraints=true})`
-
-Cast given value according to the field type and format.
-
-- `value (any)` - value to cast against field
-- `constraints (Boolean/String[])` - gets constraints configuration
-  - it could be set to true to disable constraint checks
-  - it could be an Array of constraints to check e.g. ['minimum', 'maximum']
-- `(errors.TableSchemaError)` - raises any error occured in the process
-- `(any)` - returns cast value
-
-#### `field.testValue(value[, constraints])`
-
-Test if value is compliant to the field.
-
-- `value (any)` - value to cast against field
-- `constraints (Boolean/String[])` - constraints configuration; defaults to `true`.
-- `(Boolean)` - returns if value is compliant to the field
-
-### Validate
+### Working with validate/infer
 
 > `validate()` validates whether a **schema** is a validate Table Schema accordingly to the [specifications](http://schemas.datapackages.org/json-table-schema.json). It does **not** validate data against a schema.
 
@@ -589,18 +361,6 @@ for (const error of errors) {
   // inspect Error objects
 }
 ```
-
-#### `async validate(descriptor)`
-
-This function is async so it has to be used with `await` keyword or as a `Promise`.
-
-- `descriptor (String/Object)` - schema descriptor (one of):
-  - local path
-  - remote url
-  - object
-- `(Object)` - returns `{valid, errors}` object
-
-### Infer
 
 Given data source and headers `infer` will return a Table Schema as a JSON object based on the data values.
 
@@ -650,26 +410,424 @@ The `descriptor` variable is now a JSON object:
 }
 ```
 
-#### `async infer(source, {headers=1, ...options})`
+## API Reference
 
+### Table
+Table representation
+
+
+* [Table](#Table)
+    * _instance_
+        * [.headers](#Table+headers) ⇒ <code>Array.&lt;string&gt;</code>
+        * [.schema](#Table+schema) ⇒ <code>Schema</code>
+        * [.iter(keyed, extended, cast, forceCast, relations, stream)](#Table+iter) ⇒ <code>AsyncIterator</code> \| <code>Stream</code>
+        * [.read(limit)](#Table+read) ⇒ <code>Array.&lt;Array&gt;</code> \| <code>Array.&lt;Object&gt;</code>
+        * [.infer(limit)](#Table+infer) ⇒ <code>Object</code>
+        * [.save(target)](#Table+save) ⇒ <code>Boolean</code>
+    * _static_
+        * [.load(source, schema, strict, headers, parserOptions)](#Table.load) ⇒ [<code>Table</code>](#Table)
+
+
+#### table.headers ⇒ <code>Array.&lt;string&gt;</code>
+Headers
+
+**Returns**: <code>Array.&lt;string&gt;</code> - data source headers  
+
+#### table.schema ⇒ <code>Schema</code>
+Schema
+
+**Returns**: <code>Schema</code> - table schema instance  
+
+#### table.iter(keyed, extended, cast, forceCast, relations, stream) ⇒ <code>AsyncIterator</code> \| <code>Stream</code>
+Iterate through the table data
+
+And emits rows cast based on table schema (async for loop).
+With a `stream` flag instead of async iterator a Node stream will be returned.
+Data casting can be disabled.
+
+**Returns**: <code>AsyncIterator</code> \| <code>Stream</code> - async iterator/stream of rows:
+ - `[value1, value2]` - base
+ - `{header1: value1, header2: value2}` - keyed
+ - `[rowNumber, [header1, header2], [value1, value2]]` - extended  
+**Throws**:
+
+- <code>TableSchemaError</code> raises any error occurred in this process
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| keyed | <code>boolean</code> | iter keyed rows |
+| extended | <code>boolean</code> | iter extended rows |
+| cast | <code>boolean</code> | disable data casting if false |
+| forceCast | <code>boolean</code> | instead of raising on the first row with cast error   return an error object to replace failed row. It will allow   to iterate over the whole data file even if it's not compliant to the schema.   Example of output stream:     `[['val1', 'val2'], TableSchemaError, ['val3', 'val4'], ...]` |
+| relations | <code>Object</code> | object of foreign key references in a form of   `{resource1: [{field1: value1, field2: value2}, ...], ...}`.   If provided foreign key fields will checked and resolved to its references |
+| stream | <code>boolean</code> | return Node Readable Stream of table rows |
+
+
+#### table.read(limit) ⇒ <code>Array.&lt;Array&gt;</code> \| <code>Array.&lt;Object&gt;</code>
+Read the table data into memory
+
+> The API is the same as `table.iter` has except for:
+
+**Returns**: <code>Array.&lt;Array&gt;</code> \| <code>Array.&lt;Object&gt;</code> - list of rows:
+ - `[value1, value2]` - base
+ - `{header1: value1, header2: value2}` - keyed
+ - `[rowNumber, [header1, header2], [value1, value2]]` - extended  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| limit | <code>integer</code> | limit of rows to read |
+
+
+#### table.infer(limit) ⇒ <code>Object</code>
+Infer a schema for the table.
+
+It will infer and set Table Schema to `table.schema` based on table data.
+
+**Returns**: <code>Object</code> - Table Schema descriptor  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| limit | <code>number</code> | limit rows sample size |
+
+
+#### table.save(target) ⇒ <code>Boolean</code>
+Save data source to file locally in CSV format with `,` (comma) delimiter
+
+**Returns**: <code>Boolean</code> - true on success  
+**Throws**:
+
+- <code>TableSchemaError</code> an error if there is saving problem
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| target | <code>string</code> | path where to save a table data |
+
+
+#### Table.load(source, schema, strict, headers, parserOptions) ⇒ [<code>Table</code>](#Table)
+Factory method to instantiate `Table` class.
+
+This method is async and it should be used with await keyword or as a `Promise`.
+If `references` argument is provided foreign keys will be checked
+on any reading operation.
+
+**Returns**: [<code>Table</code>](#Table) - data table class instance  
+**Throws**:
+
+- <code>TableSchemaError</code> raises any error occurred in table creation process
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| source | <code>string</code> \| <code>Array.&lt;Array&gt;</code> \| <code>Stream</code> \| <code>function</code> | data source (one of):   - local CSV file (path)   - remote CSV file (url)   - array of arrays representing the rows   - readable stream with CSV file contents   - function returning readable stream with CSV file contents |
+| schema | <code>string</code> \| <code>Object</code> | data schema   in all forms supported by `Schema` class |
+| strict | <code>boolean</code> | strictness option to pass to `Schema` constructor |
+| headers | <code>number</code> \| <code>Array.&lt;string&gt;</code> | data source headers (one of):   - row number containing headers (`source` should contain headers rows)   - array of headers (`source` should NOT contain headers rows) |
+| parserOptions | <code>Object</code> | options to be used by CSV parser.   All options listed at <http://csv.adaltas.com/parse/#parser-options>.   By default `ltrim` is true according to the CSV Dialect spec. |
+
+
+### Schema
+Schema representation
+
+
+* [Schema](#Schema)
+    * _instance_
+        * [.valid](#Schema+valid) ⇒ <code>Boolean</code>
+        * [.errors](#Schema+errors) ⇒ <code>Array.&lt;Error&gt;</code>
+        * [.descriptor](#Schema+descriptor) ⇒ <code>Object</code>
+        * [.primaryKey](#Schema+primaryKey) ⇒ <code>Array.&lt;string&gt;</code>
+        * [.foreignKeys](#Schema+foreignKeys) ⇒ <code>Array.&lt;Object&gt;</code>
+        * [.fields](#Schema+fields) ⇒ <code>Array.&lt;Field&gt;</code>
+        * [.fieldNames](#Schema+fieldNames) ⇒ <code>Array.&lt;string&gt;</code>
+        * [.getField(fieldName)](#Schema+getField) ⇒ <code>Field</code> \| <code>null</code>
+        * [.addField(descriptor)](#Schema+addField) ⇒ <code>Field</code>
+        * [.removeField(name)](#Schema+removeField) ⇒ <code>Field</code> \| <code>null</code>
+        * [.castRow(row, failFalst)](#Schema+castRow) ⇒ <code>Array.&lt;Array&gt;</code>
+        * [.infer(rows, headers)](#Schema+infer) ⇒ <code>Object</code>
+        * [.commit(strict)](#Schema+commit) ⇒ <code>Boolean</code>
+        * [.save(target)](#Schema+save) ⇒ <code>boolean</code>
+    * _static_
+        * [.load(descriptor, strict)](#Schema.load) ⇒ [<code>Schema</code>](#Schema)
+
+
+#### schema.valid ⇒ <code>Boolean</code>
+Validation status
+
+It always `true` in strict mode.
+
+**Returns**: <code>Boolean</code> - returns validation status  
+
+#### schema.errors ⇒ <code>Array.&lt;Error&gt;</code>
+Validation errors
+
+It always empty in strict mode.
+
+**Returns**: <code>Array.&lt;Error&gt;</code> - returns validation errors  
+
+#### schema.descriptor ⇒ <code>Object</code>
+Descriptor
+
+**Returns**: <code>Object</code> - schema descriptor  
+
+#### schema.primaryKey ⇒ <code>Array.&lt;string&gt;</code>
+Primary Key
+
+**Returns**: <code>Array.&lt;string&gt;</code> - schema primary key  
+
+#### schema.foreignKeys ⇒ <code>Array.&lt;Object&gt;</code>
+Foreign Keys
+
+**Returns**: <code>Array.&lt;Object&gt;</code> - schema foreign keys  
+
+#### schema.fields ⇒ <code>Array.&lt;Field&gt;</code>
+Fields
+
+**Returns**: <code>Array.&lt;Field&gt;</code> - schema fields  
+
+#### schema.fieldNames ⇒ <code>Array.&lt;string&gt;</code>
+Field names
+
+**Returns**: <code>Array.&lt;string&gt;</code> - schema field names  
+
+#### schema.getField(fieldName) ⇒ <code>Field</code> \| <code>null</code>
+Return a field
+
+**Returns**: <code>Field</code> \| <code>null</code> - field instance if exists  
+
+| Param | Type |
+| --- | --- |
+| fieldName | <code>string</code> | 
+
+
+#### schema.addField(descriptor) ⇒ <code>Field</code>
+Add a field
+
+**Returns**: <code>Field</code> - added field instance  
+
+| Param | Type |
+| --- | --- |
+| descriptor | <code>Object</code> | 
+
+
+#### schema.removeField(name) ⇒ <code>Field</code> \| <code>null</code>
+Remove a field
+
+**Returns**: <code>Field</code> \| <code>null</code> - removed field instance if exists  
+
+| Param | Type |
+| --- | --- |
+| name | <code>string</code> | 
+
+
+#### schema.castRow(row, failFalst) ⇒ <code>Array.&lt;Array&gt;</code>
+Cast row based on field types and formats.
+
+**Returns**: <code>Array.&lt;Array&gt;</code> - cast data row  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| row | <code>Array.&lt;Array&gt;</code> | data row as an array of values |
+| failFalst | <code>boolean</code> |  |
+
+
+#### schema.infer(rows, headers) ⇒ <code>Object</code>
+Infer and set `schema.descriptor` based on data sample.
+
+**Returns**: <code>Object</code> - Table Schema descriptor  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| rows | <code>Array.&lt;Array&gt;</code> | array of arrays representing rows |
+| headers | <code>integer</code> \| <code>Array.&lt;string&gt;</code> | data sample headers (one of):   - row number containing headers (`rows` should contain headers rows)   - array of headers (`rows` should NOT contain headers rows)   - defaults to 1 |
+
+
+#### schema.commit(strict) ⇒ <code>Boolean</code>
+Update schema instance if there are in-place changes in the descriptor.
+
+**Returns**: <code>Boolean</code> - returns true on success and false if not modified  
+**Throws**:
+
+- <code>TableSchemaError</code> raises any error occurred in the process
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| strict | <code>boolean</code> | alter `strict` mode for further work |
+
+**Example**  
+```javascript
+const descriptor = {fields: [{name: 'field', type: 'string'}]}
+const schema = await Schema.load(descriptor)
+
+schema.getField('name').type // string
+schema.descriptor.fields[0].type = 'number'
+schema.getField('name').type // string
+schema.commit()
+schema.getField('name').type // number
+```
+
+#### schema.save(target) ⇒ <code>boolean</code>
+Save schema descriptor to target destination.
+
+**Returns**: <code>boolean</code> - returns true on success  
+**Throws**:
+
+- <code>TableSchemaError</code> raises any error occurred in the process
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| target | <code>string</code> | path where to save a descriptor |
+
+
+#### Schema.load(descriptor, strict) ⇒ [<code>Schema</code>](#Schema)
+Factory method to instantiate `Schema` class.
+
+This method is async and it should be used with await keyword or as a `Promise`.
+
+**Returns**: [<code>Schema</code>](#Schema) - returns schema class instance  
+**Throws**:
+
+- <code>TableSchemaError</code> raises any error occurred in the process
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| descriptor | <code>string</code> \| <code>Object</code> | schema descriptor:   - local path   - remote url   - object |
+| strict | <code>boolean</code> | flag to alter validation behaviour:   - if false error will not be raised and all error will be collected in `schema.errors`   - if strict is true any validation error will be raised immediately |
+
+
+### Field
+Field representation
+
+
+* [Field](#Field)
+    * [new Field(descriptor, missingValues)](#new_Field_new)
+    * [.name](#Field+name) ⇒ <code>string</code>
+    * [.type](#Field+type) ⇒ <code>string</code>
+    * [.format](#Field+format) ⇒ <code>string</code>
+    * [.required](#Field+required) ⇒ <code>boolean</code>
+    * [.constraints](#Field+constraints) ⇒ <code>Object</code>
+    * [.descriptor](#Field+descriptor) ⇒ <code>Object</code>
+    * [.castValue(value, constraints)](#Field+castValue) ⇒ <code>any</code>
+    * [.testValue(value, constraints)](#Field+testValue) ⇒ <code>boolean</code>
+
+
+#### new Field(descriptor, missingValues)
+Constructor to instantiate `Field` class.
+
+**Returns**: [<code>Field</code>](#Field) - returns field class instance  
+**Throws**:
+
+- <code>TableSchemaError</code> raises any error occured in the process
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| descriptor | <code>Object</code> | schema field descriptor |
+| missingValues | <code>Array.&lt;string&gt;</code> | an array with string representing missing values |
+
+
+#### field.name ⇒ <code>string</code>
+Field name
+
+
+#### field.type ⇒ <code>string</code>
+Field type
+
+
+#### field.format ⇒ <code>string</code>
+Field format
+
+
+#### field.required ⇒ <code>boolean</code>
+Return true if field is required
+
+
+#### field.constraints ⇒ <code>Object</code>
+Field constraints
+
+
+#### field.descriptor ⇒ <code>Object</code>
+Field descriptor
+
+
+#### field.castValue(value, constraints) ⇒ <code>any</code>
+Cast value
+
+**Returns**: <code>any</code> - cast value  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| value | <code>any</code> | value to cast |
+| constraints | <code>Object</code> \| <code>false</code> |  |
+
+
+#### field.testValue(value, constraints) ⇒ <code>boolean</code>
+Check if value can be cast
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| value | <code>any</code> | value to test |
+| constraints | <code>Object</code> \| <code>false</code> |  |
+
+
+### validate(descriptor) ⇒ <code>Object</code>
 This function is async so it has to be used with `await` keyword or as a `Promise`.
 
-- `source (String/Array[]/Stream/Function)` - data source (one of):
-  - local CSV file (path)
-  - remote CSV file (url)
-  - array of arrays representing the rows
-  - readable stream with CSV file contents
-  - function returning readable stream with CSV file contents
-- `headers (String[])` - array of headers
-- `options (Object)` - any `Table.load` options
-- `(errors.TableSchemaError)` - raises any error occured in the process
-- `(Object)` - returns schema descriptor
+**Returns**: <code>Object</code> - returns `{valid, errors}` object  
 
-### Errors
+| Param | Type | Description |
+| --- | --- | --- |
+| descriptor | <code>string</code> \| <code>Object</code> | schema descriptor (one of):   - local path   - remote url   - object |
 
-#### `errors.TableSchemaError`
 
-Base class for the all library errors. If there are more than one error you could get an additional information from the error object:
+### infer(source, headers, options) ⇒ <code>Object</code>
+This function is async so it has to be used with `await` keyword or as a `Promise`.
+
+**Returns**: <code>Object</code> - returns schema descriptor  
+**Throws**:
+
+- <code>TableSchemaError</code> raises any error occured in the process
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| source | <code>string</code> \| <code>Array.&lt;Array&gt;</code> \| <code>Stream</code> \| <code>function</code> | data source (one of):   - local CSV file (path)   - remote CSV file (url)   - array of arrays representing the rows   - readable stream with CSV file contents   - function returning readable stream with CSV file contents |
+| headers | <code>Array.&lt;string&gt;</code> | array of headers |
+| options | <code>Object</code> | any `Table.load` options |
+
+### Classes
+
+<dl>
+<dt><a href="#DataPackageError">DataPackageError</a></dt>
+<dd><p>Base class for the all DataPackage/TableSchema errors.</p>
+<p>If there are more than one error you could get an additional information
+from the error object:</p>
+<pre><code class="language-javascript">try {
+  // some lib action
+} catch (error) {
+  console.log(error) // you have N cast errors (see error.errors)
+  if (error.multiple) {
+    for (const error of error.errors) {
+        console.log(error) // cast error M is ...
+    }
+  }
+}</code></pre>
+</dd>
+<dt><a href="#TableSchemaError">TableSchemaError</a></dt>
+<dd><p>Base class for the all TableSchema errors.</p>
+</dd>
+</dl>
+
+
+### DataPackageError
+Base class for the all DataPackage/TableSchema errors.
+
+If there are more than one error you could get an additional information
+from the error object:
 
 ```javascript
 try {
@@ -684,25 +842,38 @@ try {
 }
 ```
 
-#### `errors.tableSchemaError.rowNumber`
 
-- `(Number/undefined)` - row number of the error if available
+* [DataPackageError](#DataPackageError)
+    * [new DataPackageError(message, errors)](#new_DataPackageError_new)
+    * [.multiple](#DataPackageError+multiple) ⇒ <code>boolean</code>
+    * [.errors](#DataPackageError+errors) ⇒ <code>Array.&lt;Error&gt;</code>
 
-#### `errors.tableSchemaError.columnNumber`
 
-- `(Number/undefined)` - column number of the error if available
+#### new DataPackageError(message, errors)
+Create an error
 
-#### `errors.tableSchemaError.fieldNames`
 
-- `(Array/undefined)` - names of the fields in the tableschema
+| Param | Type | Description |
+| --- | --- | --- |
+| message | <code>string</code> |  |
+| errors | <code>Array.&lt;Error&gt;</code> | nested errors |
 
-#### `errors.tableSchemaError.headerNames`
 
-- `(Array/undefined)` - names of the headers in the table
+#### dataPackageError.multiple ⇒ <code>boolean</code>
+Whether it's nested
+
+
+#### dataPackageError.errors ⇒ <code>Array.&lt;Error&gt;</code>
+List of errors
+
+
+### TableSchemaError
+Base class for the all TableSchema errors.
+
 
 ## Contributing
 
-The project follows the [Open Knowledge International coding standards](https://github.com/okfn/coding-standards). There are common commands to work with the project:
+> The project follows the [Open Knowledge International coding standards](https://github.com/okfn/coding-standards). There are common commands to work with the project:
 
 ```bash
 $ npm install

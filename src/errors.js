@@ -4,12 +4,36 @@ const ExtendableError = require('es6-error').default || require('es6-error') // 
 
 // Module API
 
+
+/**
+ * Base class for the all DataPackage/TableSchema errors.
+ *
+ * If there are more than one error you could get an additional information
+ * from the error object:
+ *
+ * ```javascript
+ * try {
+ *   // some lib action
+ * } catch (error) {
+ *   console.log(error) // you have N cast errors (see error.errors)
+ *   if (error.multiple) {
+ *     for (const error of error.errors) {
+ *         console.log(error) // cast error M is ...
+ *     }
+ *   }
+ * }
+ * ```
+ */
 class DataPackageError extends ExtendableError {
 
   // Public
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#errors
+   * Create an error
+   *
+   * @param {string} message
+   * @param {Error[]} errors - nested errors
+   * @returns {DataPackageError}
    */
   constructor(message, errors=[]) {
     super(message)
@@ -17,14 +41,18 @@ class DataPackageError extends ExtendableError {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#errors
+   * Whether it's nested
+   *
+   * @returns {boolean}
    */
   get multiple() {
     return !!this._errors.length
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#errors
+   * List of errors
+   *
+   * @returns {Error[]}
    */
   get errors() {
     return this._errors
@@ -33,6 +61,9 @@ class DataPackageError extends ExtendableError {
 }
 
 
+/**
+ * Base class for the all TableSchema errors.
+ */
 class TableSchemaError extends DataPackageError {}
 
 
