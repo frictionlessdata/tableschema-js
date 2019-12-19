@@ -111,7 +111,6 @@ class Table {
    *  - `[value1, value2]` - base
    *  - `{header1: value1, header2: value2}` - keyed
    *  - `[rowNumber, [header1, header2], [value1, value2]]` - extended
-   *
    */
   async iter({keyed, extended, cast=true, relations=false, stream=false, forceCast=false}={}) {
     const source = this._source
@@ -238,7 +237,6 @@ class Table {
    *  - `[value1, value2]` - base
    *  - `{header1: value1, header2: value2}` - keyed
    *  - `[rowNumber, [header1, header2], [value1, value2]]` - extended
-   *
    */
   async read({keyed, extended, cast=true, relations=false, limit, forceCast=false}={}) {
 
@@ -264,7 +262,6 @@ class Table {
    *
    * @param {number} limit - limit rows sample size
    * @returns {Object} Table Schema descriptor
-   *
    */
   async infer({limit=100}={}) {
     if (!this._schema || !this._headers) {
