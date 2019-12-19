@@ -36,12 +36,8 @@ A library for working with [Table Schema](http://specs.frictionlessdata.io/table
   - [Field](#field)
   - [validate(descriptor) ⇒ <code>Object</code>](#validatedescriptor-%E2%87%92-codeobjectcode)
   - [infer(source, headers, options) ⇒ <code>Object</code>](#infersource-headers-options-%E2%87%92-codeobjectcode)
-  - [Classes](#classes)
   - [DataPackageError](#datapackageerror)
   - [TableSchemaError](#tableschemaerror)
-  - [Classes](#classes-1)
-  - [DataPackageError](#datapackageerror-1)
-  - [TableSchemaError](#tableschemaerror-1)
 - [Legacy API Reference](#legacy-api-reference)
 - [Contributing](#contributing)
 - [Changelog](#changelog)
@@ -803,29 +799,6 @@ This function is async so it has to be used with `await` keyword or as a `Promis
 | headers | <code>Array.&lt;string&gt;</code> | array of headers |
 | options | <code>Object</code> | any `Table.load` options |
 
-### Classes
-
-<dl>
-<dt><a href="#DataPackageError">DataPackageError</a></dt>
-<dd><p>Base class for the all DataPackage/TableSchema errors.</p>
-<p>If there are more than one error you could get an additional information
-from the error object:</p>
-<pre><code class="language-javascript">try {
-  // some lib action
-} catch (error) {
-  console.log(error) // you have N cast errors (see error.errors)
-  if (error.multiple) {
-    for (const error of error.errors) {
-        console.log(error) // cast error M is ...
-    }
-  }
-}</code></pre>
-</dd>
-<dt><a href="#TableSchemaError">TableSchemaError</a></dt>
-<dd><p>Base class for the all TableSchema errors.</p>
-</dd>
-</dl>
-
 
 ### DataPackageError
 Base class for the all DataPackage/TableSchema errors.
@@ -848,90 +821,19 @@ try {
 
 
 * [DataPackageError](#DataPackageError)
-    * [new DataPackageError(message, nested)](#new_DataPackageError_new)
+    * [new DataPackageError(message, errors)](#new_DataPackageError_new)
     * [.multiple](#DataPackageError+multiple) ⇒ <code>boolean</code>
     * [.errors](#DataPackageError+errors) ⇒ <code>Array.&lt;Error&gt;</code>
 
 
-#### new DataPackageError(message, nested)
+#### new DataPackageError(message, errors)
 Create an error
 
 
 | Param | Type | Description |
 | --- | --- | --- |
 | message | <code>string</code> |  |
-| nested | <code>Array.&lt;Error&gt;</code> | errors |
-
-
-#### dataPackageError.multiple ⇒ <code>boolean</code>
-Whether it's nested
-
-
-#### dataPackageError.errors ⇒ <code>Array.&lt;Error&gt;</code>
-List of errors
-
-
-### TableSchemaError
-Base class for the all TableSchema errors.
-
-### Classes
-
-<dl>
-<dt><a href="#DataPackageError">DataPackageError</a></dt>
-<dd><p>Base class for the all DataPackage/TableSchema errors.</p>
-<p>If there are more than one error you could get an additional information
-from the error object:</p>
-<pre><code class="language-javascript">try {
-  // some lib action
-} catch (error) {
-  console.log(error) // you have N cast errors (see error.errors)
-  if (error.multiple) {
-    for (const error of error.errors) {
-        console.log(error) // cast error M is ...
-    }
-  }
-}</code></pre>
-</dd>
-<dt><a href="#TableSchemaError">TableSchemaError</a></dt>
-<dd><p>Base class for the all TableSchema errors.</p>
-</dd>
-</dl>
-
-
-### DataPackageError
-Base class for the all DataPackage/TableSchema errors.
-
-If there are more than one error you could get an additional information
-from the error object:
-
-```javascript
-try {
-  // some lib action
-} catch (error) {
-  console.log(error) // you have N cast errors (see error.errors)
-  if (error.multiple) {
-    for (const error of error.errors) {
-        console.log(error) // cast error M is ...
-    }
-  }
-}
-```
-
-
-* [DataPackageError](#DataPackageError)
-    * [new DataPackageError(message, nested)](#new_DataPackageError_new)
-    * [.multiple](#DataPackageError+multiple) ⇒ <code>boolean</code>
-    * [.errors](#DataPackageError+errors) ⇒ <code>Array.&lt;Error&gt;</code>
-
-
-#### new DataPackageError(message, nested)
-Create an error
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| message | <code>string</code> |  |
-| nested | <code>Array.&lt;Error&gt;</code> | errors |
+| errors | <code>Array.&lt;Error&gt;</code> | nested errors |
 
 
 #### dataPackageError.multiple ⇒ <code>boolean</code>

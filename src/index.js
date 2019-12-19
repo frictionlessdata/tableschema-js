@@ -5,7 +5,7 @@ const { Field } = require('./field')
 const { validate } = require('./validate')
 const { infer } = require('./infer')
 const { DataPackageError } = require('./errors')
-const { TableSchemaError } = require('./errors')
+const { TableSchemaError  } = require('./errors')
 
 
 // Module API

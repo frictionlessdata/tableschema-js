@@ -32,7 +32,7 @@ class DataPackageError extends ExtendableError {
    * Create an error
    *
    * @param {string} message
-   * @param {Error[]} nested errors
+   * @param {Error[]} errors - nested errors
    * @returns {DataPackageError}
    */
   constructor(message, errors=[]) {
