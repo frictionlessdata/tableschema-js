@@ -417,7 +417,7 @@ Table representation
         * [.iter(keyed, extended, cast, forceCast, relations, stream)](#Table+iter) ⇒ <code>AsyncIterator</code> \| <code>Stream</code>
         * [.read(limit)](#Table+read) ⇒ <code>Array.&lt;Array&gt;</code> \| <code>Array.&lt;Object&gt;</code>
         * [.infer(limit)](#Table+infer) ⇒ <code>Object</code>
-        * [.save(target, true)](#Table+save)
+        * [.save(target)](#Table+save) ⇒ <code>Boolean</code>
     * _static_
         * [.load(source, schema, strict, headers, parserOptions)](#Table.load) ⇒ [<code>Table</code>](#Table)
 
@@ -485,9 +485,10 @@ It will infer and set Table Schema to `table.schema` based on table data.
 | limit | <code>number</code> | limit rows sample size |
 
 
-#### table.save(target, true)
+#### table.save(target) ⇒ <code>Boolean</code>
 Save data source to file locally in CSV format with `,` (comma) delimiter
 
+**Returns**: <code>Boolean</code> - true on success  
 **Throws**:
 
 - <code>TableSchemaError</code> an error if there is saving problem
@@ -496,7 +497,6 @@ Save data source to file locally in CSV format with `,` (comma) delimiter
 | Param | Type | Description |
 | --- | --- | --- |
 | target | <code>string</code> | path where to save a table data |
-| true | <code>Boolean</code> | on success |
 
 
 #### Table.load(source, schema, strict, headers, parserOptions) ⇒ [<code>Table</code>](#Table)

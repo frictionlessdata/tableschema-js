@@ -288,7 +288,7 @@ class Table {
    *
    * @param {string} target  - path where to save a table data
    * @throws {TableSchemaError} an error if there is saving problem
-   * @param {Boolean} true on success
+   * @returns {Boolean} true on success
    */
   async save(target) {
     const rowStream = await this.iter({keyed: true, stream: true})
