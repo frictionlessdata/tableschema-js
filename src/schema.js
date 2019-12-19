@@ -18,12 +18,27 @@ const types = require('./types')
 
 // Module API
 
+/**
+ * Schema representation
+ */
 class Schema {
 
   // Public
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Factory method to instantiate `Schema` class.
+   *
+   * This method is async and it should be used with await keyword or as a `Promise`.
+   *
+   * @param {(string|Object)} descriptor - schema descriptor:
+   *   - local path
+   *   - remote url
+   *   - object
+   * @param {boolean} strict - flag to alter validation behaviour:
+   *   - if false error will not be raised and all error will be collected in `schema.errors`
+   *   - if strict is true any validation error will be raised immediately
+   * @throws {TableSchemaError} raises any error occurred in the process
+   * @returns {Schema} returns schema class instance
    */
   static async load(descriptor={}, {strict=false, caseInsensitiveHeaders=false}={}) {
 
@@ -34,21 +49,31 @@ class Schema {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Validation status
+   *
+   * It always `true` in strict mode.
+   *
+   * @returns {Boolean} returns validation status
    */
   get valid() {
     return this._errors.length === 0
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Validation errors
+   *
+   * It always empty in strict mode.
+   *
+   * @returns {Error[]} returns validation errors
    */
   get errors() {
     return this._errors
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Descriptor
+   *
+   * @returns {Object} schema descriptor
    */
   get descriptor() {
     // Never use this.descriptor inside this class (!!!)
@@ -56,7 +81,9 @@ class Schema {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Primary Key
+   *
+   * @returns {string[]} schema primary key
    */
   get primaryKey() {
     const primaryKey = this._currentDescriptor.primaryKey || []
@@ -64,7 +91,9 @@ class Schema {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Foreign Keys
+   *
+   * @returns {Object[]} schema foreign keys
    */
   get foreignKeys() {
     const foreignKeys = this._currentDescriptor.foreignKeys || []
@@ -84,21 +113,28 @@ class Schema {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Fields
+   *
+   * @returns {Field[]} schema fields
    */
   get fields() {
     return this._fields
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Field names
+   *
+   * @returns {string[]} schema field names
    */
   get fieldNames() {
     return this._fields.map(field => field.name)
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Return a field
+   *
+   * @param {string} fieldName
+   * @returns {(Field|null)} field instance if exists
    */
   getField(fieldName, {index=0}={}) {
     const name = fieldName
@@ -116,7 +152,10 @@ class Schema {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Add a field
+   *
+   * @param {Object} descriptor
+   * @returns {Field} added field instance
    */
   addField(descriptor) {
     if (!this._currentDescriptor.fields) this._currentDescriptor.fields = []
@@ -126,7 +165,10 @@ class Schema {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Remove a field
+   *
+   * @param {string} name
+   * @returns {(Field|null)} removed field instance if exists
    */
   removeField(name) {
     const field = this.getField(name)
@@ -139,7 +181,11 @@ class Schema {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Cast row based on field types and formats.
+   *
+   * @param {Array[]} row - data row as an array of values
+   * @param {boolean} failFalst
+   * @returns {Array[]} cast data row
    */
   castRow(row, {failFast=false}={}) {
     const result = []
@@ -174,7 +220,14 @@ class Schema {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Infer and set `schema.descriptor` based on data sample.
+   *
+   * @param {Array[]} rows - array of arrays representing rows
+   * @param {(integer|string[])} headers - data sample headers (one of):
+   *   - row number containing headers (`rows` should contain headers rows)
+   *   - array of headers (`rows` should NOT contain headers rows)
+   *   - defaults to 1
+   * @returns {Object} Table Schema descriptor
    */
   infer(rows, {headers=1}={}) {
     rows = cloneDeep(rows)
@@ -219,7 +272,24 @@ class Schema {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Update schema instance if there are in-place changes in the descriptor.
+   *
+   * @example
+   *
+   * ```javascript
+   * const descriptor = {fields: [{name: 'field', type: 'string'}]}
+   * const schema = await Schema.load(descriptor)
+   *
+   * schema.getField('name').type // string
+   * schema.descriptor.fields[0].type = 'number'
+   * schema.getField('name').type // string
+   * schema.commit()
+   * schema.getField('name').type // number
+   * ```
+   *
+   * @param {boolean} strict - alter `strict` mode for further work
+   * @throws {TableSchemaError} raises any error occurred in the process
+   * @returns {Boolean} returns true on success and false if not modified
    */
   commit({strict}={}) {
     if (isBoolean(strict)) this._strict = strict
@@ -230,7 +300,11 @@ class Schema {
   }
 
   /**
-   * https://github.com/frictionlessdata/tableschema-js#schema
+   * Save schema descriptor to target destination.
+   *
+   * @param {string} target - path where to save a descriptor
+   * @throws {TableSchemaError} raises any error occurred in the process
+   * @returns {boolean} returns true on success
    */
   save(target) {
     return new Promise((resolve, reject) => {
