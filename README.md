@@ -36,9 +36,9 @@ A library for working with [Table Schema](http://specs.frictionlessdata.io/table
   - [Field](#field)
   - [validate(descriptor) ⇒ <code>Object</code>](#validatedescriptor-%E2%87%92-codeobjectcode)
   - [infer(source, headers, options) ⇒ <code>Object</code>](#infersource-headers-options-%E2%87%92-codeobjectcode)
+  - [Classes](#classes)
   - [DataPackageError](#datapackageerror)
   - [TableSchemaError](#tableschemaerror)
-- [Legacy API Reference](#legacy-api-reference)
 - [Contributing](#contributing)
 - [Changelog](#changelog)
 
@@ -431,12 +431,12 @@ Table representation
 #### table.headers ⇒ <code>Array.&lt;string&gt;</code>
 Headers
 
-**Returns**: <code>Array.&lt;string&gt;</code> - data source headers
+**Returns**: <code>Array.&lt;string&gt;</code> - data source headers  
 
 #### table.schema ⇒ <code>Schema</code>
 Schema
 
-**Returns**: <code>Schema</code> - table schema instance
+**Returns**: <code>Schema</code> - table schema instance  
 
 #### table.iter(keyed, extended, cast, forceCast, relations, stream) ⇒ <code>AsyncIterator</code> \| <code>Stream</code>
 Iterate through the table data
@@ -448,7 +448,7 @@ Data casting can be disabled.
 **Returns**: <code>AsyncIterator</code> \| <code>Stream</code> - async iterator/stream of rows:
  - `[value1, value2]` - base
  - `{header1: value1, header2: value2}` - keyed
- - `[rowNumber, [header1, header2], [value1, value2]]` - extended
+ - `[rowNumber, [header1, header2], [value1, value2]]` - extended  
 **Throws**:
 
 - <code>TableSchemaError</code> raises any error occurred in this process
@@ -472,7 +472,7 @@ Read the table data into memory
 **Returns**: <code>Array.&lt;Array&gt;</code> \| <code>Array.&lt;Object&gt;</code> - list of rows:
  - `[value1, value2]` - base
  - `{header1: value1, header2: value2}` - keyed
- - `[rowNumber, [header1, header2], [value1, value2]]` - extended
+ - `[rowNumber, [header1, header2], [value1, value2]]` - extended  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -484,7 +484,7 @@ Infer a schema for the table.
 
 It will infer and set Table Schema to `table.schema` based on table data.
 
-**Returns**: <code>Object</code> - Table Schema descriptor
+**Returns**: <code>Object</code> - Table Schema descriptor  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -494,7 +494,7 @@ It will infer and set Table Schema to `table.schema` based on table data.
 #### table.save(target) ⇒ <code>Boolean</code>
 Save data source to file locally in CSV format with `,` (comma) delimiter
 
-**Returns**: <code>Boolean</code> - true on success
+**Returns**: <code>Boolean</code> - true on success  
 **Throws**:
 
 - <code>TableSchemaError</code> an error if there is saving problem
@@ -512,7 +512,7 @@ This method is async and it should be used with await keyword or as a `Promise`.
 If `references` argument is provided foreign keys will be checked
 on any reading operation.
 
-**Returns**: [<code>Table</code>](#Table) - data table class instance
+**Returns**: [<code>Table</code>](#Table) - data table class instance  
 **Throws**:
 
 - <code>TableSchemaError</code> raises any error occurred in table creation process
@@ -556,74 +556,74 @@ Validation status
 
 It always `true` in strict mode.
 
-**Returns**: <code>Boolean</code> - returns validation status
+**Returns**: <code>Boolean</code> - returns validation status  
 
 #### schema.errors ⇒ <code>Array.&lt;Error&gt;</code>
 Validation errors
 
 It always empty in strict mode.
 
-**Returns**: <code>Array.&lt;Error&gt;</code> - returns validation errors
+**Returns**: <code>Array.&lt;Error&gt;</code> - returns validation errors  
 
 #### schema.descriptor ⇒ <code>Object</code>
 Descriptor
 
-**Returns**: <code>Object</code> - schema descriptor
+**Returns**: <code>Object</code> - schema descriptor  
 
 #### schema.primaryKey ⇒ <code>Array.&lt;string&gt;</code>
 Primary Key
 
-**Returns**: <code>Array.&lt;string&gt;</code> - schema primary key
+**Returns**: <code>Array.&lt;string&gt;</code> - schema primary key  
 
 #### schema.foreignKeys ⇒ <code>Array.&lt;Object&gt;</code>
 Foreign Keys
 
-**Returns**: <code>Array.&lt;Object&gt;</code> - schema foreign keys
+**Returns**: <code>Array.&lt;Object&gt;</code> - schema foreign keys  
 
 #### schema.fields ⇒ <code>Array.&lt;Field&gt;</code>
 Fields
 
-**Returns**: <code>Array.&lt;Field&gt;</code> - schema fields
+**Returns**: <code>Array.&lt;Field&gt;</code> - schema fields  
 
 #### schema.fieldNames ⇒ <code>Array.&lt;string&gt;</code>
 Field names
 
-**Returns**: <code>Array.&lt;string&gt;</code> - schema field names
+**Returns**: <code>Array.&lt;string&gt;</code> - schema field names  
 
 #### schema.getField(fieldName) ⇒ <code>Field</code> \| <code>null</code>
 Return a field
 
-**Returns**: <code>Field</code> \| <code>null</code> - field instance if exists
+**Returns**: <code>Field</code> \| <code>null</code> - field instance if exists  
 
 | Param | Type |
 | --- | --- |
-| fieldName | <code>string</code> |
+| fieldName | <code>string</code> | 
 
 
 #### schema.addField(descriptor) ⇒ <code>Field</code>
 Add a field
 
-**Returns**: <code>Field</code> - added field instance
+**Returns**: <code>Field</code> - added field instance  
 
 | Param | Type |
 | --- | --- |
-| descriptor | <code>Object</code> |
+| descriptor | <code>Object</code> | 
 
 
 #### schema.removeField(name) ⇒ <code>Field</code> \| <code>null</code>
 Remove a field
 
-**Returns**: <code>Field</code> \| <code>null</code> - removed field instance if exists
+**Returns**: <code>Field</code> \| <code>null</code> - removed field instance if exists  
 
 | Param | Type |
 | --- | --- |
-| name | <code>string</code> |
+| name | <code>string</code> | 
 
 
 #### schema.castRow(row, failFalst) ⇒ <code>Array.&lt;Array&gt;</code>
 Cast row based on field types and formats.
 
-**Returns**: <code>Array.&lt;Array&gt;</code> - cast data row
+**Returns**: <code>Array.&lt;Array&gt;</code> - cast data row  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -634,7 +634,7 @@ Cast row based on field types and formats.
 #### schema.infer(rows, headers) ⇒ <code>Object</code>
 Infer and set `schema.descriptor` based on data sample.
 
-**Returns**: <code>Object</code> - Table Schema descriptor
+**Returns**: <code>Object</code> - Table Schema descriptor  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -645,7 +645,7 @@ Infer and set `schema.descriptor` based on data sample.
 #### schema.commit(strict) ⇒ <code>Boolean</code>
 Update schema instance if there are in-place changes in the descriptor.
 
-**Returns**: <code>Boolean</code> - returns true on success and false if not modified
+**Returns**: <code>Boolean</code> - returns true on success and false if not modified  
 **Throws**:
 
 - <code>TableSchemaError</code> raises any error occurred in the process
@@ -655,7 +655,7 @@ Update schema instance if there are in-place changes in the descriptor.
 | --- | --- | --- |
 | strict | <code>boolean</code> | alter `strict` mode for further work |
 
-**Example**
+**Example**  
 ```javascript
 const descriptor = {fields: [{name: 'field', type: 'string'}]}
 const schema = await Schema.load(descriptor)
@@ -670,7 +670,7 @@ schema.getField('name').type // number
 #### schema.save(target) ⇒ <code>boolean</code>
 Save schema descriptor to target destination.
 
-**Returns**: <code>boolean</code> - returns true on success
+**Returns**: <code>boolean</code> - returns true on success  
 **Throws**:
 
 - <code>TableSchemaError</code> raises any error occurred in the process
@@ -686,7 +686,7 @@ Factory method to instantiate `Schema` class.
 
 This method is async and it should be used with await keyword or as a `Promise`.
 
-**Returns**: [<code>Schema</code>](#Schema) - returns schema class instance
+**Returns**: [<code>Schema</code>](#Schema) - returns schema class instance  
 **Throws**:
 
 - <code>TableSchemaError</code> raises any error occurred in the process
@@ -717,7 +717,7 @@ Field representation
 #### new Field(descriptor, missingValues)
 Constructor to instantiate `Field` class.
 
-**Returns**: [<code>Field</code>](#Field) - returns field class instance
+**Returns**: [<code>Field</code>](#Field) - returns field class instance  
 **Throws**:
 
 - <code>TableSchemaError</code> raises any error occured in the process
@@ -756,7 +756,7 @@ Field descriptor
 #### field.castValue(value, constraints) ⇒ <code>any</code>
 Cast value
 
-**Returns**: <code>any</code> - cast value
+**Returns**: <code>any</code> - cast value  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -777,7 +777,7 @@ Check if value can be cast
 ### validate(descriptor) ⇒ <code>Object</code>
 This function is async so it has to be used with `await` keyword or as a `Promise`.
 
-**Returns**: <code>Object</code> - returns `{valid, errors}` object
+**Returns**: <code>Object</code> - returns `{valid, errors}` object  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -787,7 +787,7 @@ This function is async so it has to be used with `await` keyword or as a `Promis
 ### infer(source, headers, options) ⇒ <code>Object</code>
 This function is async so it has to be used with `await` keyword or as a `Promise`.
 
-**Returns**: <code>Object</code> - returns schema descriptor
+**Returns**: <code>Object</code> - returns schema descriptor  
 **Throws**:
 
 - <code>TableSchemaError</code> raises any error occured in the process
@@ -798,6 +798,29 @@ This function is async so it has to be used with `await` keyword or as a `Promis
 | source | <code>string</code> \| <code>Array.&lt;Array&gt;</code> \| <code>Stream</code> \| <code>function</code> | data source (one of):   - local CSV file (path)   - remote CSV file (url)   - array of arrays representing the rows   - readable stream with CSV file contents   - function returning readable stream with CSV file contents |
 | headers | <code>Array.&lt;string&gt;</code> | array of headers |
 | options | <code>Object</code> | any `Table.load` options |
+
+### Classes
+
+<dl>
+<dt><a href="#DataPackageError">DataPackageError</a></dt>
+<dd><p>Base class for the all DataPackage/TableSchema errors.</p>
+<p>If there are more than one error you could get an additional information
+from the error object:</p>
+<pre><code class="language-javascript">try {
+  // some lib action
+} catch (error) {
+  console.log(error) // you have N cast errors (see error.errors)
+  if (error.multiple) {
+    for (const error of error.errors) {
+        console.log(error) // cast error M is ...
+    }
+  }
+}</code></pre>
+</dd>
+<dt><a href="#TableSchemaError">TableSchemaError</a></dt>
+<dd><p>Base class for the all TableSchema errors.</p>
+</dd>
+</dl>
 
 
 ### DataPackageError
@@ -846,6 +869,7 @@ List of errors
 
 ### TableSchemaError
 Base class for the all TableSchema errors.
+
 
 ## Contributing
 
