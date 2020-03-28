@@ -1,102 +1,20 @@
-extends:
-  airbnb
-
-env:
-  es6: true
-  node: true
-  mocha: true
-  browser: true
-
-parserOptions:
-  sourceType: module
-
-rules:
-  quotes:
-    - error
-    - single
-    - avoid-escape
-  semi:
-    - error
-    - never
-  max-len:
-    - error
-    - code: 120
-      ignoreStrings: true
-  comma-style:
-    - off
-    - first
-  comma-dangle:
-    - off
-    - never
-  no-empty:
-    - error
-    - allowEmptyCatch: true
-  no-use-before-define:
-    - off
-    - nofunc
-  one-var:
-    - off
-    - var: always
-      let: always
-      const: always
-  eqeqeq:
-    - warn
-    - smart
-  no-unused-vars:
-    - error
-  no-param-reassign:
-    - off
-  no-cond-assign:
-    - error
-    - except-parens
-  arrow-parens:
-    - off
-    - as-needed
-  block-spacing:
-    - off
-  class-methods-use-this:
-    - off
-  object-curly-spacing:
-    - off
-  padded-blocks:
-    - off
-  no-underscore-dangle:
-    - off
-  space-infix-ops:
-    - off
-  no-restricted-syntax:
-    - off
-  no-throw-literal:
-    - off
-  no-console:
-    - off
-  operator-assignment:
-    - off
-  one-var-declaration-per-line:
-    - off
-  no-continue:
-    - off
-  no-shadow:
-    - off
-  func-names:
-    - off
-  no-prototype-builtins:
-    - off
-  no-lonely-if:
-    - off
-  no-else-return:
-    - off
-  no-confusing-arrow:
-    - off
-  array-callback-return:
-    - off
-  arrow-body-style:
-    - off
-  space-before-function-paren:
-    - off
-  consistent-return:
-    - off
-  import/prefer-default-export:
-    - off
-  import/newline-after-import:
-    - off
+{
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint/eslint-plugin"
+  ],
+  "extends": [
+    "standard",
+    "plugin:react/recommended"
+  ],
+  "env": {
+    "mocha": true
+  },
+  "rules": {
+    "space-before-function-paren": "off",
+    "comma-dangle": ["error", {
+      "arrays": "always-multiline",
+      "objects": "always-multiline"
+    }]
+  }
+}
