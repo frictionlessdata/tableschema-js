@@ -1,6 +1,6 @@
 const fs = require('fs')
 const axios = require('axios')
-const csv = require('csv-parse')
+const csv = require('csv-parse/lib/es5')
 const through2 = require('through2')
 const { Readable, PassThrough } = require('stream')
 const zip = require('lodash/zip')
@@ -414,7 +414,7 @@ function createCsvDelimiterDetector(csvParser) {
   detector.on('data', (chunk) => {
     if (!done) {
       const result = sniffer.sniff(chunk.toString())
-      csvParser.options.delimiter = result.delimiter
+      csvParser.options.delimiter = Buffer.from(result.delimiter, 'utf-8')
       done = true
     }
   })
