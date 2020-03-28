@@ -10,7 +10,6 @@ function checkMinimum(constraint, value) {
   return false
 }
 
-
 module.exports = {
   checkMinimum,
 }

@@ -7,7 +7,6 @@ function checkRequired(constraint, value) {
   return false
 }
 
-
 module.exports = {
   checkRequired,
 }

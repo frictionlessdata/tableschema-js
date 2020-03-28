@@ -4,8 +4,7 @@ const isString = require('lodash/isString')
 const isPlainObject = require('lodash/isPlainObject')
 const geojsonProfile = require('../profiles/geojson.json')
 const topojsonProfile = require('../profiles/topojson.json')
-const {ERROR} = require('../config')
-
+const { ERROR } = require('../config')
 
 // Module API
 
@@ -44,7 +43,6 @@ function castGeojson(format, value) {
   }
   return value
 }
-
 
 module.exports = {
   castGeojson,

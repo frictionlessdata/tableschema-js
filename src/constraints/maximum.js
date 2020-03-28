@@ -10,7 +10,6 @@ function checkMaximum(constraint, value) {
   return false
 }
 
-
 module.exports = {
   checkMaximum,
 }

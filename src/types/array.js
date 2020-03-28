@@ -1,7 +1,6 @@
 const isArray = require('lodash/isArray')
 const isString = require('lodash/isString')
-const {ERROR} = require('../config')
-
+const { ERROR } = require('../config')
 
 // Module API
 
@@ -22,7 +21,6 @@ function castArray(format, value) {
   return value
 }
 
-
 module.exports = {
-  castArray
+  castArray,
 }

@@ -1,13 +1,11 @@
 const tv4 = require('tv4')
 const isArray = require('lodash/isArray')
 const isString = require('lodash/isString')
-const {TableSchemaError} = require('./errors')
-
+const { TableSchemaError } = require('./errors')
 
 // Module API
 
 class Profile {
-
   // Public
 
   static async load(profile) {
@@ -29,16 +27,18 @@ class Profile {
     // Basic validation
     const validation = tv4.validateMultiple(descriptor, this._jsonschema)
     for (const validationError of validation.errors) {
-      errors.push(new Error(
-        `Descriptor validation error:
+      errors.push(
+        new Error(
+          `Descriptor validation error:
         ${validationError.message}
         at "${validationError.dataPath}" in descriptor and
-        at "${validationError.schemaPath}" in profile`))
+        at "${validationError.schemaPath}" in profile`
+        )
+      )
     }
 
     // Extra validation
     if (!errors.length) {
-
       // PrimaryKey validation
       for (const message of validatePrimaryKey(descriptor)) {
         errors.push(new Error(message))
@@ -48,7 +48,6 @@ class Profile {
       for (const message of validateForeignKeys(descriptor)) {
         errors.push(new Error(message))
       }
-
     }
 
     return {
@@ -67,16 +66,13 @@ class Profile {
       throw new TableSchemaError(`Can't load profile "${profile}"`)
     }
   }
-
 }
-
 
 // Internal
 
-
 function validatePrimaryKey(descriptor) {
   const messages = []
-  const fieldNames = (descriptor.fields || []).map(field => field.name)
+  const fieldNames = (descriptor.fields || []).map((field) => field.name)
   if (descriptor.primaryKey) {
     const primaryKey = descriptor.primaryKey
     if (isString(primaryKey)) {
@@ -94,10 +90,9 @@ function validatePrimaryKey(descriptor) {
   return messages
 }
 
-
 function validateForeignKeys(descriptor) {
   const messages = []
-  const fieldNames = (descriptor.fields || []).map(field => field.name)
+  const fieldNames = (descriptor.fields || []).map((field) => field.name)
   if (descriptor.foreignKeys) {
     const foreignKeys = descriptor.foreignKeys
     for (const fk of foreignKeys) {
@@ -137,7 +132,6 @@ function validateForeignKeys(descriptor) {
   }
   return messages
 }
-
 
 // System
 

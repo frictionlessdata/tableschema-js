@@ -1,9 +1,8 @@
 const moment = require('moment')
 const isDate = require('lodash/isDate')
 const isString = require('lodash/isString')
-const {timeParse} = require('d3-time-format')
-const {ERROR} = require('../config')
-
+const { timeParse } = require('d3-time-format')
+const { ERROR } = require('../config')
 
 // Module API
 
@@ -21,7 +20,8 @@ function castDate(format, value) {
         if (format.startsWith('fmt:')) {
           console.warn(
             `Format "fmt:<PATTERN>" is deprecated.
-             Please use "<PATTERN>" without "fmt:" prefix.`)
+             Please use "<PATTERN>" without "fmt:" prefix.`
+          )
           format = format.replace('fmt:', '')
         }
         // https://github.com/d3/d3-time-format/issues/47
@@ -39,11 +39,9 @@ function castDate(format, value) {
   return value
 }
 
-
 module.exports = {
-  castDate
+  castDate,
 }
-
 
 // Internal
 

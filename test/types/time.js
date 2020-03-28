@@ -1,11 +1,10 @@
-const {assert} = require('chai')
-const {ERROR} = require('../../src/config')
+const { assert } = require('chai')
+const { ERROR } = require('../../src/config')
 const types = require('../../src/types')
-
 
 // Helpers
 
-function time(hour, minute=0, second=0) {
+function time(hour, minute = 0, second = 0) {
   return new Date(0, 0, 1, hour, minute, second)
 }
 
@@ -50,12 +49,10 @@ const TESTS = [
 // Tests
 
 describe('castTime', () => {
-
-  TESTS.forEach(test => {
+  TESTS.forEach((test) => {
     const [format, value, result] = test
     it(`format "${format}" should cast "${value}" to "${result}"`, () => {
       assert.deepEqual(types.castTime(format, value), result)
     })
   })
-
 })

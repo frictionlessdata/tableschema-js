@@ -1,7 +1,6 @@
-const {assert} = require('chai')
-const {ERROR} = require('../../src/config')
+const { assert } = require('chai')
+const { ERROR } = require('../../src/config')
 const types = require('../../src/types')
-
 
 // Constants
 
@@ -22,12 +21,10 @@ const TESTS = [
 // Tests
 
 describe('castYearmonth', () => {
-
-  TESTS.forEach(test => {
+  TESTS.forEach((test) => {
     const [format, value, result] = test
     it(`format "${format}" should cast "${value}" to "${result}"`, () => {
       assert.deepEqual(types.castYearmonth(format, value), result)
     })
   })
-
 })

@@ -10,7 +10,6 @@ function checkMaxLength(constraint, value) {
   return false
 }
 
-
 module.exports = {
   checkMaxLength,
 }

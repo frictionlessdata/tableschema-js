@@ -3,8 +3,7 @@ const isEmail = require('validator/lib/isEmail')
 const isUUID = require('validator/lib/isUUID')
 const isURL = require('validator/lib/isURL')
 const isString = require('lodash/isString')
-const {ERROR} = require('../config')
-
+const { ERROR } = require('../config')
 
 // Module API
 
@@ -13,7 +12,7 @@ function castString(format, value) {
     return ERROR
   }
   if (format === 'uri') {
-    if (!isURL(value, {require_protocol: true})) {
+    if (!isURL(value, { require_protocol: true })) {
       return ERROR
     }
   } else if (format === 'email') {
@@ -31,7 +30,6 @@ function castString(format, value) {
   }
   return value
 }
-
 
 module.exports = {
   castString,

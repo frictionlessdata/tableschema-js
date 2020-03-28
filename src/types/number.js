@@ -2,12 +2,11 @@ const isNaN = require('lodash/isNaN')
 const isString = require('lodash/isString')
 const isNumber = require('lodash/isNumber')
 const toNumber = require('lodash/toNumber')
-const {ERROR} = require('../config')
-
+const { ERROR } = require('../config')
 
 // Module API
 
-function castNumber(format, value, options={}) {
+function castNumber(format, value, options = {}) {
   const decimalChar = options.decimalChar || _DEFAULT_DECIMAL_CHAR
   const groupChar = options.groupChar || _DEFAULT_GROUP_CHAR
   if (!isNumber(value)) {
@@ -31,11 +30,9 @@ function castNumber(format, value, options={}) {
   return value
 }
 
-
 module.exports = {
   castNumber,
 }
-
 
 // Internal
 

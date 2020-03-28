@@ -1,12 +1,11 @@
 const isNaN = require('lodash/isNaN')
 const isString = require('lodash/isString')
 const isInteger = require('lodash/isInteger')
-const {ERROR} = require('../config')
-
+const { ERROR } = require('../config')
 
 // Module API
 
-function castInteger(format, value, options={}) {
+function castInteger(format, value, options = {}) {
   if (!isInteger(value)) {
     if (!isString(value)) return ERROR
     if (options.bareNumber === false) {
@@ -22,7 +21,6 @@ function castInteger(format, value, options={}) {
   }
   return value
 }
-
 
 module.exports = {
   castInteger,

@@ -1,6 +1,5 @@
-const {assert} = require('chai')
+const { assert } = require('chai')
 const types = require('../../src/types')
-
 
 // Constants
 
@@ -15,12 +14,10 @@ const TESTS = [
 // Tests
 
 describe('castAny', () => {
-
-  TESTS.forEach(test => {
+  TESTS.forEach((test) => {
     const [format, value, result] = test
     it(`format "${format}" should cast "${value}" to "${result}"`, () => {
       assert.deepEqual(types.castAny(format, value), result)
     })
   })
-
 })

@@ -1,7 +1,6 @@
 const moment = require('moment')
 const isString = require('lodash/isString')
-const {ERROR} = require('../config')
-
+const { ERROR } = require('../config')
 
 // Module API
 
@@ -24,7 +23,6 @@ function castDuration(format, value) {
   }
   return value
 }
-
 
 module.exports = {
   castDuration,

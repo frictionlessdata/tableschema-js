@@ -2,8 +2,7 @@ const isNaN = require('lodash/isNaN')
 const isArray = require('lodash/isArray')
 const isString = require('lodash/isString')
 const toNumber = require('lodash/toNumber')
-const {ERROR} = require('../config')
-
+const { ERROR } = require('../config')
 
 // Module API
 
@@ -12,17 +11,17 @@ function castGeopoint(format, value) {
   try {
     if (format === 'default') {
       if (isString(value)) {
-        [lon, lat] = value.split(',')
+        ;[lon, lat] = value.split(',')
         lon = lon.trim()
         lat = lat.trim()
       } else if (isArray(value)) {
-        [lon, lat] = value
+        ;[lon, lat] = value
       }
     } else if (format === 'array') {
       if (isString(value)) {
         value = JSON.parse(value)
       }
-      [lon, lat] = value
+      ;[lon, lat] = value
     } else if (format === 'object') {
       if (isString(value)) {
         value = JSON.parse(value)
@@ -43,7 +42,6 @@ function castGeopoint(format, value) {
   }
   return [lon, lat]
 }
-
 
 module.exports = {
   castGeopoint,
