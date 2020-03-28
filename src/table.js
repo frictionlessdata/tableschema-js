@@ -237,8 +237,7 @@ class Table {
     }
 
     // Return iterator
-    // return Symbol.asyncIterator in tableRowStream ? tableRowStream : new S2A(tableRowStream)
-    return new S2A(tableRowStream)
+    return Symbol.asyncIterator in tableRowStream ? tableRowStream : new S2A(tableRowStream)
   }
 
   /**
@@ -257,11 +256,9 @@ class Table {
     const iterator = await this.iter({ keyed, extended, cast, relations, forceCast })
     const rows = []
     let count = 0
-    for (;;) {
+    for await (const row of iterator) {
       count += 1
-      const iteration = await iterator.next()
-      if (iteration.done) break
-      rows.push(iteration.value)
+      rows.push(row)
       if (limit && count >= limit) break
     }
 
