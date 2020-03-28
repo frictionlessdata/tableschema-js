@@ -3,7 +3,9 @@
   "title": "Table Schema",
   "description": "A Table Schema for this resource, compliant with the [Table Schema](/tableschema/) specification.",
   "type": "object",
-  "required": ["fields"],
+  "required": [
+    "fields"
+  ],
   "properties": {
     "fields": {
       "type": "array",
@@ -16,7 +18,9 @@
             "type": "object",
             "title": "String Field",
             "description": "The field contains strings, that is, sequences of characters.",
-            "required": ["name"],
+            "required": [
+              "name"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -27,7 +31,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -39,12 +45,20 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `string`.",
-                "enum": ["string"]
+                "enum": [
+                  "string"
+                ]
               },
               "format": {
                 "description": "The format keyword options for `string` are `default`, `email`, `uri`, `binary`, and `uuid`.",
                 "context": "The following `format` options are supported:\n  * **default**: any valid string.\n  * **email**: A valid email address.\n  * **uri**: A valid URI.\n  * **binary**: A base64 encoded string representing binary data.\n  * **uuid**: A string that is a uuid.",
-                "enum": ["default", "email", "uri", "binary", "uuid"],
+                "enum": [
+                  "default",
+                  "email",
+                  "uri",
+                  "binary",
+                  "uuid"
+                ],
                 "default": "default"
               },
               "constraints": {
@@ -100,7 +114,9 @@
             "title": "Number Field",
             "description": "The field contains numbers of any kind including decimals.",
             "context": "The lexical formatting follows that of decimal in [XMLSchema](https://www.w3.org/TR/xmlschema-2/#decimal): a non-empty finite-length sequence of decimal digits separated by a period as a decimal indicator. An optional leading sign is allowed. If the sign is omitted, '+' is assumed. Leading and trailing zeroes are optional. If the fractional part is zero, the period and following zero(es) can be omitted. For example: '-1.23', '12678967.543233', '+100000.00', '210'.\n\nThe following special string values are permitted (case does not need to be respected):\n  - NaN: not a number\n  - INF: positive infinity\n  - -INF: negative infinity\n\nA number `MAY` also have a trailing:\n  - exponent: this `MUST` consist of an E followed by an optional + or - sign followed by one or more decimal digits (0-9)\n  - percentage: the percentage sign: `%`. In conversion percentages should be divided by 100.\n\nIf both exponent and percentages are present the percentage `MUST` follow the exponent e.g. '53E10%' (equals 5.3).",
-            "required": ["name"],
+            "required": [
+              "name"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -111,7 +127,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -123,11 +141,15 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `number`.",
-                "enum": ["number"]
+                "enum": [
+                  "number"
+                ]
               },
               "format": {
                 "description": "There are no format keyword options for `number`: only `default` is allowed.",
-                "enum": ["default"],
+                "enum": [
+                  "default"
+                ],
                 "default": "default"
               },
               "bareNumber": {
@@ -215,7 +237,10 @@
             "title": "Integer Field",
             "description": "The field contains integers - that is whole numbers.",
             "context": "Integer values are indicated in the standard way for any valid integer.",
-            "required": ["name", "type"],
+            "required": [
+              "name",
+              "type"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -226,7 +251,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -238,11 +265,15 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `integer`.",
-                "enum": ["integer"]
+                "enum": [
+                  "integer"
+                ]
               },
               "format": {
                 "description": "There are no format keyword options for `integer`: only `default` is allowed.",
-                "enum": ["default"],
+                "enum": [
+                  "default"
+                ],
                 "default": "default"
               },
               "bareNumber": {
@@ -320,7 +351,10 @@
             "type": "object",
             "title": "Date Field",
             "description": "The field contains temporal date values.",
-            "required": ["name", "type"],
+            "required": [
+              "name",
+              "type"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -331,7 +365,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -343,7 +379,9 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `date`.",
-                "enum": ["date"]
+                "enum": [
+                  "date"
+                ]
               },
               "format": {
                 "description": "The format keyword options for `date` are `default`, `any`, and `{PATTERN}`.",
@@ -395,7 +433,10 @@
             "type": "object",
             "title": "Time Field",
             "description": "The field contains temporal time values.",
-            "required": ["name", "type"],
+            "required": [
+              "name",
+              "type"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -406,7 +447,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -418,7 +461,9 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `time`.",
-                "enum": ["time"]
+                "enum": [
+                  "time"
+                ]
               },
               "format": {
                 "description": "The format keyword options for `time` are `default`, `any`, and `{PATTERN}`.",
@@ -469,7 +514,10 @@
             "type": "object",
             "title": "Date Time Field",
             "description": "The field contains temporal datetime values.",
-            "required": ["name", "type"],
+            "required": [
+              "name",
+              "type"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -480,7 +528,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -492,7 +542,9 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `datetime`.",
-                "enum": ["datetime"]
+                "enum": [
+                  "datetime"
+                ]
               },
               "format": {
                 "description": "The format keyword options for `datetime` are `default`, `any`, and `{PATTERN}`.",
@@ -543,7 +595,10 @@
             "type": "object",
             "title": "Year Field",
             "description": "A calendar year, being an integer with 4 digits. Equivalent to [gYear in XML Schema](https://www.w3.org/TR/xmlschema-2/#gYear)",
-            "required": ["name", "type"],
+            "required": [
+              "name",
+              "type"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -554,7 +609,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -566,11 +623,15 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `year`.",
-                "enum": ["year"]
+                "enum": [
+                  "year"
+                ]
               },
               "format": {
                 "description": "There are no format keyword options for `year`: only `default` is allowed.",
-                "enum": ["default"],
+                "enum": [
+                  "default"
+                ],
                 "default": "default"
               },
               "constraints": {
@@ -643,7 +704,10 @@
             "type": "object",
             "title": "Year Month Field",
             "description": "A calendar year month, being an integer with 1 or 2 digits. Equivalent to [gYearMonth in XML Schema](https://www.w3.org/TR/xmlschema-2/#gYearMonth)",
-            "required": ["name", "type"],
+            "required": [
+              "name",
+              "type"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -654,7 +718,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -666,11 +732,15 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `yearmonth`.",
-                "enum": ["yearmonth"]
+                "enum": [
+                  "yearmonth"
+                ]
               },
               "format": {
                 "description": "There are no format keyword options for `yearmonth`: only `default` is allowed.",
-                "enum": ["default"],
+                "enum": [
+                  "default"
+                ],
                 "default": "default"
               },
               "constraints": {
@@ -717,7 +787,10 @@
             "type": "object",
             "title": "Boolean Field",
             "description": "The field contains boolean (true/false) data.",
-            "required": ["name", "type"],
+            "required": [
+              "name",
+              "type"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -728,7 +801,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -740,7 +815,9 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `boolean`.",
-                "enum": ["boolean"]
+                "enum": [
+                  "boolean"
+                ]
               },
               "trueValues": {
                 "type": "array",
@@ -748,7 +825,12 @@
                 "items": {
                   "type": "string"
                 },
-                "default": ["true", "True", "TRUE", "1"]
+                "default": [
+                  "true",
+                  "True",
+                  "TRUE",
+                  "1"
+                ]
               },
               "falseValues": {
                 "type": "array",
@@ -756,7 +838,12 @@
                 "items": {
                   "type": "string"
                 },
-                "default": ["false", "False", "FALSE", "0"]
+                "default": [
+                  "false",
+                  "False",
+                  "FALSE",
+                  "0"
+                ]
               },
               "constraints": {
                 "title": "Constraints",
@@ -783,13 +870,18 @@
                 "description": "The RDF type for this field."
               }
             },
-            "examples": ["{\n  \"name\": \"registered\",\n  \"type\": \"boolean\"\n}\n"]
+            "examples": [
+              "{\n  \"name\": \"registered\",\n  \"type\": \"boolean\"\n}\n"
+            ]
           },
           {
             "type": "object",
             "title": "Object Field",
             "description": "The field contains data which can be parsed as a valid JSON object.",
-            "required": ["name", "type"],
+            "required": [
+              "name",
+              "type"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -800,7 +892,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -812,11 +906,15 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `object`.",
-                "enum": ["object"]
+                "enum": [
+                  "object"
+                ]
               },
               "format": {
                 "description": "There are no format keyword options for `object`: only `default` is allowed.",
-                "enum": ["default"],
+                "enum": [
+                  "default"
+                ],
                 "default": "default"
               },
               "constraints": {
@@ -868,13 +966,18 @@
                 "description": "The RDF type for this field."
               }
             },
-            "examples": ["{\n  \"name\": \"extra\"\n  \"type\": \"object\"\n}\n"]
+            "examples": [
+              "{\n  \"name\": \"extra\"\n  \"type\": \"object\"\n}\n"
+            ]
           },
           {
             "type": "object",
             "title": "GeoPoint Field",
             "description": "The field contains data describing a geographic point.",
-            "required": ["name", "type"],
+            "required": [
+              "name",
+              "type"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -885,7 +988,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -897,7 +1002,9 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `geopoint`.",
-                "enum": ["geopoint"]
+                "enum": [
+                  "geopoint"
+                ]
               },
               "format": {
                 "description": "The format keyword options for `geopoint` are `default`,`array`, and `object`.",
@@ -905,7 +1012,11 @@
                 "notes": [
                   "Implementations `MUST` strip all white space in the default format of `lon, lat`."
                 ],
-                "enum": ["default", "array", "object"],
+                "enum": [
+                  "default",
+                  "array",
+                  "object"
+                ],
                 "default": "default"
               },
               "constraints": {
@@ -966,7 +1077,10 @@
             "type": "object",
             "title": "GeoJSON Field",
             "description": "The field contains a JSON object according to GeoJSON or TopoJSON",
-            "required": ["name", "type"],
+            "required": [
+              "name",
+              "type"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -977,7 +1091,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -989,12 +1105,17 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `geojson`.",
-                "enum": ["geojson"]
+                "enum": [
+                  "geojson"
+                ]
               },
               "format": {
                 "description": "The format keyword options for `geojson` are `default` and `topojson`.",
                 "context": "The following `format` options are supported:\n  * **default**: A geojson object as per the [GeoJSON spec](http://geojson.org/).\n  * **topojson**: A topojson object as per the [TopoJSON spec](https://github.com/topojson/topojson-specification/blob/master/README.md)",
-                "enum": ["default", "topojson"],
+                "enum": [
+                  "default",
+                  "topojson"
+                ],
                 "default": "default"
               },
               "constraints": {
@@ -1055,7 +1176,10 @@
             "type": "object",
             "title": "Array Field",
             "description": "The field contains data which can be parsed as a valid JSON array.",
-            "required": ["name", "type"],
+            "required": [
+              "name",
+              "type"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -1066,7 +1190,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -1078,11 +1204,15 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `array`.",
-                "enum": ["array"]
+                "enum": [
+                  "array"
+                ]
               },
               "format": {
                 "description": "There are no format keyword options for `array`: only `default` is allowed.",
-                "enum": ["default"],
+                "enum": [
+                  "default"
+                ],
                 "default": "default"
               },
               "constraints": {
@@ -1134,14 +1264,19 @@
                 "description": "The RDF type for this field."
               }
             },
-            "examples": ["{\n  \"name\": \"options\"\n  \"type\": \"array\"\n}\n"]
+            "examples": [
+              "{\n  \"name\": \"options\"\n  \"type\": \"array\"\n}\n"
+            ]
           },
           {
             "type": "object",
             "title": "Duration Field",
             "description": "The field contains a duration of time.",
             "context": "The lexical representation for duration is the [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601#Durations) extended format `PnYnMnDTnHnMnS`, where `nY` represents the number of years, `nM` the number of months, `nD` the number of days, 'T' is the date/time separator, `nH` the number of hours, `nM` the number of minutes and `nS` the number of seconds. The number of seconds can include decimal digits to arbitrary precision. Date and time elements including their designator may be omitted if their value is zero, and lower order elements may also be omitted for reduced precision. Here we follow the definition of [XML Schema duration datatype](http://www.w3.org/TR/xmlschema-2/#duration) directly and that definition is implicitly inlined here.",
-            "required": ["name", "type"],
+            "required": [
+              "name",
+              "type"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -1152,7 +1287,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -1164,11 +1301,15 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `duration`.",
-                "enum": ["duration"]
+                "enum": [
+                  "duration"
+                ]
               },
               "format": {
                 "description": "There are no format keyword options for `duration`: only `default` is allowed.",
-                "enum": ["default"],
+                "enum": [
+                  "default"
+                ],
                 "default": "default"
               },
               "constraints": {
@@ -1206,13 +1347,18 @@
                 "description": "The RDF type for this field."
               }
             },
-            "examples": ["{\n  \"name\": \"period\"\n  \"type\": \"duration\"\n}\n"]
+            "examples": [
+              "{\n  \"name\": \"period\"\n  \"type\": \"duration\"\n}\n"
+            ]
           },
           {
             "type": "object",
             "title": "Any Field",
             "description": "Any value is accepted, including values that are not captured by the type/format/constraint requirements of the specification.",
-            "required": ["name", "type"],
+            "required": [
+              "name",
+              "type"
+            ],
             "properties": {
               "name": {
                 "title": "Name",
@@ -1223,7 +1369,9 @@
                 "title": "Title",
                 "description": "A human-readable title.",
                 "type": "string",
-                "examples": ["{\n  \"title\": \"My Package Title\"\n}\n"]
+                "examples": [
+                  "{\n  \"title\": \"My Package Title\"\n}\n"
+                ]
               },
               "description": {
                 "title": "Description",
@@ -1235,7 +1383,9 @@
               },
               "type": {
                 "description": "The type keyword, which `MUST` be a value of `any`.",
-                "enum": ["any"]
+                "enum": [
+                  "any"
+                ]
               },
               "constraints": {
                 "title": "Constraints",
@@ -1263,7 +1413,9 @@
                 "description": "The RDF type for this field."
               }
             },
-            "examples": ["{\n  \"name\": \"notes\",\n  \"type\": \"any\"\n"]
+            "examples": [
+              "{\n  \"name\": \"notes\",\n  \"type\": \"any\"\n"
+            ]
           }
         ]
       },
@@ -1301,7 +1453,10 @@
         "title": "Table Schema Foreign Key",
         "description": "Table Schema Foreign Key",
         "type": "object",
-        "required": ["fields", "reference"],
+        "required": [
+          "fields",
+          "reference"
+        ],
         "oneOf": [
           {
             "properties": {
@@ -1316,7 +1471,10 @@
               },
               "reference": {
                 "type": "object",
-                "required": ["resource", "fields"],
+                "required": [
+                  "resource",
+                  "fields"
+                ],
                 "properties": {
                   "resource": {
                     "type": "string",
@@ -1342,7 +1500,10 @@
               },
               "reference": {
                 "type": "object",
-                "required": ["resource", "fields"],
+                "required": [
+                  "resource",
+                  "fields"
+                ],
                 "properties": {
                   "resource": {
                     "type": "string",
@@ -1367,7 +1528,9 @@
       "items": {
         "type": "string"
       },
-      "default": [""],
+      "default": [
+        ""
+      ],
       "description": "Values that when encountered in the source, should be considered as `null`, 'not present', or 'blank' values.",
       "context": "Many datasets arrive with missing data values, either because a value was not collected or it never existed.\nMissing values may be indicated simply by the value being empty in other cases a special value may have been used e.g. `-`, `NaN`, `0`, `-9999` etc.\nThe `missingValues` property provides a way to indicate that these values should be interpreted as equivalent to null.\n\n`missingValues` are strings rather than being the data type of the particular field. This allows for comparison prior to casting and for fields to have missing value which are not of their type, for example a `number` field to have missing values indicated by `-`.\n\nThe default value of `missingValue` for a non-string type field is the empty string `''`. For string type fields there is no default for `missingValue` (for string fields the empty string `''` is a valid value and need not indicate null).",
       "examples": [
