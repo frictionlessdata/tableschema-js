@@ -1,6 +1,7 @@
 const fs = require('fs')
-const csv = require('csv')
 const axios = require('axios')
+const csv = require('csv-parse')
+const through2 = require('through2')
 const { Readable, PassThrough } = require('stream')
 const zip = require('lodash/zip')
 const isEqual = require('lodash/isEqual')
@@ -136,13 +137,13 @@ class Table {
     // Get table row stream
     let rowNumber = 0
     const tableRowStream = rowStream.pipe(
-      csv.transform((row) => {
+      through2.obj((row, _encoding, done) => {
         rowNumber += 1
 
         // Get headers
         if (rowNumber === this._headersRow) {
           this._headers = row
-          return
+          return done()
         }
 
         // Check headers
@@ -155,8 +156,8 @@ class Table {
               error.rowNumber = rowNumber
               error.headerNames = this.headers
               error.fieldNames = this.fieldNames
-              if (forceCast) return error
-              throw error
+              if (forceCast) return done(null, error)
+              return done(error)
             }
           }
         }
@@ -171,8 +172,8 @@ class Table {
               error.errors.forEach((error) => {
                 error.rowNumber = rowNumber
               })
-              if (forceCast) return error
-              throw error
+              if (forceCast) return done(null, error)
+              return done(error)
             }
           }
         }
@@ -189,8 +190,8 @@ class Table {
                     `violation in column "${cache.name}"`
                 )
                 error.rowNumber = rowNumber
-                if (forceCast) return error
-                throw error
+                if (forceCast) return done(null, error)
+                return done(error)
               }
               cache.data.add(values.toString())
             }
@@ -207,8 +208,8 @@ class Table {
                   `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`
                 )
                 error.rowNumber = rowNumber
-                if (forceCast) return error
-                throw error
+                if (forceCast) return done(null, error)
+                return done(error)
               }
             }
           }
@@ -221,7 +222,7 @@ class Table {
           row = [rowNumber, this.headers, row]
         }
 
-        return row
+        done(null, row)
       })
     )
 
@@ -341,7 +342,7 @@ class Table {
 // Internal
 
 async function createRowStream(source, encoding, parserOptions) {
-  const parser = csv.parse({ ltrim: true, relax_column_count: true, ...parserOptions })
+  const parser = csv({ ltrim: true, relax_column_count: true, ...parserOptions })
   let stream
 
   // Stream factory
