@@ -861,6 +861,10 @@ $ npm run build
 
 Here described only breaking and the most important changes. The full changelog and documentation for all released versions could be found in nicely formatted [commit history](https://github.com/frictionlessdata/tableschema-js/commits/master).
 
+#### v1.10
+
+- Rebased on csv-parse@4
+
 #### v1.9
 
 Fix bug:
