@@ -12,7 +12,6 @@ function checkPattern(constraint, value) {
   return false
 }
 
-
 module.exports = {
-  checkPattern
+  checkPattern,
 }

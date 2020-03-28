@@ -29,7 +29,7 @@ describe('Table', () => {
       primaryKey: 'id',
     }
 
-    it('should not instantiate with bad schema path', async function() {
+    it('should not instantiate with bad schema path', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const error = await catchError(Table.load, SOURCE, {
         schema: 'bad schema path',
@@ -50,7 +50,7 @@ describe('Table', () => {
       assert.equal(rows.length, 5)
     })
 
-    it('should work with stream as a source', async function() {
+    it('should work with stream as a source', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const stream = fs.createReadStream('data/data_big.csv')
       const table = await Table.load(stream)
@@ -58,7 +58,7 @@ describe('Table', () => {
       assert.equal(rows.length, 100)
     })
 
-    it('should iter with huge stream as a source', async function() {
+    it('should iter with huge stream as a source', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       this.timeout(100000)
       /* eslint max-len: off */
@@ -76,13 +76,13 @@ describe('Table', () => {
           assert.equal(total, 107826)
           resolve()
         })
-        iter.on('error', err => {
+        iter.on('error', (err) => {
           reject(err)
         })
       })
     })
 
-    it('should work with readable stream factory', async function() {
+    it('should work with readable stream factory', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const source = () => fs.createReadStream('data/data_big.csv')
       const table = await Table.load(source)
@@ -90,7 +90,7 @@ describe('Table', () => {
       assert.equal(rows.length, 100)
     })
 
-    it('should work with local path', async function() {
+    it('should work with local path', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const table = await Table.load('data/data_big.csv')
       const rows = await table.read()
@@ -163,7 +163,7 @@ describe('Table', () => {
       ])
     })
 
-    it('should infer headers and schema', async function() {
+    it('should infer headers and schema', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const table = await Table.load('data/data_infer.csv')
       await table.infer()
@@ -183,7 +183,7 @@ describe('Table', () => {
       assert.deepEqual(error.fieldNames, SCHEMA.headers)
     })
 
-    it('should support user-defined constraints (issue #103)', async function() {
+    it('should support user-defined constraints (issue #103)', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const source = 'data/mathematics.csv'
       const schema = 'data/mathematics.json'
@@ -207,7 +207,7 @@ Paris;48.85,2.30;2.244
       assert.deepEqual(table.headers, ['city', 'location', 'population'])
     })
 
-    it('should be able to handle defective rows', async function() {
+    it('should be able to handle defective rows', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       // TODO: here we disable csvSniffer because of the following issue
       // (https://github.com/frictionlessdata/tableschema-js/issues/142)
@@ -221,7 +221,7 @@ Paris;48.85,2.30;2.244
       ])
     })
 
-    it('should be able to handle non-parsable csv files', async function() {
+    it('should be able to handle non-parsable csv files', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const table = await Table.load('data/schema.json')
       const error = await catchError(table.read.bind(table))
@@ -242,7 +242,7 @@ Paris;48.85,2.30;2.244
   })
 
   describe('#format', () => {
-    it('should use csv format by default', async function() {
+    it('should use csv format by default', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const table = await Table.load('data/data_infer.csv')
       const rows = await table.read({ limit: 2 })
@@ -252,7 +252,7 @@ Paris;48.85,2.30;2.244
       ])
     })
 
-    it('should raise on not supported formats', async function() {
+    it('should raise on not supported formats', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const error = await catchError(Table.load, 'data/data_infer.csv', {
         format: 'xls',
@@ -262,7 +262,7 @@ Paris;48.85,2.30;2.244
   })
 
   describe('#encoding', () => {
-    it('should use utf-8 by default', async function() {
+    it('should use utf-8 by default', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const table = await Table.load('data/data_infer.csv')
       const rows = await table.read({ limit: 2 })
@@ -283,7 +283,7 @@ Paris;48.85,2.30;2.244
       ])
     })
 
-    it('should fail to read correctly file with other encoding', async function() {
+    it('should fail to read correctly file with other encoding', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const table = await Table.load('data/latin1.csv')
       const rows = await table.read({ limit: 2 })
@@ -293,7 +293,7 @@ Paris;48.85,2.30;2.244
       ])
     })
 
-    it('should support user-defined encoding', async function() {
+    it('should support user-defined encoding', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const table = await Table.load('data/latin1.csv', { encoding: 'latin1' })
       const rows = await table.read({ limit: 2 })
@@ -317,14 +317,14 @@ Paris;48.85,2.30;2.244
   })
 
   describe('#parserOptions', () => {
-    it('should use default ltrim param to parse file', async function() {
+    it('should use default ltrim param to parse file', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const table = await Table.load('data/data_parse_options_default.csv')
       const rows = await table.read({ extended: true, limit: 1 })
       assert.deepEqual(rows[0], [2, ['id', 'age', 'name'], ['1', '39', 'Paul']])
     })
 
-    it('should use provided parserOptions such as delimiter to parse file', async function() {
+    it('should use provided parserOptions such as delimiter to parse file', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const table = await Table.load('data/data_parse_options_delimiter.csv', {
         delimiter: ';',

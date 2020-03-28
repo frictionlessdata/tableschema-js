@@ -1,7 +1,6 @@
 const isArray = require('lodash/isArray')
 const isString = require('lodash/isString')
-const {ERROR} = require('../config')
-
+const { ERROR } = require('../config')
 
 // Module API
 
@@ -33,7 +32,6 @@ function castYearmonth(format, value) {
   }
   return value
 }
-
 
 module.exports = {
   castYearmonth,

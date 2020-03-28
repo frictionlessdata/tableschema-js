@@ -10,7 +10,6 @@ async function catchError(func, ...args) {
   return error
 }
 
-
 // System
 
 module.exports = {

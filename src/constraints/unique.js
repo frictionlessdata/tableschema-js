@@ -4,7 +4,6 @@ function checkUnique() {
   return true
 }
 
-
 module.exports = {
   checkUnique,
 }

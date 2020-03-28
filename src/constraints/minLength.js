@@ -10,7 +10,6 @@ function checkMinLength(constraint, value) {
   return false
 }
 
-
 module.exports = {
   checkMinLength,
 }

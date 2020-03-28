@@ -2,12 +2,11 @@ const bind = require('lodash/bind')
 const isArray = require('lodash/isArray')
 const cloneDeep = require('lodash/cloneDeep')
 const upperFirst = require('lodash/upperFirst')
-const {TableSchemaError} = require('./errors')
+const { TableSchemaError } = require('./errors')
 const constraints = require('./constraints')
 const helpers = require('./helpers')
 const config = require('./config')
 const types = require('./types')
-
 
 // Module API
 
@@ -15,7 +14,6 @@ const types = require('./types')
  * Field representation
  */
 class Field {
-
   // Public
 
   /**
@@ -26,8 +24,7 @@ class Field {
    * @throws {TableSchemaError} raises any error occured in the process
    * @returns {Field} returns field class instance
    */
-  constructor(descriptor, {missingValues=config.DEFAULT_MISSING_VALUES}={}) {
-
+  constructor(descriptor, { missingValues = config.DEFAULT_MISSING_VALUES } = {}) {
     // Process descriptor
     descriptor = cloneDeep(descriptor)
     descriptor = helpers.expandFieldDescriptor(descriptor)
@@ -37,7 +34,6 @@ class Field {
     this._missingValues = missingValues
     this._castFunction = this._getCastFunction()
     this._checkFunctions = this._getCheckFunctions()
-
   }
 
   /**
@@ -101,8 +97,7 @@ class Field {
    * @param {Object|false} constraints
    * @returns {any} cast value
    */
-  castValue(value, {constraints=true}={}) {
-
+  castValue(value, { constraints = true } = {}) {
     // Null value
     if (this._missingValues.includes(value)) {
       value = null
@@ -115,7 +110,7 @@ class Field {
       if (castValue === config.ERROR) {
         throw new TableSchemaError(
           `The value "${value}" in column "${this.name}" ` +
-          `is not type "${this.type}" and format "${this.format}"`
+            `is not type "${this.type}" and format "${this.format}"`
         )
       }
     }
@@ -130,7 +125,7 @@ class Field {
         if (!passed) {
           throw new TableSchemaError(
             `The value "${value}" does not conform ` +
-            `to the "${name}" constraint for column "${this.name}"`
+              `to the "${name}" constraint for column "${this.name}"`
           )
         }
       }
@@ -146,9 +141,9 @@ class Field {
    * @param {Object|false} constraints
    * @returns {boolean}
    */
-  testValue(value, {constraints=true}={}) {
+  testValue(value, { constraints = true } = {}) {
     try {
-      this.castValue(value, {constraints})
+      this.castValue(value, { constraints })
     } catch (error) {
       return false
     }
@@ -178,7 +173,7 @@ class Field {
 
   _getCheckFunctions() {
     const checks = {}
-    const cast = bind(this.castValue, this, bind.placeholder, {constraints: false})
+    const cast = bind(this.castValue, this, bind.placeholder, { constraints: false })
     for (const [name, constraint] of Object.entries(this.constraints)) {
       let castConstraint = constraint
 
@@ -195,13 +190,10 @@ class Field {
       // Get check function
       const func = constraints[`check${upperFirst(name)}`]
       if (func) checks[name] = bind(func, null, castConstraint)
-
     }
     return checks
   }
-
 }
-
 
 // System
 

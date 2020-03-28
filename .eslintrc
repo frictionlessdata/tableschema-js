@@ -1,11 +1,7 @@
 {
-  "parser": "@typescript-eslint/parser",
-  "plugins": [
-    "@typescript-eslint/eslint-plugin"
-  ],
+  "parser": "babel-eslint",
   "extends": [
     "standard",
-    "plugin:react/recommended"
   ],
   "env": {
     "mocha": true

@@ -1,9 +1,7 @@
 // Weird mocha/karma discrepancy on this import
 const ExtendableError = require('es6-error').default || require('es6-error') // eslint-disable-line
 
-
 // Module API
-
 
 /**
  * Base class for the all DataPackage/TableSchema errors.
@@ -25,7 +23,6 @@ const ExtendableError = require('es6-error').default || require('es6-error') // 
  * ```
  */
 class DataPackageError extends ExtendableError {
-
   // Public
 
   /**
@@ -35,7 +32,7 @@ class DataPackageError extends ExtendableError {
    * @param {Error[]} errors - nested errors
    * @returns {DataPackageError}
    */
-  constructor(message, errors=[]) {
+  constructor(message, errors = []) {
     super(message)
     this._errors = errors
   }
@@ -57,15 +54,12 @@ class DataPackageError extends ExtendableError {
   get errors() {
     return this._errors
   }
-
 }
-
 
 /**
  * Base class for the all TableSchema errors.
  */
 class TableSchemaError extends DataPackageError {}
-
 
 // System
 

@@ -8,8 +8,7 @@ const DEFAULT_ENCODING = 'utf-8'
 const DEFAULT_FIELD_TYPE = 'string'
 const DEFAULT_FIELD_FORMAT = 'default'
 const DEFAULT_MISSING_VALUES = ['']
-const IS_BROWSER = (typeof window !== 'undefined')
-
+const IS_BROWSER = typeof window !== 'undefined'
 
 // System
 

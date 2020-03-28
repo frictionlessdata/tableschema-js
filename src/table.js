@@ -136,7 +136,7 @@ class Table {
     // Get table row stream
     let rowNumber = 0
     const tableRowStream = rowStream.pipe(
-      csv.transform(row => {
+      csv.transform((row) => {
         rowNumber += 1
 
         // Get headers
@@ -168,7 +168,7 @@ class Table {
               row = this.schema.castRow(row, { failFast: false })
             } catch (error) {
               error.rowNumber = rowNumber
-              error.errors.forEach(error => {
+              error.errors.forEach((error) => {
                 error.rowNumber = rowNumber
               })
               if (forceCast) return error
@@ -180,9 +180,9 @@ class Table {
         // Check unique
         if (cast) {
           for (const [indexes, cache] of Object.entries(uniqueFieldsCache)) {
-            const splitIndexes = indexes.split(',').map(index => parseInt(index, 10))
+            const splitIndexes = indexes.split(',').map((index) => parseInt(index, 10))
             const values = row.filter((value, index) => splitIndexes.includes(index))
-            if (!values.every(value => value === null)) {
+            if (!values.every((value) => value === null)) {
               if (cache.data.has(values.toString())) {
                 const error = new TableSchemaError(
                   `Row ${rowNumber} has an unique constraint ` +
@@ -413,7 +413,7 @@ function createCsvDelimiterDetector(csvParser) {
   const sniffer = new CSVSniffer()
   let done = false
 
-  detector.on('data', chunk => {
+  detector.on('data', (chunk) => {
     if (!done) {
       const result = sniffer.sniff(chunk.toString())
       csvParser.options.delimiter = result.delimiter

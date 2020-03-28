@@ -1,12 +1,9 @@
-const {assert} = require('chai')
-const {TableSchemaError} = require('../src/errors')
-
+const { assert } = require('chai')
+const { TableSchemaError } = require('../src/errors')
 
 // Tests
 
-
 describe('TableSchemaError', () => {
-
   it('should work with one error', () => {
     const error = new TableSchemaError('message')
     assert.deepEqual(error.message, 'message')
@@ -33,5 +30,4 @@ describe('TableSchemaError', () => {
       assert.deepEqual(error instanceof TableSchemaError, true)
     }
   })
-
 })

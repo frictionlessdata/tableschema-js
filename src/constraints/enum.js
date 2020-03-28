@@ -10,7 +10,6 @@ function checkEnum(constraint, value) {
   return false
 }
 
-
 module.exports = {
   checkEnum,
 }

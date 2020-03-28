@@ -1,8 +1,7 @@
 const isNaN = require('lodash/isNaN')
 const isString = require('lodash/isString')
 const isInteger = require('lodash/isInteger')
-const {ERROR} = require('../config')
-
+const { ERROR } = require('../config')
 
 // Module API
 
@@ -29,7 +28,6 @@ function castYear(format, value) {
   }
   return value
 }
-
 
 module.exports = {
   castYear,

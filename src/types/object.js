@@ -1,7 +1,6 @@
 const isString = require('lodash/isString')
 const isPlainObject = require('lodash/isPlainObject')
-const {ERROR} = require('../config')
-
+const { ERROR } = require('../config')
 
 // Module API
 
@@ -21,7 +20,6 @@ function castObject(format, value) {
   }
   return value
 }
-
 
 module.exports = {
   castObject,

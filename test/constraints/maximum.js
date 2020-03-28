@@ -1,6 +1,5 @@
-const {assert} = require('chai')
+const { assert } = require('chai')
 const constraints = require('../../src/constraints')
-
 
 // Constants
 
@@ -13,12 +12,10 @@ const TESTS = [
 // Tests
 
 describe('checkMaximum', () => {
-
-  TESTS.forEach(test => {
+  TESTS.forEach((test) => {
     const [constraint, value, result] = test
     it(`constraint "${constraint}" should check "${value}" as "${result}"`, () => {
       assert.deepEqual(constraints.checkMaximum(constraint, value), result)
     })
   })
-
 })

@@ -1,11 +1,10 @@
 const isString = require('lodash/isString')
 const isBoolean = require('lodash/isBoolean')
-const {ERROR} = require('../config')
-
+const { ERROR } = require('../config')
 
 // Module API
 
-function castBoolean(format, value, options={}) {
+function castBoolean(format, value, options = {}) {
   if (!isBoolean(value)) {
     if (!isString(value)) {
       return ERROR
@@ -22,11 +21,9 @@ function castBoolean(format, value, options={}) {
   return value
 }
 
-
 module.exports = {
   castBoolean,
 }
-
 
 // Internal
 
