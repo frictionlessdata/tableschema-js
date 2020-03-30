@@ -1,4 +1,5 @@
 const fs = require('fs')
+const moment = require('moment')
 const min = require('lodash/min')
 const zip = require('lodash/zip')
 const isArray = require('lodash/isArray')
@@ -7,7 +8,6 @@ const isString = require('lodash/isString')
 const cloneDeep = require('lodash/cloneDeep')
 const isBoolean = require('lodash/isBoolean')
 const upperFirst = require('lodash/upperFirst')
-const { timeParse } = require('d3-time-format')
 const { TableSchemaError } = require('./errors')
 const { Profile } = require('./profile')
 const helpers = require('./helpers')
@@ -369,6 +369,8 @@ const INSPECT_VALUE_DATE_TIME_MAPPING = {
   // and fill this mapping based on the decision
   '%d/%m/%y': 'date',
   '%d/%m/%Y': 'date',
+  '%m/%d/%y': 'date',
+  '%m/%d/%Y': 'date',
   '%H:%M': 'time',
 }
 const INSPECT_VALUE_GUESS_ORDER = [
@@ -414,7 +416,7 @@ function inspectValue(value) {
 
     // Guess date/time
     for (const [format, type] of Object.entries(INSPECT_VALUE_DATE_TIME_MAPPING)) {
-      if (timeParse(format)(value)) {
+      if (moment(value, helpers.convertDatetimeFormatFromFDtoJS(format), true).isValid()) {
         return { type, format }
       }
     }

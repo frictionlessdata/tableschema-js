@@ -1,3 +1,4 @@
+const moment = require('moment')
 const { assert } = require('chai')
 const { ERROR } = require('../../src/config')
 const types = require('../../src/types')
@@ -5,7 +6,7 @@ const types = require('../../src/types')
 // Helpers
 
 function time(hour, minute = 0, second = 0) {
-  return new Date(0, 0, 1, hour, minute, second)
+  return moment(`${hour}:${minute}:${second}`, 'h:m:s', true).toDate()
 }
 
 // Constants
