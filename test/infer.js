@@ -90,4 +90,16 @@ describe('infer', () => {
       { name: 'name', type: 'time', format: '%H:%M' },
     ])
   })
+
+  it('should infer "%m/%d/%Y" date formats (#134)', async () => {
+    const descriptor = await infer('data/data_infer_dates.csv')
+    assert.deepEqual(descriptor.fields, [
+      { format: 'default', name: 'first_name', type: 'string' },
+      { format: 'default', name: 'last_name', type: 'string' },
+      { format: 'email', name: 'email', type: 'string' },
+      { format: 'default', name: 'gender', type: 'string' },
+      { format: 'default', name: 'ip_address', type: 'string' },
+      { format: '%m/%d/%Y', name: 'date', type: 'date' },
+    ])
+  })
 })
