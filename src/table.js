@@ -413,8 +413,8 @@ function createCsvDelimiterDetector(csvParser) {
 
   detector.on('data', (chunk) => {
     if (!done) {
-      const result = sniffer.sniff(chunk.toString())
-      csvParser.options.delimiter = Buffer.from(result.delimiter, 'utf-8')
+      const delimiter = sniffer.sniff(chunk.toString()).delimiter || ','
+      csvParser.options.delimiter = Buffer.from(delimiter, 'utf-8')
       done = true
     }
   })

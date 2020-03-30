@@ -239,6 +239,16 @@ Paris;48.85,2.30;2.244
       assert.deepEqual(rows[19][0], '1959')
       assert.deepEqual(rows[20][0], '1960')
     })
+
+    it('should not fail while guessing if there are defective rows (#142)', async function () {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const table = await Table.load('data/defective_rows.csv')
+      const rows = await table.read()
+      assert.deepEqual(rows, [
+        ['1101', 'John'],
+        ['1102', 'Julie', '26', 'Potatoes'],
+      ])
+    })
   })
 
   describe('#format', () => {
