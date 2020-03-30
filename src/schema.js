@@ -199,6 +199,8 @@ class Schema {
     // Cast row
     for (const [index, [field, value]] of zip(this.fields, row).entries()) {
       try {
+        // Recreate the failing field to throw proper error message
+        if (!field) new Field(this._currentDescriptor.fields[index]) // eslint-disable-line
         result.push(field.castValue(value))
       } catch (error) {
         error.columnNumber = index + 1
