@@ -1,6 +1,13 @@
+const moment = require('moment')
 const { assert } = require('chai')
 const { Schema } = require('../src')
 const { catchError } = require('./helpers')
+
+// Helpers
+
+function time(hour, minute = 0, second = 0) {
+  return moment(`${hour}:${minute}:${second}`, 'h:m:s', false).toDate()
+}
 
 // Fixtures
 
@@ -211,5 +218,22 @@ describe('Schema', () => {
       assert.include(error.errors[1].message, '"bad" in column "name2"')
       assert.include(error.errors[2].message, 'Array is required')
     }
+  })
+
+  it('should correctly cast date/time with any format (#138)', async () => {
+    const schema = await Schema.load({
+      fields: [
+        { name: 'time', type: 'time', format: 'any' },
+        // { name: 'datetime', type: 'datetime', format: 'any' },
+      ],
+    })
+    const row = schema.castRow([
+      '00:01',
+      // '2018/01/02T00:00:00'
+    ])
+    assert.deepEqual(row, [
+      time(0, 1, 0),
+      // Not supported by moment.js
+    ])
   })
 })

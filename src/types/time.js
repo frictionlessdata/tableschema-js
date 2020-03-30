@@ -16,8 +16,10 @@ function castTime(format, value) {
         value = moment(value, _DEFAULT_PATTERN, true)
       } else if (format === 'any') {
         try {
+          if (!value) return ERROR
           moment.suppressDeprecationWarnings = true
-          value = moment(value)
+          const today = moment().format('YYYY-MM-DD')
+          value = moment(`${today} ${value}`)
         } finally {
           moment.suppressDeprecationWarnings = false
         }
