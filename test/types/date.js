@@ -33,6 +33,8 @@ const TESTS = [
   ['invalid', '21/11/06 16:30', ERROR],
   ['default', '1999-11-31', ERROR],
   ['default', '1999-02-29', ERROR],
+  ['%Y-%m-%d', '1999-11-31', ERROR],
+  ['%Y-%m-%d', '1999-02-29', ERROR],
   ['default', '2000-02-29', date(2000, 2, 29)],
   // Deprecated
   ['fmt:%d/%m/%y', date(2019, 1, 1), date(2019, 1, 1)],
