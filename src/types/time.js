@@ -15,7 +15,12 @@ function castTime(format, value) {
       if (format === 'default') {
         value = moment(timeParse(_DEFAULT_PATTERN)(value))
       } else if (format === 'any') {
-        value = moment(value)
+        try {
+          moment.suppressDeprecationWarnings = true
+          value = moment(value)
+        } finally {
+          moment.suppressDeprecationWarnings = false
+        }
       } else {
         if (format.startsWith('fmt:')) {
           console.warn(
