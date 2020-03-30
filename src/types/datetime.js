@@ -1,8 +1,8 @@
 const moment = require('moment')
 const isDate = require('lodash/isDate')
 const isString = require('lodash/isString')
-const { timeParse } = require('d3-time-format')
 const { ERROR } = require('../config')
+const helpers = require('../helpers')
 
 // Module API
 
@@ -29,9 +29,7 @@ function castDatetime(format, value) {
           )
           format = format.replace('fmt:', '')
         }
-        // https://github.com/d3/d3-time-format/issues/47
-        // It doesn't raise any error if the value is out-of-range
-        value = moment(timeParse(format)(value))
+        value = moment(value, helpers.convertDatetimeFormatFromFDtoJS(format), true)
       }
       if (!value.isValid()) {
         return ERROR
