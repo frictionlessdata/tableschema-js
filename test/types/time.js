@@ -6,7 +6,7 @@ const types = require('../../src/types')
 // Helpers
 
 function time(hour, minute = 0, second = 0) {
-  return moment(`${hour}:${minute}:${second}`, 'h:m:s', true).toDate()
+  return moment(`${hour}:${minute}:${second}`, 'h:m:s', false).toDate()
 }
 
 // Constants
@@ -21,6 +21,7 @@ const TESTS = [
   ['default', true, ERROR],
   ['default', '', ERROR],
   ['any', time(6), time(6)],
+  ['any', '00:01', time(0, 1, 0)],
   // ['any', '06:00:00', time(6)],
   // ['any', '3:00 am', time(3)],
   ['any', 'some night', ERROR],
