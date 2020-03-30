@@ -102,4 +102,14 @@ describe('Field', () => {
     assert.include(error.message, '"minimum" constraint')
     assert.include(error.message, 'column "column"')
   })
+
+  it('should throw correctly on bad min/max/enum constraint (#117)', async () => {
+    try {
+      const field = new Field({ name: 'column', type: 'integer', constraints: { minimum: 'bad' } })
+      assert.not(field)
+    } catch (error) {
+      assert.include(error.message, 'value "bad" in column "column"')
+      assert.include(error.message, 'is not type "integer"')
+    }
+  })
 })
