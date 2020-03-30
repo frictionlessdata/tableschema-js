@@ -193,4 +193,23 @@ describe('Schema', () => {
     schema.infer(sample, { headers: 1 })
     assert.deepEqual(sample, [[1], [2], [3]])
   })
+
+  it('should throw correctly on bad min/max/enum constraint (#117)', async () => {
+    try {
+      const descriptor = {
+        fields: [
+          { name: 'name1', type: 'integer', constraints: { minimum: 'bad' } },
+          { name: 'name2', type: 'integer', constraints: { maximum: 'bad' } },
+          { name: 'name3', type: 'integer', constraints: { enum: 'bad' } },
+        ],
+      }
+      const schema = new Schema(descriptor)
+      const row = schema.castRow(['1', '2', '3'])
+      assert(!row)
+    } catch (error) {
+      assert.include(error.errors[0].message, '"bad" in column "name1"')
+      assert.include(error.errors[1].message, '"bad" in column "name2"')
+      assert.include(error.errors[2].message, 'Array is required')
+    }
+  })
 })

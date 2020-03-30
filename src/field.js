@@ -179,12 +179,25 @@ class Field {
 
       // Cast enum constraint
       if (['enum'].includes(name)) {
-        castConstraint = constraint.map(cast)
+        try {
+          if (!Array.isArray(constraint)) throw new TableSchemaError('Array is required')
+          castConstraint = constraint.map(cast)
+        } catch (error) {
+          throw new TableSchemaError(
+            `Enum constraint "${constraint}" is not valid: ${error.message}`
+          )
+        }
       }
 
       // Cast maximum/minimum constraint
       if (['maximum', 'minimum'].includes(name)) {
-        castConstraint = cast(constraint)
+        try {
+          castConstraint = cast(constraint)
+        } catch (error) {
+          throw new TableSchemaError(
+            `Maximum/minimum constraint "${constraint}" is not valid: ${error.message}`
+          )
+        }
       }
 
       // Get check function

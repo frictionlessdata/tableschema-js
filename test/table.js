@@ -228,7 +228,7 @@ Paris;48.85,2.30;2.244
       assert.include(error.message, 'parsing error')
     })
 
-    it('should preserve row order - issue 108', async function () {
+    it('should preserve row order (#108)', async function () {
       if (process.env.USER_ENV === 'browser') this.skip()
       const table = await Table.load('data/population.csv')
       const rows = await table.read()
