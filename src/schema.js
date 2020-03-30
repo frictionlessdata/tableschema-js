@@ -369,6 +369,8 @@ const INSPECT_VALUE_DATE_TIME_MAPPING = {
   // and fill this mapping based on the decision
   '%d/%m/%y': 'date',
   '%d/%m/%Y': 'date',
+  '%m/%d/%y': 'date',
+  '%m/%d/%Y': 'date',
   '%H:%M': 'time',
 }
 const INSPECT_VALUE_GUESS_ORDER = [

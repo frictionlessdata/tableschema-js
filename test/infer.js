@@ -91,7 +91,7 @@ describe('infer', () => {
     ])
   })
 
-  it('should infer "%m/%d/%Y" date formats (#134)', async () => {
+  it.skip('should infer "%m/%d/%Y" date formats (#134)', async () => {
     const descriptor = await infer('data/data_infer_dates.csv')
     assert.deepEqual(descriptor.fields, [
       { format: 'default', name: 'first_name', type: 'string' },
