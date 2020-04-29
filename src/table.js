@@ -253,20 +253,19 @@ class Table {
    *  - `[rowNumber, [header1, header2], [value1, value2]]` - extended
    */
   async read({ keyed, extended, cast = true, relations = false, limit, forceCast = false } = {}) {
-    // Get rows
     const stream = await this.iter({ keyed, extended, cast, relations, forceCast, stream: true })
-    const iterator = stream[Symbol.asyncIterator]()
     const rows = []
     let count = 0
-    for (;;) {
-      count += 1
-      const iteration = await iterator.next()
-      if (iteration.done) break
-      rows.push(iteration.value)
-      if (limit && count >= limit) break
-    }
-
-    return rows
+    return new Promise((resolve, reject) => {
+      stream.on('data', (row) => {
+        if (limit && count >= limit) return stream.destroy()
+        rows.push(row)
+        count += 1
+      })
+      stream.on('error', reject)
+      stream.on('close', () => resolve(rows))
+      stream.on('end', () => resolve(rows))
+    })
   }
 
   /**

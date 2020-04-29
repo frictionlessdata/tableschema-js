@@ -28,7 +28,6 @@ jobs:
         edge: true
         provider: npm
         email: eskarev@gmail.com
-        cleanup: false
         on:
           tags: true
         api_token:
