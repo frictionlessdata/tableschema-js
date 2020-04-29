@@ -254,12 +254,15 @@ class Table {
    */
   async read({ keyed, extended, cast = true, relations = false, limit, forceCast = false } = {}) {
     // Get rows
-    const iterator = await this.iter({ keyed, extended, cast, relations, forceCast })
+    const stream = await this.iter({ keyed, extended, cast, relations, forceCast, stream: true })
+    const iterator = stream[Symbol.asyncIterator]()
     const rows = []
     let count = 0
-    for await (const row of iterator) {
+    for (;;) {
       count += 1
-      rows.push(row)
+      const iteration = await iterator.next()
+      if (iteration.done) break
+      rows.push(iteration.value)
       if (limit && count >= limit) break
     }
 
