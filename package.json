@@ -23,7 +23,7 @@
     "format": "prettier --write '{src,test}/**/*.js' && eslint --fix '{src,test}/**/*.js'",
     "lint": "prettier --check '{src,test}/**/*.js' && eslint '{src,test}/**/*.js'",
     "prepublish": "npm run build",
-    "posttest": "npm run lint",
+    "pretest": "npm run lint",
     "profiles": "wget -O src/profiles/table-schema.json https://specs.frictionlessdata.io/schemas/table-schema.json",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "NODE_ENV=testing nyc mocha",
