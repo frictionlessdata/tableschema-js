@@ -14,20 +14,16 @@
     "src"
   ],
   "scripts": {
-    "build": "npm run build:lib && npm run build:dist && npm run build:dist-min",
-    "build:lib": "babel src --out-dir lib --copy-files",
-    "build:dist": "webpack --progress --hide-modules",
-    "build:dist-min": "NODE_ENV=production webpack --progress --hide-modules",
+    "build": "npm run compile && npm run bundle",
+    "bundle": "webpack --progress --hide-modules && NODE_ENV=production webpack --progress --hide-modules",
+    "compile": "babel src --out-dir lib --copy-files",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "dev": "webpack-dev-server --open --inline --hot",
     "format": "prettier --write '{src,test}/**/*.js' && eslint --fix '{src,test}/**/*.js'",
     "lint": "prettier --check '{src,test}/**/*.js' && eslint '{src,test}/**/*.js'",
-    "prepublish": "npm run build",
     "pretest": "npm run lint",
     "profiles": "wget -O src/profiles/table-schema.json https://specs.frictionlessdata.io/schemas/table-schema.json",
-    "test": "npm run test:node && npm run test:browser",
-    "test:node": "NODE_ENV=testing nyc mocha",
-    "test:browser": "NODE_ENV=testing karma start"
+    "test": "NODE_ENV=testing nyc mocha && karma start"
   },
   "dependencies": {
     "@types/csv-parse": "^1.2.2",

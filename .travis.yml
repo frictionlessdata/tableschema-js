@@ -14,6 +14,7 @@ node_js:
 
 script:
   - npm run test
+  - npm run build
 
 after_script:
   - npm run coveralls
@@ -22,7 +23,7 @@ jobs:
   include:
     - stage: release
       if: tag IS present
-      node_js: 12
+      node_js: 14
       deploy:
         provider: npm
         email: eskarev@gmail.com
