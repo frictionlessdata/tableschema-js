@@ -32,7 +32,7 @@
   "dependencies": {
     "@types/csv-parse": "^1.2.2",
     "axios": "^0.19.2",
-    "csv-parse": "^4.9.0",
+    "csv-parse": "~4.8.8",
     "csv-sniffer": "^0.1.1",
     "es6-error": "^4.1.1",
     "lodash": "^4.17.15",
