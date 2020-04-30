@@ -863,6 +863,10 @@ $ npm run build
 
 Here described only breaking and the most important changes. The full changelog and documentation for all released versions could be found in nicely formatted [commit history](https://github.com/frictionlessdata/tableschema-js/commits/master).
 
+#### v1.12
+
+- Added support for infinite numbers: NaN, INF, -INF
+
 #### v1.11
 
 - Improved data/time validation using a conversion table and moment.js (#170)
