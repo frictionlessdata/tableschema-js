@@ -45,6 +45,8 @@ A library for working with [Table Schema](http://specs.frictionlessdata.io/table
 
 ## Getting started
 
+> To use the library with `webpack` please replicate the `webpack.config.js->node` configuration - https://github.com/frictionlessdata/tableschema-js/blob/master/webpack.config.js
+
 ### Installation
 
 The package use semantic versioning. It means that major versions could include breaking changes. It's highly recommended to specify `tableschema` version range in your `package.json` file e.g. `tabulator: ^1.0` which  will be added by default by `npm install --save`.
