@@ -102,4 +102,17 @@ describe('infer', () => {
       { format: '%m/%d/%Y', name: 'date', type: 'date' },
     ])
   })
+
+  it('should infer dates - issue 175', async () => {
+    const descriptor = await infer('data/issue_175.csv')
+    assert.deepEqual(descriptor, {
+      fields: [
+        { name: 'Project_Entity_ID', type: 'string', format: 'default' },
+        { name: 'Accident_type', type: 'string', format: 'default' },
+        { name: 'Accident_Date', type: 'date', format: 'default' },
+        { name: 'numbertest', type: 'integer', format: 'default' },
+      ],
+      missingValues: [''],
+    })
+  })
 })
