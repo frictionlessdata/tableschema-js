@@ -335,8 +335,8 @@ Available types, formats and resultant value of the cast:
 | any | default | Any |
 | array | default | Array |
 | boolean | default | Boolean |
-| date | default, any, <PATTERN> | Date |
-| datetime | default, any, <PATTERN> | Date |
+| date | default, any, \<PATTERN\> | Date |
+| datetime | default, any, \<PATTERN\> | Date |
 | duration | default | moment.Duration |
 | geojson | default, topojson | Object |
 | geopoint | default, array, object | [Number, Number] |
@@ -344,7 +344,7 @@ Available types, formats and resultant value of the cast:
 | number | default | Number |
 | object | default | Object |
 | string | default, uri, email, binary | String |
-| time | default, any, <PATTERN> | Date |
+| time | default, any, \<PATTERN\> | Date |
 | year | default | Number |
 | yearmonth | default | [Number, Number] |
 
