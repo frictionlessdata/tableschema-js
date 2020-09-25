@@ -115,4 +115,9 @@ describe('infer', () => {
       missingValues: [''],
     })
   })
+
+  it('should properly recognize a delimiter - issue 269', async () => {
+    const descriptor = await infer('data/issue-269.csv')
+    assert.deepEqual(descriptor.fields.length, 27)
+  })
 })

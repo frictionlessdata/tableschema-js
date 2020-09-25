@@ -1,0 +1,3 @@
+Datetime_UTC [YYYY-MM-DDTHH:MM:SS+00:00],Latitude [degN],Longitude [degE],Leg [1-3],Station [-],Cast [-],Event [-],Profile types [1-3],Depth min. [m],Depth max. [m],MLD [m],T MLD [degC],S MLD [PSU],T surf. [degC],S surf. [PSU],T upper 15m [degC],S upper 15m [PSU],T mean [degC],S mean [PSU],Depth T max. [m],T max. [degC],Depth T min. [m],T min. [degC],Depth S max. [m],S max. [PSU],Depth S min. [m],S min. [PSU]
+2016-12-28T15:05:00+00:00,-46.7138,37.6299,1,4,2,80,2,6.94,646.42,33.71,4.940,33.799,4.980,33.798,4.983,33.798,2.979,34.221,16.86,4.991,646.42,34.419,189.33,2.742,26.78,33.797
+2016-12-30T13:10:00+00:00,-46.1788,50.9974,1,8,3,123,2,30.74,398.31,NaN,NaN,NaN,5.569,33.816,NaN,NaN,3.933,34.009,30.74,5.569,394.35,34.177,398.31,3.202,48.59,33.815
