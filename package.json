@@ -3,7 +3,7 @@
   "version": "1.12.5",
   "description": "A library for working with Table Schema in Javascript.",
   "license": "MIT",
-  "main": "lib/index.js",
+  "main": "src/index.js",
   "typings": "index.d.ts",
   "engines": {
     "node": ">=4"
