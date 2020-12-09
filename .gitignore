@@ -48,5 +48,5 @@ jspm_packages
 
 # Extra
 dist/
-lib/
+# lib/
 package-lock.json
