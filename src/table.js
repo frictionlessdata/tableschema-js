@@ -142,6 +142,7 @@ class Table {
 
     // Get row stream
     const rowStream = await createRowStream(source, this._encoding, this._parserOptions)
+    // Store the detected delimiter
     this._detectedParserOptions = {
       delimiter: rowStream.options ? rowStream.options.delimiter.toString() : null,
     }
