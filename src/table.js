@@ -89,6 +89,15 @@ class Table {
   }
 
   /**
+   * Schema
+   *
+   * @returns {Schema} table schema instance
+   */
+  get detectedParserOptions() {
+    return this._detectedParserOptions
+  }
+
+  /**
    * Iterate through the table data
    *
    * And emits rows cast based on table schema (async for loop).
@@ -133,7 +142,9 @@ class Table {
 
     // Get row stream
     const rowStream = await createRowStream(source, this._encoding, this._parserOptions)
-
+    this._detectedParserOptions = {
+      delimiter: rowStream.options ? rowStream.options.delimiter.toString() : null,
+    }
     // Get table row stream
     let rowNumber = 0
     const tableRowStream = rowStream.pipe(
@@ -329,6 +340,7 @@ class Table {
     this._format = format
     this._encoding = encoding
     this._parserOptions = parserOptions
+    this._detectedParserOptions = null
 
     // Headers
     this._headers = null
