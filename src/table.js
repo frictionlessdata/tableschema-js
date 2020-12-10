@@ -89,6 +89,15 @@ class Table {
   }
 
   /**
+   * Schema
+   *
+   * @returns {Schema} table schema instance
+   */
+  get detectedParserOptions() {
+    return this._detectedParserOptions
+  }
+
+  /**
    * Iterate through the table data
    *
    * And emits rows cast based on table schema (async for loop).
@@ -121,6 +130,7 @@ class Table {
     stream = false,
     forceCast = false,
   } = {}) {
+    const _this = this
     const source = this._source
 
     // Prepare unique checks
@@ -132,7 +142,11 @@ class Table {
     }
 
     // Get row stream
-    const rowStream = await createRowStream(source, this._encoding, this._parserOptions)
+    const { stream: rowStream, parser } = await createRowStream(
+      source,
+      this._encoding,
+      this._parserOptions
+    )
 
     // Get table row stream
     let rowNumber = 0
@@ -232,6 +246,14 @@ class Table {
       tableRowStream.emit('error', error)
     })
 
+    // Handle csv errors
+    rowStream.on('finish', () => {
+      // Store the detected delimiter
+      _this._detectedParserOptions = {
+        delimiter: parser.options ? parser.options.delimiter.toString() : null,
+      }
+    })
+
     // Return stream
     if (stream) {
       return tableRowStream
@@ -329,6 +351,7 @@ class Table {
     this._format = format
     this._encoding = encoding
     this._parserOptions = parserOptions
+    this._detectedParserOptions = null
 
     // Headers
     this._headers = null
@@ -394,7 +417,7 @@ async function createRowStream(source, encoding, parserOptions) {
     stream = stream.pipe(parser)
   }
 
-  return stream
+  return { stream, parser }
 }
 
 /**

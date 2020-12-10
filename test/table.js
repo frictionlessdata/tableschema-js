@@ -171,6 +171,28 @@ describe('Table', () => {
       assert.deepEqual(table.schema.fields.length, 3)
     })
 
+    it('should contain stream options after infer', async function () {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const table = await Table.load('data/data_infer.csv')
+      await table.infer()
+      assert.deepEqual(table.headers, ['id', 'age', 'name'])
+      assert.deepEqual(table.schema.fields.length, 3)
+      assert.deepEqual(table.detectedParserOptions, {
+        delimiter: ',',
+      })
+    })
+
+    it('should contain stream options after infer for non comma delimiter', async function () {
+      if (process.env.USER_ENV === 'browser') this.skip()
+      const table = await Table.load('data/data_parse_options_delimiter.csv')
+      await table.infer()
+      assert.deepEqual(table.headers, ['id', 'age', 'name'])
+      assert.deepEqual(table.schema.fields.length, 3)
+      assert.deepEqual(table.detectedParserOptions, {
+        delimiter: ';',
+      })
+    })
+
     it('should throw on read for headers/fieldNames missmatch', async () => {
       const source = [
         ['id', 'bad', 'age', 'name', 'occupation'],
