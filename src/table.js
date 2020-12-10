@@ -130,6 +130,7 @@ class Table {
     stream = false,
     forceCast = false,
   } = {}) {
+    const _this = this
     const source = this._source
 
     // Prepare unique checks
@@ -141,11 +142,12 @@ class Table {
     }
 
     // Get row stream
-    const rowStream = await createRowStream(source, this._encoding, this._parserOptions)
-    // Store the detected delimiter
-    this._detectedParserOptions = {
-      delimiter: rowStream.options ? rowStream.options.delimiter.toString() : null,
-    }
+    const { stream: rowStream, parser } = await createRowStream(
+      source,
+      this._encoding,
+      this._parserOptions
+    )
+
     // Get table row stream
     let rowNumber = 0
     const tableRowStream = rowStream.pipe(
@@ -242,6 +244,15 @@ class Table {
     rowStream.on('error', () => {
       const error = new TableSchemaError('Data source parsing error')
       tableRowStream.emit('error', error)
+    })
+
+    // Handle csv errors
+    rowStream.on('finish', () => {
+      console.log('createRowStream delimiter', parser.options.delimiter)
+      // Store the detected delimiter
+      _this._detectedParserOptions = {
+        delimiter: parser.options ? parser.options.delimiter.toString() : null,
+      }
     })
 
     // Return stream
@@ -357,6 +368,7 @@ class Table {
 // Internal
 
 async function createRowStream(source, encoding, parserOptions) {
+  console.log('Calling create row stream')
   const parser = csv({ ltrim: true, relax_column_count: true, ...parserOptions })
   let stream
 
@@ -407,7 +419,7 @@ async function createRowStream(source, encoding, parserOptions) {
     stream = stream.pipe(parser)
   }
 
-  return stream
+  return { stream, parser }
 }
 
 /**
@@ -432,6 +444,7 @@ function createCsvDelimiterDetector(csvParser) {
       if (delimiter.match(/[a-zA-Z0-9+]/)) delimiter = ','
       csvParser.options.delimiter = Buffer.from(delimiter, 'utf-8')
       done = true
+      console.log('createCsvDelimiterDetector delimiter', csvParser.options.delimiter)
     }
   })
 
