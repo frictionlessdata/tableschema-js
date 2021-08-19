@@ -1,10 +1,10 @@
 # tableschema-js
 
-[![Travis](https://travis-ci.org/frictionlessdata/tableschema-js.svg?branch=master)](https://travis-ci.org/frictionlessdata/tableschema-js)
-[![Coveralls](https://coveralls.io/repos/github/frictionlessdata/tableschema-js/badge.svg?branch=master)](https://coveralls.io/github/frictionlessdata/tableschema-js?branch=master)
-[![NPM](https://img.shields.io/npm/v/tableschema.svg)](https://www.npmjs.com/package/tableschema)
-[![Codebase](https://img.shields.io/badge/codebase-github-brightgreen)](https://github.com/frictionlessdata/tableschema-js)
-[![Support](https://img.shields.io/badge/support-discord-brightgreen)](https://discordapp.com/invite/Sewv6av)
+[![Build](https://img.shields.io/github/workflow/status/frictionlessdata/tableschema-js/general/main)](https://github.com/frictionlessdata/tableschema-js/actions)
+[![Coverage](https://img.shields.io/codecov/c/github/frictionlessdata/tableschema-js/main)](https://codecov.io/gh/frictionlessdata/tableschema-js)
+[![Registry](https://img.shields.io/npm/v/frictionless-tableschema-js.svg)](https://www.npmjs.com/package/frictionless-tableschema-js)
+[![Codebase](https://img.shields.io/badge/github-main-brightgreen)](https://github.com/frictionlessdata/tableschema-js)
+[![Support](https://img.shields.io/badge/chat-discord-brightgreen)](https://discord.com/channels/695635777199145130/695635777199145133)
 
 A library for working with [Table Schema](http://specs.frictionlessdata.io/table-schema/).
 
