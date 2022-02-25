@@ -56,6 +56,7 @@ class Table {
     {
       schema,
       strict = false,
+      caseSensitive = true,
       headers = 1,
       format = config.DEFAULT_FORMAT,
       encoding = config.DEFAULT_ENCODING,
@@ -67,7 +68,15 @@ class Table {
       schema = await Schema.load(schema, { strict })
     }
 
-    return new Table(source, { schema, strict, headers, format, encoding, ...parserOptions })
+    return new Table(source, {
+      schema,
+      strict,
+      caseSensitive,
+      headers,
+      format,
+      encoding,
+      ...parserOptions,
+    })
   }
 
   /**
@@ -149,13 +158,19 @@ class Table {
         // Check headers
         if (cast) {
           if (this.schema && this.headers) {
-            if (!isEqual(this.headers, this.schema.fieldNames)) {
+            const lowerHeaders = (hs) => hs.map((h) => h.toLocaleLowerCase())
+            const tableHeaders = this._caseSensitive ? this.headers : lowerHeaders(this.headers)
+            const schemaHeaders = this._caseSensitive
+              ? this.schema.fieldNames
+              : lowerHeaders(this.schema.fieldNames)
+
+            if (!isEqual(tableHeaders, schemaHeaders)) {
               const error = new TableSchemaError(
                 'The column header names do not match the field names in the schema'
               )
               error.rowNumber = rowNumber
               error.headerNames = this.headers
-              error.fieldNames = this.fieldNames
+              error.fieldNames = this.schema.fieldNames
               if (forceCast) return done(null, error)
               return done(error)
             }
@@ -311,6 +326,7 @@ class Table {
     {
       schema,
       strict = false,
+      caseSensitive = true,
       headers = 1,
       format = config.DEFAULT_FORMAT,
       encoding = config.DEFAULT_ENCODING,
@@ -326,6 +342,7 @@ class Table {
     this._source = source
     this._schema = schema
     this._strict = strict
+    this._caseSensitive = caseSensitive
     this._format = format
     this._encoding = encoding
     this._parserOptions = parserOptions
