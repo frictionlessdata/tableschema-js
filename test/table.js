@@ -2,7 +2,7 @@ const fs = require('fs')
 const { Readable } = require('stream')
 const { assert } = require('chai')
 const cloneDeep = require('lodash/cloneDeep')
-const { Table, Schema } = require('../src')
+const { Schema, Table, TableSchemaError } = require('../src')
 const { catchError } = require('./helpers')
 const axios = require('axios').default
 
@@ -179,6 +179,11 @@ describe('Table', () => {
       const table = await Table.load(source, { schema: SCHEMA })
       const error = await catchError(table.read.bind(table))
       assert.include(error.message, 'header names do not match the field names')
+      assert.equal(error.errors.length, 1)
+      assert.deepEqual(
+        error._errors[0],
+        new TableSchemaError("The column header name 'height' is missing")
+      )
       assert.deepEqual(error.headerNames, source[0])
       assert.deepEqual(error.fieldNames, SCHEMA.headers)
     })
