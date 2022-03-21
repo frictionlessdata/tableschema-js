@@ -158,9 +158,11 @@ class Table {
               error.rowNumber = rowNumber
               error.headerNames = this.headers
               error.fieldNames = this.fieldNames
-              error.errors = missingFields.map(
-                (fieldName) =>
-                  new TableSchemaError(`The column header name '${fieldName}' is missing`)
+              error.errors.push(
+                ...missingFields.map(
+                  (fieldName) =>
+                    new TableSchemaError(`The column header name '${fieldName}' is missing`)
+                )
               )
               if (forceCast) return done(null, error)
               return done(error)
