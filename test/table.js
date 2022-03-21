@@ -181,7 +181,7 @@ describe('Table', () => {
       assert.include(error.message, 'header names do not match the field names')
       assert.equal(error.errors.length, 1)
       assert.deepEqual(
-        error._errors[0],
+        error.errors[0],
         new TableSchemaError("The column header name 'height' is missing")
       )
       assert.deepEqual(error.headerNames, source[0])
