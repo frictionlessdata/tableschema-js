@@ -4,8 +4,8 @@ const csv = require('csv-parse/lib/es5')
 const through2 = require('through2')
 const { Readable, PassThrough } = require('stream')
 const zip = require('lodash/zip')
-const isEqual = require('lodash/isEqual')
 const isArray = require('lodash/isArray')
+const isEqual = require('lodash/isEqual')
 const isMatch = require('lodash/isMatch')
 const isInteger = require('lodash/isInteger')
 const isFunction = require('lodash/isFunction')
@@ -171,6 +171,17 @@ class Table {
               error.rowNumber = rowNumber
               error.headerNames = this.headers
               error.fieldNames = this.schema.fieldNames
+              const missingFields = this.schema.fieldNames.filter(
+                (name) => !this.headers.includes(name)
+              )
+              if (missingFields.length > 0) {
+                error.errors.push(
+                  ...missingFields.map(
+                    (fieldName) =>
+                      new TableSchemaError(`The column header name '${fieldName}' is missing`)
+                  )
+                )
+              }
               if (forceCast) return done(null, error)
               return done(error)
             }
