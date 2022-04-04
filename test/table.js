@@ -185,7 +185,7 @@ describe('Table', () => {
         new TableSchemaError("The column header name 'height' is missing")
       )
       assert.deepEqual(error.headerNames, source[0])
-      assert.deepEqual(error.fieldNames, SCHEMA.headers)
+      assert.deepEqual(error.fieldNames, table.schema.fieldNames)
     })
 
     it('should support user-defined constraints (issue #103)', async function () {

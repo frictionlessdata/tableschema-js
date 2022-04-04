@@ -16,6 +16,7 @@ declare module "tableschema" {
     interface TSTableLoadOpts {
         schema?: SchemaDescriptor;
         strict?: boolean;
+        caseSensitive?: boolean;
         headers?: number | string[],
     }
 
