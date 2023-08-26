@@ -33,7 +33,7 @@
     "csv-sniffer": "^0.1.1",
     "es6-error": "^4.1.1",
     "lodash": "^4.17.15",
-    "moment": "~2.24.0",
+    "moment": "~2.29.4",
     "regenerator-runtime": "^0.13.5",
     "stream-to-async-iterator": "^0.2.0",
     "through2": "^3.0.1",
